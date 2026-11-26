@@ -19,6 +19,12 @@ interface Task {
   lastDoneDays: number;     // days since last done (sample)
   consumable?: string;
   pro: boolean;             // requires technician
+  /**
+   * Real-project test D5 (2026-11-26): genset service items are due by ENGINE HOURS, and this demo
+   * has no OEM-sourced interval for them, so none is shown: "per OEM manual (enter from the manual)".
+   * intervalDays / lastDoneDays are not used for these rows.
+   */
+  perOemHours?: true;
 }
 
 const TASKS: Task[] = [
@@ -37,14 +43,23 @@ const TASKS: Task[] = [
   { id: 'ups-trans',   asset: 'UPS',             task: 'Transfer test — pull mains, log time',  intervalDays:  90, lastDoneDays:  88,                          pro: false },
   { id: 'ups-runtime', asset: 'UPS',             task: 'Full discharge runtime test',           intervalDays: 365, lastDoneDays: 380,                          pro: true  },
   // Genset
-  { id: 'gen-oil',     asset: 'Genset',          task: 'Oil + filter change',                   intervalDays: 250, lastDoneDays: 200, consumable: 'oil + filter', pro: true },
+  // Genset service scope (D5): oil and oil filter, fuel filter, air filter, coolant. Intervals are in
+  // engine hours from the engine's OEM manual; this demo holds no sourced figure, so none is shown.
+  { id: 'gen-oil',     asset: 'Genset',          task: 'Oil + oil filter change',               intervalDays: 0,   lastDoneDays: 0,   consumable: 'oil + oil filter', pro: true, perOemHours: true },
+  { id: 'gen-fuel',    asset: 'Genset',          task: 'Fuel filter change',                    intervalDays: 0,   lastDoneDays: 0,   consumable: 'fuel filter',      pro: true, perOemHours: true },
+  { id: 'gen-air',     asset: 'Genset',          task: 'Air filter check / change',             intervalDays: 0,   lastDoneDays: 0,   consumable: 'air filter',       pro: true, perOemHours: true },
+  { id: 'gen-coolant', asset: 'Genset',          task: 'Coolant check / change',                intervalDays: 0,   lastDoneDays: 0,   consumable: 'coolant',          pro: true, perOemHours: true },
   { id: 'gen-load',    asset: 'Genset',          task: 'Load-bank test at 80 % rated',          intervalDays: 365, lastDoneDays: 305,                          pro: true  },
   // Earthing / SPD
   { id: 'earth',       asset: 'Earthing',        task: 'Fall-of-potential resistance test',     intervalDays: 365, lastDoneDays: 200,                          pro: true  },
   { id: 'spd',         asset: 'SPD',             task: 'Inspect status windows + replace if red', intervalDays: 90, lastDoneDays: 60,                          pro: false },
 ];
 
+/** Shown wherever a genset interval would be. Never an invented figure. */
+export const PER_OEM_INTERVAL = 'engine hours — per OEM manual (enter from the manual)';
+
 function status(t: Task): StatusKey {
+  if (t.perOemHours) return 'info';
   const overdue = t.lastDoneDays - t.intervalDays;
   if (overdue >= 30) return 'danger';
   if (overdue >= 0)  return 'warning';
@@ -119,11 +134,13 @@ export default function MaintenanceClient() {
                     </div>
                     <div className="text-right text-xs">
                       <div className="font-mono tabular-nums" style={{ color: p.fg }}>
-                        {sk === 'danger' && `${t.lastDoneDays - t.intervalDays} d overdue`}
-                        {sk === 'warning' && `${t.lastDoneDays - t.intervalDays} d overdue`}
-                        {(sk === 'info' || sk === 'success') && `next in ${next} d`}
+                        {t.perOemHours ? 'due: by engine hours' : (<>
+                          {sk === 'danger' && `${t.lastDoneDays - t.intervalDays} d overdue`}
+                          {sk === 'warning' && `${t.lastDoneDays - t.intervalDays} d overdue`}
+                          {(sk === 'info' || sk === 'success') && `next in ${next} d`}
+                        </>)}
                       </div>
-                      <div className="text-xs text-ink-muted">interval: {t.intervalDays} d</div>
+                      <div className="text-xs text-ink-muted">interval: {t.perOemHours ? PER_OEM_INTERVAL : `${t.intervalDays} d`}</div>
                     </div>
                   </div>
                 </li>

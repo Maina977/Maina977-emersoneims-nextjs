@@ -22,6 +22,9 @@
  *   change shows as "changed after sign-off". Anyone can recompute a hash, so
  *   it detects changes but proves nothing about who signed.
  */
+import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
+import { UNIT_OPTIONS, unitKindOf } from '@/lib/generator-oracle/diagnostics/units';
+import type { Question } from '@/lib/generator-oracle/diagnostics/types';
 import { sha256Hex } from './sha256';
 
 export const SERVICE_ENGINE_VERSION = 'oracle-service 1.1.0 (2026-11-21)';
@@ -279,6 +282,57 @@ const latchedStopBlocker = (card: Pick<JobCard, 'findings' | 'guidedSafety'> & P
 };
 export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is safe to run. A STOP from Guided Diagnosis is kept only in this browser — record it on this card. Do not test-run a set with an unresolved STOP.';
 
+/**
+ * Real-project test D6 (2026-11-26): the job-specific test-run checklist. Completion used to accept
+ * any single reading (even one with no limit). Now the card needs, unless the structured
+ * "readings not taken — STOP in force" action is recorded:
+ *  - the engine test-run readings every generator test run takes, from the Guided Diagnosis question
+ *    definitions: oil pressure, coolant temperature, output voltage and frequency;
+ *  - for every fault family diagnosed on this card (its Guided Diagnosis record or its STOPs), that
+ *    family's protective readings (the readings of its protective limits).
+ * Each needs a value and a unit of the right kind. No limit is invented: a reading without a limit is
+ * printed "NOT VERIFIED, not a pass". The file-consistency check of saved cards is unchanged.
+ */
+interface RequiredReading { family: string; id: string; text: string; units: string[]; match?: RegExp }
+/** The engine test-run readings, with the words a technician uses for them on a card. */
+const BASE_TEST_RUN: Array<[string, string, RegExp]> = [['low-oil-pressure', 'oilPressure', /oil\s*pressure/i], ['overheating', 'coolantTemp', /coolant/i], ['no-voltage', 'voltage', /volt/i], ['no-voltage', 'frequency', /freq|hz/i]];
+const unitsOf = (q: Question): string[] => {
+  const kind = unitKindOf(q);
+  return kind ? [...UNIT_OPTIONS[kind]] : q.kind === 'number' ? [q.unit] : [];
+};
+const required = (familyId: string, id: string): RequiredReading | null => {
+  const q = FAMILIES.find((f) => f.id === familyId)?.questions.find((x) => x.id === id);
+  return q && q.kind === 'number' ? { family: familyId, id, text: q.text, units: unitsOf(q) } : null;
+};
+/** Fault families diagnosed on this card: its Guided Diagnosis records ("[family-id]") and its structured STOPs. */
+export function cardFamilies(card: Pick<JobCard, 'findings' | 'guidedSafety'>): string[] {
+  const ids = new Set<string>();
+  for (const m of card.findings.matchAll(/^GUIDED DIAGNOSIS: .* \[([a-z0-9-]+)\] —/gm)) ids.add(m[1]);
+  for (const st of card.guidedSafety?.stops ?? []) ids.add(st.key.split('|')[0]);
+  return [...ids].filter((id) => FAMILIES.some((f) => f.id === id));
+}
+export function requiredTestRunReadings(card: Pick<JobCard, 'findings' | 'guidedSafety'>): RequiredReading[] {
+  const out: RequiredReading[] = [];
+  const add = (r: RequiredReading | null) => { if (r && !out.some((x) => x.id === r.id)) out.push(r); };
+  for (const [f, id, match] of BASE_TEST_RUN) { const r = required(f, id); add(r ? { ...r, match } : null); }
+  for (const fid of cardFamilies(card)) {
+    const fam = FAMILIES.find((f) => f.id === fid)!;
+    for (const l of (fam.limits ?? []).filter((x) => x.protective)) add(required(fid, l.reading));
+  }
+  return out;
+}
+const words = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
+/** A card reading matches a required one when its name holds the question text or its first two words. */
+const readingMatches = (r: Reading, q: RequiredReading) => {
+  const name = r.name.toLowerCase();
+  const w = words(q.text);
+  return (q.match ? q.match.test(r.name) : false) || name.includes(q.text.toLowerCase()) || (w.length >= 2 ? name.includes(`${w[0]} ${w[1]}`) : name.includes(w[0]));
+};
+export function missingTestRunReadings(card: Pick<JobCard, 'findings' | 'guidedSafety' | 'readings'>): string[] {
+  return requiredTestRunReadings(card).filter((q) => !card.readings.some((r) => readingMatches(r, q) && Number.isFinite(r.value) && q.units.some((u) => u.toLowerCase() === r.unit.trim().toLowerCase())))
+    .map((q) => `${q.text} (${q.units.join(' / ')})`);
+}
+
 export interface ManualRef { document: string; edition: string; page: string }
 export interface Asset { id: string; make: string; model: string; engine: string; controller: string; serial: string; ratedKva: number }
 export interface PlanTask { id: string; task: string; intervalHours?: number; intervalMonths?: number; source: ManualRef }
@@ -454,7 +508,11 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (!next.findings.trim()) e.push('findings');
     if (!next.tasks.length) e.push('work done');
     if (!(next.engineHoursAtJob !== null && next.engineHoursAtJob >= 0)) e.push('engine-hour reading');
-    if (!next.readings.length && !recordsStopInForce(next)) e.push(`test-run readings (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
+    if (!recordsStopInForce(next)) {
+      // Real-project test D6 (2026-11-26): not "any reading" — the test-run readings THIS job needs.
+      const missing = missingTestRunReadings(next);
+      if (missing.length) e.push(`test-run readings for this job: ${missing.join('; ')} (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
+    }
     const latched = latchedStopBlocker(next);
     if (latched) e.push(latched);
     const imported = importedBlocker(next);
@@ -586,7 +644,7 @@ export function signOffSummary(card: JobCard): string[] {
 }
 
 const fmtLimits = (r: Reading) => {
-  if (r.min === undefined && r.max === undefined) return 'no limit given, not judged';
+  if (r.min === undefined && r.max === undefined) return 'no limit given — NOT VERIFIED, not a pass';
   const range = r.min !== undefined && r.max !== undefined ? `${r.min}–${r.max} ${r.unit}` : r.min !== undefined ? `min ${r.min} ${r.unit}` : `max ${r.max} ${r.unit}`;
   return `limits ${range}, source: ${r.limitSource?.trim() || 'NOT GIVEN'}`;
 };

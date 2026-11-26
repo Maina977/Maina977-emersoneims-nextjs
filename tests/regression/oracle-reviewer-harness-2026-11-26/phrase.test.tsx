@@ -3,6 +3,9 @@
  * Copied from the reviewer's scratch/integration/mine6u/phrase.test.tsx (2026-11-26, F10-R3 demonstration).
  * Changed: the console-only demonstration now asserts the fix — the hold line does not contain the
  * phrase, recordsStopInForce is false, and the card does not complete with test-run readings.
+ *
+ * Real-project D6 (2026-11-26): completion fixtures now carry the engine test-run readings
+ * (oil pressure, coolant temperature, output voltage, frequency; oil temperature for low-oil cards).
  */
 import { it, expect, afterEach } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -36,7 +39,7 @@ it('F10-R3 fixed (was REMAINING?): the refused-value HOLD line no longer contain
   console.log('PHRASE hold line:', holdLine);
   console.log('PHRASE recordsStopInForce(card) with no phrase written by anyone:', recordsStopInForce(card), '| findings include phrase:', card.findings.includes(READINGS_NOT_TAKEN_STOP));
   const r1 = apply(s, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: '2026-11-26T12:00:00.000Z' } as ServiceAction);
-  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }] } } as ServiceAction);
+  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] } } as ServiceAction);
   console.log('PHRASE completion with test-run readings →', r2.error);
   expect(holdLine).toBeDefined();
   expect(card.findings).not.toContain(READINGS_NOT_TAKEN_STOP);

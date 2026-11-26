@@ -60,7 +60,7 @@ describe('job cards', () => {
     const done = transition(start(), 'COMPLETED', 'TECH-A', '2026-11-20T12:00:00Z', {
       findings: 'Oil pressure sender faulty; replaced', tasks: ['Replace oil pressure sender'], engineHoursAtJob: 1500,
       parts: [{ partNo: 'TEST-123', description: 'Oil pressure sender', qty: 1, compatibility: null }],
-      readings: [{ name: 'Output voltage L1-L2', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'rating plate (test)' }],
+      readings: [{ name: 'Output voltage L1-L2', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'rating plate (test)' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
     });
     expect(() => transition(done, SIGNOFF, 'TECH-A', '2026-11-20T13:00:00Z')).toThrow(/supervisor other than the technician/);
     expect(() => transition(done, SIGNOFF, 'SUPERVISOR-B', '2026-11-20T13:00:00Z')).toThrow(/Compatibility unverified for: TEST-123/);

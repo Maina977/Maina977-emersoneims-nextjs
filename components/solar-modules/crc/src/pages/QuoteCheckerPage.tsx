@@ -148,6 +148,11 @@ interface ParsedLine {
   description: string;
   qty: number;
   unitPriceKes: number | null;
+  /**
+   * Real-project test D3 (2026-11-26): set when the line is ambiguous (a count inside the description,
+   * or numbers that do not agree). The line is then NOT priced; it is shown as "needs confirmation".
+   */
+  needsConfirmation?: string;
 }
 
 interface VerdictRow {
@@ -257,9 +262,17 @@ function reduceBatteries(arr: any[]): LibItem[] {
 //   "BYD HVS 10.2kWh battery 1 350000"
 /** Subtotal, VAT, totals, discounts and payment terms: not items to price. */
 export function isSummaryLine(l: string): boolean {
+  // Real-project test D3: "Sales Tax (16.0%) 40,212.80" is the tax line, not an item. The label is
+  // what is left once amounts, rates and punctuation are taken out.
+  if (TAX_LABEL.test(taxLabel(l))) return true;
   // "16% VAT 20,000" starts with the rate (2026-10-27 audit: listed as an item).
   return /^\s*(\d+(?:\.\d+)?\s*%\s*)?(sub\s*-?\s*total|grand\s*total|total|vat|tax|discount|balance|deposit|amount\s+due|less\b|pay(ment)?\b|valid|terms|quotation\b|quote\s*(no|number|#)|invoice|proforma|pro-forma|date\b|customer|client|to:|from:|ref\b|note)\b/i.test(l);
 }
+
+/** The words of a line without amounts, rates, currency and punctuation. */
+const taxLabel = (l: string) => l.replace(/\b(ksh|kes|sh)\.?/gi, ' ').replace(/[\d.,%()|:;@\-–\s]+/g, ' ').trim().toLowerCase();
+/** A tax line: "Sales Tax", "VAT", "Tax", "Add VAT", "VAT amount" (with its rate and amount). */
+const TAX_LABEL = /^(add\s+|plus\s+)?(sales\s+tax|value\s+added\s+tax|vat|tax)(\s+(amount|at|on\s+subtotal))?$/;
 
 /** Subtotal, VAT and total amounts the quote states, for checking its arithmetic. */
 export interface QuoteTotals { subtotal: number | null; vat: number | null; total: number | null }
@@ -272,7 +285,7 @@ export function parseTotals(input: string): QuoteTotals {
     if (!amounts) continue;
     const amount = Number(amounts[amounts.length - 1]);
     if (/^\s*sub\s*-?\s*total\b/i.test(l)) out.subtotal = amount;
-    else if (/^\s*(\d+(?:\.\d+)?\s*%\s*)?(vat|tax)\b/i.test(l)) out.vat = amount;
+    else if (/^\s*(\d+(?:\.\d+)?\s*%\s*)?(vat|tax)\b/i.test(l) || TAX_LABEL.test(taxLabel(l))) out.vat = amount;
     else if (/^\s*(grand\s*)?total\b/i.test(l)) out.total = amount;
   }
   return out;
@@ -299,7 +312,12 @@ export function bosReferenceKes(arrayKwp: number, equipmentKes: number): number 
 }
 
 /** Words that make a line a quotation item even without a recognised rating. */
-const ITEM_WORDS = /\b(panel|module|inverter|battery|batt|cabl(?:e|es|ing)|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|charge|controller|mppt|combiner|meter|db\b|distribution|kit|connector|mc4|transport|delivery|survey|design|pump|tank|accessor)/i;
+const ITEM_WORDS = /\b(enclosure|contactor|relay|pilot\s*light|indicator|label|auxiliary\s*contact|aux\s*contact|changeover|ats|interlock|busbar|gland|lug|timer|panel|module|inverter|battery|batt|cabl(?:e|es|ing)|wire|wiring|conduit|trunking|mount|mounting|rail|bracket|clamp|structure|install|installation|labou?r|commission|breaker|mcb|mccb|isolator|switch|fuse|spd|surge|earth|earthing|lightning|charge|controller|mppt|combiner|meter|db\b|distribution|kit|connector|mc4|transport|delivery|survey|design|pump|tank|accessor)/i;
+
+/** A number followed by one of these is a count or size inside the description ("2 sets", "3 rolls"). */
+const COUNT_WORD = /^(sets?|rolls?|packs?|pcs|pieces?|nos?\.?|pairs?|boxes?|lengths?|bags?|drums?|coils?)$/i;
+/** A number followed by one of these is a rating written with a space ("550 W"), not an amount. */
+const RATING_WORD = /^(w|kw|kwp|kwh|wh|v|kv|a|ah|kva|hz|mm|mm2|sqmm)$/i;
 
 export function parseLines(input: string): ParsedLine[] {
   // Header rows ("Item, Qty, Unit price, Total") and lines without a number are not items.
@@ -317,24 +335,33 @@ export function parseLines(input: string): ParsedLine[] {
     const pm = clean.match(/@\s*(\d+(?:\.\d+)?)(?![\d.]*[eE])/);
     if (qm) qty = Number(qm[1]);
     if (pm) unitPriceKes = Number(pm[1]);
+    // "SIGNAL CABLE 150 @ 150": the number just before "@" is the quantity (D3), when no other marker gave one.
+    const nAt = clean.match(/(?:^|\s)(\d+)\s*@\s*\d/);
+    if (!qm && pm && nAt) qty = Number(nAt[1]);
+    // Counts inside the description ("2 sets", "3 rolls", "2 pcs") are not quantities (D3).
+    const toks = clean.split(/[\s,;|\t]+/);
+    const descCounts = toks.filter((tok, i) => /^\d+$/.test(tok) && COUNT_WORD.test(toks[i + 1] ?? '')).length;
+    let needsConfirmation: string | undefined;
     if (unitPriceKes == null) {
       // 2) Otherwise only STANDALONE numbers count: "580W", "10.2kWh" and
       //    model names like "JAM72D40-580" are ratings or names, not amounts.
       // Spaces, commas (CSV), semicolons, pipes and tabs all separate columns.
-      const nums = clean.split(/[\s,;|\t]+/).filter((tok) => /^\d+(?:\.\d+)?$/.test(tok)).map(Number);
+      // A number followed by a rating unit ("550 W") is the rating, not a column (D3).
+      const nums = toks.filter((tok, i) => /^\d+(?:\.\d+)?$/.test(tok) && !RATING_WORD.test(toks[i + 1] ?? '')).map(Number);
       if (nums.length >= 3) {
         // "... qty unit total": the last three, when qty × unit ≈ total.
         const [q, u, tot] = nums.slice(-3);
-        const [q2, u2] = nums.slice(-2);
         if (Number.isInteger(q) && q > 0 && Math.abs(q * u - tot) / tot < 0.02) { qty = qm ? qty : q; unitPriceKes = u; }
-        // "... rating qty unit" ("Panel 550 W 10 12500"): the last two are the
-        // quantity and the unit price (2026-10-27 audit: read as qty 1 at 12,500
-        // only by luck, and as KES 550 when the price came first).
-        else if (!qm && Number.isInteger(q2) && q2 > 0 && q2 < 1000 && u2 > q2) { qty = q2; unitPriceKes = u2; }
-        else unitPriceKes = Math.max(...nums);
+        // A count inside the description and numbers that do not agree: not guessed (D3).
+        else if (descCounts) needsConfirmation = 'a count in the description ("2 sets", "3 rolls"…) and amounts that do not agree as quantity × unit price = total; confirm the quantity and the unit price';
+        // Three or more amounts that do not agree as qty × unit = total are not guessed (D3). A rating
+        // written with a space ("Panel 550 W 10 12500") is no longer an amount, so that line now has two.
+        else needsConfirmation = 'the amounts do not agree as quantity × unit price = total; confirm the quantity and the unit price';
       } else if (nums.length === 2) {
         const [n1, n2] = nums;
-        if (!qm && Number.isInteger(n1) && n1 > 0 && n1 < 1000 && n2 > n1) { qty = n1; unitPriceKes = n2; }
+        // "EARTH ROD 2 pcs 3,000": is 3,000 the unit price or the line total? Not guessed (D3).
+        if (!qm && descCounts) needsConfirmation = 'a count in the description ("2 pcs", "3 rolls"…) and one amount: is it the unit price or the line total? Confirm the quantity and the unit price';
+        else if (!qm && Number.isInteger(n1) && n1 > 0 && n1 < 1000 && n2 >= n1) { qty = n1; unitPriceKes = n2; }
         else unitPriceKes = Math.max(n1, n2);
       } else if (nums.length === 1) {
         unitPriceKes = nums[0];
@@ -346,6 +373,7 @@ export function parseLines(input: string): ParsedLine[] {
     if (!(qty > 0) || /\d[eE][+-]?\d/.test(clean)) unitPriceKes = null;
     // Description = the line without the quantity and price markers.
     const description = raw.replace(/(?:\b[x×]|@)\s*[\d,]+(?:\.\d+)?/g, '').trim();
+    if (needsConfirmation) return { raw, description, qty: 1, unitPriceKes: null, needsConfirmation };
     return { raw, description, qty, unitPriceKes };
   });
 }
@@ -381,7 +409,7 @@ function evaluate(line: ParsedLine, match: LibItem | null): VerdictRow {
       perUnitYou: line.unitPriceKes,
       deltaPct: null,
       tone: 'unknown',
-      message: line.unitPriceKes == null ? 'No price detected' : 'Not checked — no reference for this item (for example cabling, mounting or labour)'
+      message: line.needsConfirmation ? `Needs confirmation: ${line.needsConfirmation}` : line.unitPriceKes == null ? 'No price detected' : 'Not checked — no reference for this item (for example cabling, mounting or labour)'
     };
   }
   const market = match ? match.refPriceKes : rule!.kes;

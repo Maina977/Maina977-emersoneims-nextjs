@@ -53,7 +53,7 @@ const notTaken = (s: ServiceState) => go(s, { type: 'recordNotTaken', cardId: 'J
 const complete = (s: ServiceState, findings = 'TEST inspected') => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
-  const b = apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 10, readings: [{ name: 'TEST', value: 1, unit: 'V' }] } } as ServiceAction);
+  const b = apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 10, readings: [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] } } as ServiceAction);
   return b.error;
 };
 /** A card with a latched STOP and a clearance of it, made on "another device", exported. */
@@ -93,7 +93,7 @@ describe('1. CRITICAL: an imported file is never proof that a STOP was resolved'
   });
   it('tamper: an edited sign-off hash (recomputed) is shown as signed off on another device — UNVERIFIED here', () => {
     let s = go(base(), { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T0 } as ServiceAction);
-    s = go(s, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T0, update: { findings: 'TEST', tasks: ['TEST'], engineHoursAtJob: 1, readings: [{ name: 'TEST', value: 1, unit: 'V' }] } } as ServiceAction);
+    s = go(s, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T0, update: { findings: 'TEST', tasks: ['TEST'], engineHoursAtJob: 1, readings: [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] } } as ServiceAction);
     s = go(s, { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR', at: T1 } as ServiceAction);
     const j = JSON.parse(serialise(s));
     // Edit the content and recompute the hash, as anyone can.

@@ -16,7 +16,7 @@ const signed = () => run(emptyState(),
   { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: {
     findings: 'TEST findings', tasks: ['TEST work'], engineHoursAtJob: 1500, labourHours: 2,
     parts: [{ partNo: 'TEST-123', description: 'TEST part', qty: 1, compatibility: { document: 'TEST parts book', edition: 'TEST ed.', page: '7' } }],
-    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }],
+    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
   } },
   { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR-B', at: '2026-11-20T13:00' },
 );

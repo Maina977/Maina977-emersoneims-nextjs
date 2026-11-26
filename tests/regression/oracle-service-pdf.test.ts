@@ -31,7 +31,7 @@ const signed = () => run(emptyState(),
   { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: {
     findings: 'TEST sender faulty', tasks: ['TEST replace sender', 'TEST test run'], engineHoursAtJob: 1500, labourHours: 2,
     parts: [{ partNo: 'TEST-123', description: 'TEST sender', qty: 1, compatibility: book }],
-    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }],
+    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
   } },
   { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR-B', at: '2026-11-20T13:00' },
 );
@@ -62,7 +62,7 @@ describe('job card PDF', () => {
       'Engine hours at job: 1500 h. Labour: 2 h.',
       '1 × TEST-123 TEST sender — parts book: TEST parts book, TEST ed., p. 7',
       'TEST voltage: 405 V (limits 380–420 V, source: TEST rating plate)',
-      'TEST frequency: 50 Hz (no limit given, not judged)',
+      'TEST frequency: 50 Hz (no limit given — NOT VERIFIED, not a pass)',
       'TEST sender faulty',
       `Content hash at sign-off (SHA-256): ${c.signOffHash}`,
       'Card content matches the hash recorded at sign-off',

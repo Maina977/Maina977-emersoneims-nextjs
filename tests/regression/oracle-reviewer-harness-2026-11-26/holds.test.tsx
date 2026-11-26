@@ -6,6 +6,9 @@
  * Copied from the reviewer's scratch/integration/mine6u/holds.test.tsx (2026-11-26). Changed only for
  * F10-R3: "the phrase releases it" now records the structured action (recordNotTaken), because the
  * phrase in the findings satisfies nothing.
+ *
+ * Real-project D6 (2026-11-26): completion fixtures now carry the engine test-run readings
+ * (oil pressure, coolant temperature, output voltage, frequency; oil temperature for low-oil cards).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -34,7 +37,7 @@ function record(s: ServiceState, famId: string, at: string): ServiceState {
 function complete(s: ServiceState) {
   const r1 = apply(s, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: '2026-11-26T12:00:00.000Z' } as ServiceAction);
   if (r1.error) return r1.error;
-  return apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }] } } as ServiceAction).error;
+  return apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] } } as ServiceAction).error;
 }
 const setSession = (answers: Record<string, Record<string, string>>) => localStorage.setItem(SESSION, JSON.stringify({ version: 1, answers, equipment: {} }));
 const L150 = { oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' };

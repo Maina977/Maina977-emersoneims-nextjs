@@ -45,7 +45,7 @@ const base = () => go(go(emptyState(), { type: 'saveAsset', asset: { make: 'TEST
 const completeErr = (s: ServiceState, findings: string, readings = true) => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
-  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings ? [{ name: 'TEST', value: 1, unit: 'V' }] : [] } } as ServiceAction).error;
+  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings ? [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] : [] } } as ServiceAction).error;
 };
 const STOP = { key: 'knock-seizure|STOP THE SET: TEST', from: 'Knocking, bearing noise or seizure', since: T0, message: 'STOP THE SET: TEST' };
 const HOLDKEY = refusedHoldKey('low-oil-pressure', 'oilPressure');

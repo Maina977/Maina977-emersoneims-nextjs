@@ -9,6 +9,9 @@
  *
  * F10-R3 (2026-11-26): the free-text phrase in the findings no longer satisfies anything; where these
  * tests wrote it, they now record the structured action (store action recordNotTaken).
+ *
+ * Real-project D6 (2026-11-26): completion fixtures now carry the engine test-run readings
+ * (oil pressure, coolant temperature, output voltage, frequency; oil temperature for low-oil cards).
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
@@ -39,7 +42,7 @@ function record(s: ServiceState, famId: string, at: string): ServiceState {
 function complete(s: ServiceState, extra: Record<string, unknown> = {}) {
   let st = s;
   if (card(st).status === 'OPEN') { const r1 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: T0 } as ServiceAction); if (r1.error) return { error: r1.error, state: st }; st = r1.state; }
-  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }], ...extra } } as ServiceAction);
+  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }], ...extra } } as ServiceAction);
   return { error: r2.error, state: r2.state };
 }
 const reassess = (s: ServiceState, at: string) => go(s, { type: 'recordHoldReassessment', cardId: 'JC1', at, by: 'JK', reason: 'Checked in person on site', confirmed: true } as ServiceAction);
