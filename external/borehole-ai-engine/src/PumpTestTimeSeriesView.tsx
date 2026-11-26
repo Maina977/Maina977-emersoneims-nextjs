@@ -7,14 +7,15 @@ import type { TimeSeriesAnalysis } from './pumpTestTimeSeries';
 
 const cell = { padding: '4px 6px', borderBottom: '1px solid var(--border)', verticalAlign: 'top' as const, fontSize: 12 };
 
-/** Semi-log plot: observed drawdown, Theis fit and the Cooper-Jacob line (SVG, no library). */
+/** Semi-log plot: observed drawdown, Theis fit, the Cooper-Jacob line and, when leakage is diagnosed, the leaky (Hantush-Jacob) fit (SVG, no library). */
 function SemilogPlot({ a }: { a: TimeSeriesAnalysis }) {
   const pts = a.theis?.residuals ?? [];
   if (pts.length < 2) return null;
   const W = 520, H = 220, L = 46, R = 10, T = 10, B = 34;
   const lx = pts.map((p) => Math.log10(p.t_min));
   const x0 = Math.floor(Math.min(...lx)), x1 = Math.ceil(Math.max(...lx));
-  const yMax = Math.max(...pts.map((p) => Math.max(p.observed_m, p.fitted_m))) * 1.1 || 1;
+  const lk = a.leakage?.diagnosed ? a.leakage.fitted : null;
+  const yMax = Math.max(...pts.map((p) => Math.max(p.observed_m, p.fitted_m)), ...(lk ?? []).map((p) => p.fitted_m)) * 1.1 || 1;
   const X = (t: number) => L + ((Math.log10(t) - x0) / Math.max(1e-9, x1 - x0)) * (W - L - R);
   const Y = (s: number) => T + (s / yMax) * (H - T - B); // drawdown increases downwards
   const cj = a.cooperJacob;
@@ -27,10 +28,12 @@ function SemilogPlot({ a }: { a: TimeSeriesAnalysis }) {
       <text x={12} y={H / 2} fontSize={10} textAnchor="middle" fill="currentColor" transform={`rotate(-90 12 ${H / 2})`}>drawdown (m)</text>
       {[0, 0.5, 1].map((f) => <text key={f} x={L - 4} y={Y(yMax * f) + 3} fontSize={10} textAnchor="end" fill="currentColor">{(yMax * f).toFixed(2)}</text>)}
       <polyline fill="none" stroke="#06b6d4" strokeWidth={2} points={pts.map((p) => `${X(p.t_min)},${Y(p.fitted_m)}`).join(' ')} />
+      {lk && <polyline fill="none" stroke="#a855f7" strokeWidth={2} strokeDasharray="2 2" points={lk.map((p) => `${X(p.t_min)},${Y(p.fitted_m)}`).join(' ')} />}
       {cjLine && <line x1={cjLine[0][0]} y1={cjLine[0][1]} x2={cjLine[1][0]} y2={cjLine[1][1]} stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5 3" />}
       {pts.map((p) => <circle key={p.t_min} cx={X(p.t_min)} cy={Y(p.observed_m)} r={2.5} fill="currentColor" />)}
       <g fontSize={10} fill="currentColor"><circle cx={L + 10} cy={T + 8} r={2.5} /><text x={L + 18} y={T + 11}>measured</text>
         <line x1={L + 80} x2={L + 96} y1={T + 8} y2={T + 8} stroke="#06b6d4" strokeWidth={2} /><text x={L + 100} y={T + 11}>Theis fit</text>
+        {lk && <><line x1={L + 300} x2={L + 316} y1={T + 8} y2={T + 8} stroke="#a855f7" strokeWidth={2} strokeDasharray="2 2" /><text x={L + 320} y={T + 11}>leaky fit</text></>}
         {cjLine && <><line x1={L + 160} x2={L + 176} y1={T + 8} y2={T + 8} stroke="#f59e0b" strokeDasharray="5 3" /><text x={L + 180} y={T + 11}>Cooper-Jacob line</text></>}
       </g>
     </svg>

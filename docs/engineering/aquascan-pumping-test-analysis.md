@@ -73,12 +73,29 @@ $$s' = \frac{2.303\,Q}{4\pi T}\log_{10}\frac{t}{t'},\qquad t = t_p + t'$$
 - **Constant rate only.** Recovery is not analysed if the rate changed, because superposition is not implemented.
 - **Used only if** R² ≥ 0.95.
 
+### 2.3a Leakage diagnosis: Hantush and Jacob (1955) (S40 / CA-11, 2026-11-26)
+
+- **Mechanism.** In a leaky aquifer, water leaks through the aquitard, so the late drawdown rises more slowly than Theis and approaches a steady state (Kruseman & de Ridder 1994, section 4.2.1). A confined-model fit then sees a flatter curve and **overstates T**.
+- **Model.** s = Q/(4πT) · W(u, r/L), with W(u, β) = ∫_u^∞ (1/y)·exp(−y − β²/(4y)) dy and L the leakage factor. β = 0 is Theis exactly. W is computed by Simpson's rule in ln y (`hantushW`); it is tested against Theis W(u) as β → 0, the steady state 2·K₀(β) and the identity W(u, β) + W(β²/4u, β) = 2·K₀(β).
+- **Fit.** Least squares on (ln T, ln r²S, ln β), seeded from the Theis fit, with a linearised 95 % fit interval on T.
+- **Diagnosis: both conditions must hold.**
+  1. The leaky model fits significantly better: extra-sum-of-squares F test for one added parameter, at the 1 % level. The critical value is F(0.01; 1, n−3).
+  2. The last quarter of the readings (at least 3) lie on average **below** the Theis curve. That is the late-time flattening. A barrier boundary steepens the curve instead, so it cannot pass.
+- **When leakage is diagnosed:**
+  - Theis, Cooper-Jacob and Theis recovery are marked "Not used". Their values stay on screen for comparison.
+  - T (and S with an observation well) come from the leaky fit **only if its 95 % fit interval is within ±10 % of the fitted value** (`LEAKY_T_TOLERANCE`, the same ±10 % agreement tolerance used in section 5a).
+  - Otherwise the result is INSUFFICIENT EVIDENCE and **no T is given**. The screen says why.
+  - The planning projection is withheld, because the straight line does not describe a leaky aquifer.
+  - The statement is shown as a Warning row and a "Leakage (Hantush-Jacob)" row, and the plot shows the leaky fit.
+- **Not modelled:** aquitard storage (Hantush 1960).
+
 ### 2.4 Reported transmissivity and uncertainty
 
 - **Primary method.**
   - Pumping-well test: **Cooper-Jacob**. It uses the slope only, so a constant well loss does not affect it.
   - Observation-well test: the **Theis fit**, because it uses every reading.
   - Each falls back to the next valid method.
+  - When leakage is diagnosed (section 2.3a), only the leaky fit is used, within the ±10 % tolerance, or no T is given.
 - **Uncertainty reported.** The range between all valid methods, as a spread in % of the reported value, plus the segment sensitivity and the Theis 95 % fit interval.
   - A spread over 30 % gives a warning: "treat T as an order of magnitude".
 - **No valid method.** The result is INSUFFICIENT EVIDENCE, with no T, no S and no projection.
@@ -228,7 +245,19 @@ Every value in both files was compared with the text layer of the book's Table 3
 - On a leaky field test, the confined-model T is 11–41 % above the book's, depending on method and piezometer. That is outside a 10 % agreement tolerance, so this case does **not** pass as agreement.
 - The tool's Cooper-Jacob segment-sensitivity range (370–897 m²/d) contains the published 385.
 
-**Known gap: leakage is not flagged.** The tool does not warn about leakage on this record. Its methods spread is 13 %, below the 30 % warning level. The flattening check (late slope 0.23 against 0.30 m per log cycle, ratio 0.77) is just above its 0.75 threshold and runs only for the planning estimate. The threshold was deliberately not lowered to fit this case. Recorded as limitation L12.
+**Result 3 (S40 / CA-11, 2026-11-26): leakage diagnosed, leaky T matches the book within ±10 %.** Test: `tests/regression/aquascan-pumptest-leakage-s40-2026-11-26.test.ts`. The method (section 2.3a) was not tuned to this case; the tolerance is the ±10 % stated above.
+
+| Quantity | H30 (r = 30 m) | H90 (r = 90 m) | Published |
+|---|---|---|---|
+| Leakage diagnosed | yes: F = 77.6 (1 % critical 7.53); last 9 readings 0.023 m below Theis | yes: F = 53.0 (critical 7.50); 0.016 m below Theis | "late-time data influenced by leakage" (p. 70) |
+| T, leaky fit | **416 m²/d** (95 % fit interval 400–433; R² 0.997) | **421 m²/d** (397–445; R² 0.997) | conclusion 390; methods range 370–431 |
+| Difference from 390 | **+6.6 %** (within ±10 %) | **+7.9 %** (within ±10 %) | — |
+| S | 1.56e-4 | 2.38e-4 | 1.7e-4 |
+| Leakage factor L | 931 m | 907 m | — |
+
+The two piezometers give the same T (1 %) and the same L (3 %), as one aquifer should. The confined-model values (Theis 480, Cooper-Jacob 542 for H30) are no longer reported as T on this record. Results 1 and 2 above are unchanged and kept as the record of the confined-model comparison.
+
+**Known gap (as found before S40; resolved by Result 3): leakage was not flagged.** The tool did not warn about leakage on this record. Its methods spread is 13 %, below the 30 % warning level. The flattening check (late slope 0.23 against 0.30 m per log cycle, ratio 0.77) is just above its 0.75 threshold and runs only for the planning estimate. The threshold was deliberately not lowered to fit this case. Recorded as limitation L12. Resolved by mechanism, not by the threshold: the Hantush-Jacob diagnosis (section 2.3a). The flattening check on the planning path is unchanged.
 
 **Code fix found by this case.** The Cooper-Jacob segment iteration oscillated on H30 and ended on a segment that failed its own u < 0.01 check. It now falls back to the earliest self-consistent segment (start 4 min). All earlier tests are unchanged.
 
@@ -241,14 +270,14 @@ Every value in both files was compared with the text layer of the book's Table 3
 
 | # | Limitation | Consequence | Next action |
 |---|---|---|---|
-| L1 | Confined Theis model only; no Hantush (leaky), Neuman (delayed yield), partial-penetration, well-bore-storage or boundary fits | Leaky or unconfined tests are flagged (poor fit, method spread, late slope), not modelled | Add Hantush-Jacob and Neuman type curves with TTim fixtures |
+| L1 | Confined Theis model plus the Hantush-Jacob leaky model (2026-11-26, section 2.3a); no aquitard-storage (Hantush 1960), Neuman (delayed yield), partial-penetration, well-bore-storage or boundary fits | Leakage is diagnosed and modelled; unconfined tests are flagged (poor fit, method spread, late slope), not modelled | Add Neuman type curves with TTim fixtures |
 | L2 | No variable-rate superposition | Only the first constant-rate segment is used; recovery after a rate change is not analysed | Implement superposition with an independent TTim multi-rate fixture before enabling it |
 | L3 | Step-drawdown (Hantush-Bierschenk well-loss B, C) not analysed in this increment | Step tests still give only the highest tested rate | Separate increment |
 | L4 | S only with an observation well; no well-radius-based S | A pumping-well-only test gives T only, by design | — |
 | L5 | No hydraulic conductivity (thickness not measured) | — | Add once a measured screened or saturated thickness is entered |
 | L6 | Planning estimate: one horizon (365 d), straight-line extrapolation, no recharge, interference or seasonal decline | Labelled planning figure; not a yield | The hydrogeologist sets the permit yield |
-| L7 | One published example (Oude Korendijk, section 5a); the tool agrees with the book's arithmetic exactly, but its least-squares T on this leaky test is 11-41 % above the book's graphical values | Agreement with practitioner judgement on leaky data is not established | Add a leaky (Hantush-Jacob) fit and re-compare; add a second, non-leaky published case |
-| L12 | Leakage is not flagged on the Oude Korendijk record (flattening ratio 0.77 vs threshold 0.75; checked only on the planning path) | A leaky test can be reported with only the confined-model assumption stated | Evaluate a leakage diagnostic (late-slope ratio, Hantush fit) on several published leaky tests before choosing a threshold |
+| L7 | One published example (Oude Korendijk, section 5a). The confined-model T is 11-41 % above the book's values; since 2026-11-26 the leaky fit is used there instead and is +6.6 % (H30) and +7.9 % (H90) from the book's 390 m²/d | Agreement on leaky data rests on one published case | Add a second published leaky case and a non-leaky published case |
+| L12 | RESOLVED 2026-11-26 (S40 / CA-11). It was: leakage not flagged on the Oude Korendijk record (flattening ratio 0.77 vs threshold 0.75; checked only on the planning path). Now the Hantush-Jacob diagnosis (F test at 1 % plus late-time flattening) flags it on both piezometers | A leaky test is flagged; T comes from the leaky fit within ±10 %, or no T is given | Test the diagnosis on more published leaky tests (see L7) |
 | L8 | Synthetic benchmarks only; no field validation | No claim of field accuracy | Pilot per `aquascan-evidence-package.md` |
 | L9 | Dry or suction-break readings (drawdown below the intake) are rejected rather than truncated | A record with a pump failure must be cut to its valid part before entry | — |
 | L10 | Units fixed to minutes and metres; no conversion | Data in hours or feet must be converted first | — |
@@ -259,7 +288,8 @@ Every value in both files was compared with the text layer of the book's Table 3
 - Theis, C.V. (1935). The relation between the lowering of the piezometric surface and the rate and duration of discharge of a well using ground-water storage. *Trans. AGU* 16(2): 519–524. doi:10.1029/TR016i002p00519. USGS reprint: https://water.usgs.gov/ogw/pubs/Theis-1935.pdf
 - Cooper, H.H. and Jacob, C.E. (1946). A generalized graphical method for evaluating formation constants and summarizing well-field history. *Trans. AGU* 27(4): 526–534. doi:10.1029/TR027i004p00526
 - Kruseman, G.P. and de Ridder, N.A. (1990/1994). *Analysis and Evaluation of Pumping Test Data*, 2nd ed. ILRI Publication 47, Wageningen. Ch. 3: Theis 3.2.1, Jacob 3.2.2, Theis recovery 3.2.3. https://research.wur.nl/en/publications/analysis-and-evaluation-of-pumping-test-data-2/
-- Abramowitz, M. and Stegun, I.A. (1964). *Handbook of Mathematical Functions*, NBS AMS 55, eqs 5.1.53 and 5.1.56. This is the independent E₁ in the tests.
+- Hantush, M.S. and Jacob, C.E. (1955). Non-steady radial flow in an infinite leaky aquifer. *Trans. AGU* 36(1): 95–100. Leaky model, section 2.3a; Kruseman & de Ridder section 4.2.1.
+- Abramowitz, M. and Stegun, I.A. (1964). *Handbook of Mathematical Functions*, NBS AMS 55, eqs 5.1.53 and 5.1.56 (the independent E₁ in the tests) and 26.7.5 (Student t quantile for the leakage F test).
 - Bakker, M. TTim 0.8 (MIT licence): the synthetic fixtures, via `scripts/benchmarks/pumptest_benchmark.py`.
 
 See `aquascan-source-register.md` for the full source register.

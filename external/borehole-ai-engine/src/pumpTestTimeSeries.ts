@@ -12,6 +12,9 @@
  *  - Theis (1935) full-curve least-squares fit, exact W(u) (wellFunction);
  *  - Cooper & Jacob (1946) straight line, with the u < 0.01 validity check;
  *  - Theis (1935) recovery: residual drawdown vs log10(t / t').
+ *  - Hantush & Jacob (1955) leaky model: fitted beside Theis to diagnose leakage
+ *    (F test + late-time flattening); when diagnosed, T comes from the leaky fit
+ *    only if it is within the stated ±10 % tolerance, otherwise no T is given.
  * Storativity only with an observation well at a known distance. Variable-rate
  * tests are NOT analysed by superposition: the first constant-rate segment is
  * analysed and this is stated. No sustainable or safe yield is derived from
@@ -22,7 +25,7 @@
  */
 import { wellFunction, MIN_PUMP_READINGS_FOR_PARAMETERS } from './pumpTestAnalyzer';
 
-export const TIME_SERIES_ANALYSIS_VERSION = 'aquascan-pumptest-timeseries 1.0.0 (2026-11-25)';
+export const TIME_SERIES_ANALYSIS_VERSION = 'aquascan-pumptest-timeseries 1.1.0 (2026-11-26, leakage diagnosis)';
 
 // ─────────────────────────────── Input types ───────────────────────────────
 
@@ -344,6 +347,117 @@ function fitTheis(Q: number, tDay: number[], s: number[], seedT: number): TheisF
   };
 }
 
+/**
+ * Hantush leaky well function W(u, β) = ∫_u^∞ (1/y) exp(-y - β²/(4y)) dy, β = r/L
+ * (Hantush & Jacob 1955; Kruseman & de Ridder 1994, section 4.2.1). β = 0 is the
+ * Theis W(u) exactly. For β > 0: Simpson's rule in x = ln y, step ≤ 0.04, over the
+ * range where the integrand is not negligible (y from max(u, β²/160) to 40; outside
+ * it the integrand is below e^-40). Same convention as wellFunction: 0 for u > 10.
+ */
+export function hantushW(u: number, beta: number): number {
+  if (!(beta > 0)) return wellFunction(u);
+  if (u > 10) return 0;
+  const a = Math.max(Math.log(Math.max(u, 1e-300)), Math.log((beta * beta) / 160)), c = Math.log(40);
+  if (a >= c) return 0;
+  const N = 2 * Math.ceil((c - a) / 0.08);
+  const h = (c - a) / N;
+  const b2 = (beta * beta) / 4;
+  let sum = 0;
+  for (let i = 0; i <= N; i++) {
+    const y = Math.exp(a + i * h);
+    sum += Math.exp(-y - b2 / y) * (i === 0 || i === N ? 1 : i % 2 ? 4 : 2);
+  }
+  return (sum * h) / 3;
+}
+const hantushS = (Q: number, T: number, P: number, beta: number, tDay: number) => (Q / (FOUR_PI * T)) * hantushW(P / (4 * T * tDay), beta);
+
+/**
+ * Upper 1 % point of Student's t (two-sided 0.99) for ν degrees of freedom
+ * (Cornish-Fisher expansion, Abramowitz & Stegun 26.7.5; error < 0.01 for ν ≥ 3).
+ * F(0.01; 1, ν) = t² is the extra-sum-of-squares critical value for one added parameter.
+ */
+function t995(nu: number): number {
+  const z = 2.5758293035489;
+  const z3 = z ** 3, z5 = z ** 5, z7 = z ** 7, z9 = z ** 9;
+  return z + (z3 + z) / (4 * nu) + (5 * z5 + 16 * z3 + 3 * z) / (96 * nu ** 2)
+    + (3 * z7 + 19 * z5 + 17 * z3 - 15 * z) / (384 * nu ** 3)
+    + (79 * z9 + 776 * z7 + 1482 * z5 - 1920 * z3 - 945 * z) / (92160 * nu ** 4);
+}
+
+interface HantushFit { T: number; P: number; beta: number; sse: number; r2: number; rmse: number; ciT: [number, number] | null }
+
+/**
+ * Least-squares fit of the Hantush-Jacob leaky model s = Q/(4πT)·W(P/(4Tt), β) on
+ * (ln T, ln P, ln β), P = r²S, β = r/L. Deterministic Nelder-Mead from the Theis fit
+ * and a grid of β; linearised 95 % interval on T from σ²(JᵀJ)⁻¹ (statistical only).
+ */
+function fitHantush(Q: number, tDay: number[], s: number[], theisT: number, theisP: number): HantushFit | null {
+  const n = s.length;
+  if (n < 4) return null;
+  const B = [Math.log(1e-4), Math.log(10)], LT = [Math.log(1e-3), Math.log(1e6)], LP = [Math.log(1e-14), Math.log(1e8)];
+  const clamp = (v: number, b: number[]) => Math.min(b[1], Math.max(b[0], v));
+  const fix = (x: number[]) => [clamp(x[0], LT), clamp(x[1], LP), clamp(x[2], B)];
+  const resid = (x: number[]) => { const T = Math.exp(x[0]), P = Math.exp(x[1]), b = Math.exp(x[2]); return s.map((si, i) => si - hantushS(Q, T, P, b, tDay[i])); };
+  const sse = (x: number[]) => resid(fix(x)).reduce((acc, v) => acc + v * v, 0);
+  let best = { x: [Math.log(theisT), Math.log(theisP), B[0]], v: Infinity };
+  for (let lb = B[0]; lb <= B[1] + 1e-9; lb += 0.5) {
+    const x = [Math.log(theisT), Math.log(theisP), lb];
+    const v = sse(x);
+    if (v < best.v) best = { x, v };
+  }
+  // Nelder-Mead (standard coefficients), restarted once from the best vertex.
+  let x0 = best.x;
+  let fv = best.v;
+  for (let restart = 0; restart < 2; restart++) {
+    let pts = [x0, ...[0, 1, 2].map((j) => x0.map((v, k) => (k === j ? v + (j === 2 ? 1 : 0.3) : v)))];
+    let vals = pts.map(sse);
+    for (let it = 0; it < 400; it++) {
+      const ord = [0, 1, 2, 3].sort((a, b) => vals[a] - vals[b]);
+      pts = ord.map((i) => pts[i]); vals = ord.map((i) => vals[i]);
+      if (vals[3] - vals[0] <= 1e-12 * Math.max(1e-12, vals[0])) break;
+      const c = [0, 1, 2].map((k) => (pts[0][k] + pts[1][k] + pts[2][k]) / 3);
+      const along = (f: number) => c.map((v, k) => v + f * (v - pts[3][k]));
+      const xr = along(1), fr = sse(xr);
+      if (fr < vals[0]) { const xe = along(2), fe = sse(xe); if (fe < fr) { pts[3] = xe; vals[3] = fe; } else { pts[3] = xr; vals[3] = fr; } }
+      else if (fr < vals[2]) { pts[3] = xr; vals[3] = fr; }
+      else {
+        const xc = along(-0.5), fc = sse(xc);
+        if (fc < vals[3]) { pts[3] = xc; vals[3] = fc; }
+        else for (let i = 1; i < 4; i++) { pts[i] = pts[i].map((v, k) => pts[0][k] + 0.5 * (v - pts[0][k])); vals[i] = sse(pts[i]); }
+      }
+    }
+    const i0 = vals.indexOf(Math.min(...vals));
+    x0 = fix(pts[i0]); fv = vals[i0];
+  }
+  const x = x0;
+  const mean = s.reduce((a, b) => a + b, 0) / n;
+  const syy = s.reduce((a, b) => a + (b - mean) ** 2, 0);
+  // Linearised covariance on (ln T, ln P, ln β): T variance = s²·[(JᵀJ)⁻¹]₁₁.
+  let ciT: [number, number] | null = null;
+  const h = 1e-5;
+  const J: number[][] = [0, 1, 2].map((k) => {
+    const up = x.slice(), dn = x.slice(); up[k] += h; dn[k] -= h;
+    const ru = resid(up), rd = resid(dn);
+    return ru.map((v, i) => (v - rd[i]) / (2 * h));
+  });
+  const A = [0, 1, 2].map((p) => [0, 1, 2].map((q) => J[p].reduce((acc, v, i) => acc + v * J[q][i], 0)));
+  const det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+  if (n > 3 && det > 0) {
+    const inv11 = (A[1][1] * A[2][2] - A[1][2] * A[2][1]) / det;
+    const vT = (fv / (n - 3)) * inv11;
+    if (vT >= 0) { const z = 1.96; ciT = [Math.exp(x[0] - z * Math.sqrt(vT)), Math.exp(x[0] + z * Math.sqrt(vT))]; }
+  }
+  return { T: Math.exp(x[0]), P: Math.exp(x[1]), beta: Math.exp(x[2]), sse: fv, r2: syy > 0 ? 1 - fv / syy : 0, rmse: Math.sqrt(fv / n), ciT };
+}
+
+/**
+ * Stated tolerance for a transmissivity from the leaky (Hantush-Jacob) fit: it is
+ * reported only when its 95 % fit interval lies within ±10 % of the fitted value,
+ * the agreement tolerance used against the published Oude Korendijk answer
+ * (docs/engineering/aquascan-pumping-test-analysis.md, section 5a).
+ */
+export const LEAKY_T_TOLERANCE = 0.1;
+
 // ──────────────────────────────── Output types ─────────────────────────────
 
 export type Row = [string, string, string];
@@ -377,6 +491,21 @@ export interface TimeSeriesAnalysis {
     residualAtRatio1_m: number; usable: boolean; note: string;
   } | null;
   recoveryNotAnalysed: string | null;
+  /**
+   * Leakage diagnosis (S40 / CA-11, 2026-11-26): the Hantush-Jacob leaky model fitted
+   * beside Theis. Leakage is diagnosed when the leaky model fits significantly better
+   * (extra-sum-of-squares F test, 1 % level) AND the late readings lie below the Theis
+   * curve (the late-time flattening of a leaky aquifer). null when not evaluated.
+   */
+  leakage: {
+    diagnosed: boolean;
+    T_m2d: number; S: number | null; rOverL: number; L_m: number | null;
+    r2: number; rmse_m: number; T_ci95_m2d: [number, number] | null;
+    fStatistic: number; fCritical: number; lateTheisResidual_m: number;
+    tWithinTolerance: boolean; usable: boolean;
+    fitted: { t_min: number; fitted_m: number }[];
+    statement: string;
+  } | null;
   transmissivity: { value_m2d: number; value_m2s: number; method: string; methodsRange_m2d: [number, number]; spreadPct: number; statement: string } | null;
   storativity: { value: number; method: string; methodsRange: [number, number] } | null;
   storativityStatement: string;
@@ -402,14 +531,15 @@ export interface TimeSeriesAnalysis {
 export const TS_REFERENCES: readonly string[] = [
   'Theis, C.V. (1935). The relation between the lowering of the piezometric surface and the rate and duration of discharge of a well using ground-water storage. Trans. American Geophysical Union 16(2): 519-524.',
   'Cooper, H.H. and Jacob, C.E. (1946). A generalized graphical method for evaluating formation constants and summarizing well-field history. Trans. American Geophysical Union 27(4): 526-534.',
-  'Kruseman, G.P. and de Ridder, N.A. (1994). Analysis and Evaluation of Pumping Test Data, 2nd ed. ILRI Publication 47, Wageningen (sections 3.2.1 Theis, 3.2.2 Jacob straight line, 3.2.3 Theis recovery).',
+  'Kruseman, G.P. and de Ridder, N.A. (1994). Analysis and Evaluation of Pumping Test Data, 2nd ed. ILRI Publication 47, Wageningen (sections 3.2.1 Theis, 3.2.2 Jacob straight line, 3.2.3 Theis recovery, 4.2.1 Hantush-Jacob leaky aquifer).',
+  'Hantush, M.S. and Jacob, C.E. (1955). Non-steady radial flow in an infinite leaky aquifer. Trans. American Geophysical Union 36(1): 95-100.',
 ];
 
 export const TS_ASSUMPTIONS: readonly string[] = [
   'Confined, homogeneous, isotropic aquifer of infinite areal extent and uniform thickness (Theis 1935).',
   'Fully penetrating well; flow horizontal; water released instantaneously from storage.',
   'Constant pumping rate over the analysed segment; drawdown measured from a static (non-trending) level.',
-  'Well-bore storage negligible after the first readings; no leakage, recharge or boundaries within the test duration.',
+  'Well-bore storage negligible after the first readings; no leakage, recharge or boundaries within the test duration (Theis, Cooper-Jacob, recovery). Leakage is tested for with the Hantush-Jacob model (leaky aquifer, no aquitard storage); when it is diagnosed, the confined-model results are not used.',
   'For an unconfined aquifer the method holds only while drawdown is small relative to the saturated thickness (no Neuman delayed-yield correction is applied).',
 ];
 
@@ -473,7 +603,7 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
     const msg = `INSUFFICIENT EVIDENCE: only ${seg.length} reading(s) at the initial constant rate (at least ${MIN_PUMP_READINGS_FOR_PARAMETERS} needed). Transmissivity, storativity and any yield projection are not calculated.`;
     const out: TimeSeriesAnalysis = {
       ...base, status: 'insufficient', theis: null, cooperJacob: null, recovery: null,
-      recoveryNotAnalysed: 'Not analysed: the pumping record is insufficient.',
+      recoveryNotAnalysed: 'Not analysed: the pumping record is insufficient.', leakage: null,
       transmissivity: null, storativity: null, storativityStatement: 'Not determined.',
       planningEstimate: { status: 'withheld', horizon_days: HORIZON_DAYS, projectedDrawdown_m: null, availableDrawdown_m: null, logCyclesExtrapolated: null, statement: 'Withheld: INSUFFICIENT EVIDENCE.', assumptions: [] },
       limitations, warnings, insufficientEvidence: msg, required: FIELD_REQUIRED, rows: [],
@@ -565,6 +695,46 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
     };
   }
 
+  // ── Leakage diagnosis: Hantush-Jacob leaky model vs Theis (S40 / CA-11) ──
+  // Mechanism (Kruseman & de Ridder 1994, section 4.2.1): leakage through the aquitard
+  // makes the late drawdown rise more slowly than Theis and approach a steady state.
+  // Confined-model fits then flatten and overstate T. The leaky model nests Theis
+  // (β = r/L → 0), so one added parameter is tested by the extra-sum-of-squares F test.
+  let leakage: TimeSeriesAnalysis['leakage'] = null;
+  const hf = tf && theis ? fitHantush(Q, tDay, s, tf.T, tf.P) : null;
+  if (tf && theis && hf) {
+    const dof = n - 3;
+    const F = hf.sse > 0 ? (tf.sse - hf.sse) / (hf.sse / dof) : tf.sse > hf.sse ? Infinity : 0;
+    const Fc = t995(dof) ** 2;
+    const lateN = Math.max(3, Math.ceil(n / 4));
+    const late = theis.residuals.slice(-lateN);
+    const lateMean = late.reduce((a, x) => a + x.residual_m, 0) / late.length;
+    const diagnosed = F > Fc && lateMean < 0 && hf.beta > 1e-3;
+    const ciOk = !!hf.ciT && hf.ciT[0] >= hf.T * (1 - LEAKY_T_TOLERANCE) && hf.ciT[1] <= hf.T * (1 + LEAKY_T_TOLERANCE);
+    const usable = diagnosed && ciOk && hf.r2 >= 0.98;
+    const Lm = r != null ? r / hf.beta : null;
+    const ciTxt = hf.ciT ? `95 % fit interval ${sig(hf.ciT[0])}-${sig(hf.ciT[1])} m²/day` : 'no fit interval could be computed';
+    const test = `F = ${sig(F)} against the 1 % critical value ${sig(Fc)}; RMS residual ${sig(hf.rmse)} m against ${sig(tf.rmse)} m for Theis; the last ${late.length} readings lie on average ${sig(Math.abs(lateMean))} m ${lateMean < 0 ? 'below' : 'above'} the Theis curve`;
+    const statement = !diagnosed
+      ? `No leakage diagnosed: the leaky (Hantush-Jacob) model ${F > Fc ? 'fits better, but the late readings do not lie below the Theis curve (no late-time flattening)' : 'does not fit significantly better than Theis'} (${test}).`
+      : usable
+        ? `LEAKAGE DIAGNOSED (Hantush-Jacob leaky aquifer): the leaky model fits significantly better than Theis and the late drawdown flattens below the Theis curve (${test}). Transmissivity is taken from the leaky fit, ${m2(hf.T)} (${ciTxt}, within the stated ±${LEAKY_T_TOLERANCE * 100} % tolerance; R² ${hf.r2.toFixed(4)})${Lm != null ? `; leakage factor L about ${sig(Lm)} m (r/L ${sig(hf.beta)})` : '; r/L is apparent in the pumping well, so L is not reported'}. The confined-model transmissivities (Theis, Cooper-Jacob, Theis recovery) are not used: on a leaky record they overstate T.`
+        : `LEAKAGE DIAGNOSED (Hantush-Jacob leaky aquifer): the leaky model fits significantly better than Theis and the late drawdown flattens below the Theis curve (${test}). The leaky fit does not determine T within the stated ±${LEAKY_T_TOLERANCE * 100} % tolerance (${m2(hf.T)}, ${ciTxt}; R² ${hf.r2.toFixed(4)}${hf.r2 < 0.98 ? ' < 0.98' : ''}), so NO transmissivity is given: the confined-model values would overstate T and the leaky value is not determined well enough. A longer test or an observation well closer to the pumping well is needed.`;
+    leakage = {
+      diagnosed, T_m2d: hf.T, S: r != null ? hf.P / (r * r) : null, rOverL: hf.beta, L_m: Lm,
+      r2: hf.r2, rmse_m: hf.rmse, T_ci95_m2d: hf.ciT, fStatistic: F, fCritical: Fc, lateTheisResidual_m: lateMean,
+      tWithinTolerance: ciOk, usable,
+      fitted: seg.map((x, i) => ({ t_min: x.t_min, fitted_m: hantushS(Q, hf.T, hf.P, hf.beta, tDay[i]) })),
+      statement,
+    };
+    if (diagnosed) {
+      warnings.push(statement);
+      const why = 'Not used: leakage diagnosed (Hantush-Jacob); the confined model overstates T on a leaky record.';
+      theis.usable = false; theis.note = why;
+      if (cooperJacob) { cooperJacob.usable = false; cooperJacob.note = why; }
+    }
+  }
+
   // ── Theis recovery: s' = (2.303 Q / 4πT) log10(t / t'),  t = tp + t' ──
   let recovery: TimeSeriesAnalysis['recovery'] = null;
   let recoveryNotAnalysed: string | null = null;
@@ -583,10 +753,11 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
     const ln = fitLine(idx.map((i) => x[i]), idx.map((i) => y[i]));
     if (ln.slope > 0) {
       const T = (2.303 * Q) / (FOUR_PI * ln.slope);
-      const usable = ln.r2 >= 0.95;
+      const leaky = !!leakage?.diagnosed;
+      const usable = ln.r2 >= 0.95 && !leaky;
       recovery = {
         T_m2d: T, slopePerLogCycle_m: ln.slope, r2: ln.r2, readings: idx.length, residualAtRatio1_m: ln.intercept, usable,
-        note: `${usable ? 'Valid' : 'Not used'}: straight line through ${idx.length} late-recovery readings, R² ${ln.r2.toFixed(3)}. Extrapolated residual drawdown at t/t' = 1 is ${sig(ln.intercept)} m (ideal Theis: 0; a clearly non-zero value indicates recharge, a boundary or a change in storage, and is not interpreted further here).`,
+        note: `${leaky ? 'Not used (leakage diagnosed: Theis recovery assumes no leakage)' : usable ? 'Valid' : 'Not used'}: straight line through ${idx.length} late-recovery readings, R² ${ln.r2.toFixed(3)}. Extrapolated residual drawdown at t/t' = 1 is ${sig(ln.intercept)} m (ideal Theis: 0; a clearly non-zero value indicates recharge, a boundary or a change in storage, and is not interpreted further here).`,
       };
     } else recoveryNotAnalysed = 'Not analysed: residual drawdown does not decrease towards t/t\' = 1 (no positive slope).';
   }
@@ -596,8 +767,12 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
   if (theis?.usable) methods.push({ name: 'Theis curve fit', T: theis.T_m2d });
   if (cooperJacob?.usable) methods.push({ name: 'Cooper-Jacob straight line', T: cooperJacob.T_m2d });
   if (recovery?.usable) methods.push({ name: 'Theis recovery', T: recovery.T_m2d });
-  // Primary: pumping well → Cooper-Jacob (slope only, independent of well losses); observation well → Theis fit.
-  const pick = geometry === 'pumping-well'
+  if (leakage?.usable) methods.push({ name: 'Hantush-Jacob leaky fit', T: leakage.T_m2d });
+  // Primary: leakage diagnosed → the leaky fit only (the confined methods are set unusable above);
+  // pumping well → Cooper-Jacob (slope only, independent of well losses); observation well → Theis fit.
+  const pick = leakage?.diagnosed
+    ? (leakage.usable ? 'Hantush-Jacob leaky fit' : null)
+    : geometry === 'pumping-well'
     ? (cooperJacob?.usable ? 'Cooper-Jacob straight line' : theis?.usable ? 'Theis curve fit' : recovery?.usable ? 'Theis recovery' : null)
     : (theis?.usable ? 'Theis curve fit' : cooperJacob?.usable ? 'Cooper-Jacob straight line' : recovery?.usable ? 'Theis recovery' : null);
   let transmissivity: TimeSeriesAnalysis['transmissivity'] = null;
@@ -612,6 +787,8 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
       value_m2d: T, value_m2s: T / 86400, method: pick, methodsRange_m2d: [lo, hi], spreadPct,
       statement: `Transmissivity ${m2(T)} (${pick}); ${methods.length > 1 ? `range between methods ${sig(lo)}-${sig(hi)} m²/day (${spreadPct.toFixed(0)} % of the reported value)` : 'single valid method'}.`,
     };
+  } else if (leakage?.diagnosed) {
+    insufficientEvidence = `INSUFFICIENT EVIDENCE: leakage is diagnosed and the leaky (Hantush-Jacob) fit does not determine transmissivity within the stated ±${LEAKY_T_TOLERANCE * 100} % tolerance. No transmissivity is given: the confined-model values (Theis ${m2(theis!.T_m2d)}${cooperJacob ? `, Cooper-Jacob ${m2(cooperJacob.T_m2d)}` : ''}) would overstate it. Storativity and any yield projection are not reported.`;
   } else {
     insufficientEvidence = 'INSUFFICIENT EVIDENCE: no method gives a valid transmissivity for this record (Cooper-Jacob validity not met or poor fit, Theis fit R² < 0.98, no valid recovery line). Transmissivity, storativity and any yield projection are not reported.';
   }
@@ -627,12 +804,13 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
     const Ss: { name: string; S: number }[] = [];
     if (theis?.usable && theis.S != null) Ss.push({ name: 'Theis curve fit', S: theis.S });
     if (cooperJacob?.usable && cooperJacob.S != null) Ss.push({ name: 'Cooper-Jacob straight line', S: cooperJacob.S });
+    if (leakage?.usable && leakage.S != null) Ss.push({ name: 'Hantush-Jacob leaky fit', S: leakage.S });
     const prim = Ss.find((x) => x.name === transmissivity!.method) ?? Ss[0];
     if (prim) {
       storativity = { value: prim.S, method: prim.name, methodsRange: [Math.min(...Ss.map((x) => x.S)), Math.max(...Ss.map((x) => x.S))] };
       storativityStatement = `Storativity ${sci(prim.S)} (${prim.name}, observation well at ${r} m)${Ss.length > 1 ? `; range ${sci(storativity.methodsRange[0])}-${sci(storativity.methodsRange[1])}` : ''}. Storativity from recovery is not determined (the recovery method gives T only).`;
       if (prim.S > 0.5 || prim.S < 1e-7) warnings.push(`Storativity ${sci(prim.S)} is outside the physical range for aquifers (1e-7 to 0.5): check the observation distance and the readings.`);
-    } else storativityStatement = 'Not determined: neither the Theis fit nor the Cooper-Jacob line is valid for this observation-well record.';
+    } else storativityStatement = 'Not determined: neither the Theis fit, the Cooper-Jacob line nor the leaky fit is valid for this observation-well record.';
   }
 
   // ── Planning estimate: drawdown projection at the tested rate (never a yield) ──
@@ -646,6 +824,7 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
   let planningEstimate: TimeSeriesAnalysis['planningEstimate'];
   if (!transmissivity) planningEstimate = withheld('INSUFFICIENT EVIDENCE (no valid transmissivity).');
   else if (variableRate) planningEstimate = withheld('the rate was changed during the test, so there is no single tested rate to project.');
+  else if (leakage?.diagnosed) planningEstimate = withheld('leakage is diagnosed: the Cooper-Jacob straight line does not describe a leaky aquifer, so the late-time trend cannot be extrapolated with it.');
   else if (!cooperJacob?.usable) planningEstimate = withheld('the Cooper-Jacob straight line is not valid, so the late-time trend cannot be extrapolated.');
   else if (segEnd < 1440) planningEstimate = withheld(`the constant-rate test lasted ${sig(segEnd / 60, 3)} h; at least 24 h is needed before any projection.`);
   else {
@@ -685,12 +864,12 @@ export function analyzeTimeSeriesPumpTest(input: PumpTestTimeSeries): TimeSeries
   limitations.push(
     'No sustainable-yield or safe-yield figure is derived from T and S: that needs recharge, interference, water-quality and regulatory (WRA) considerations by a hydrogeologist.',
     'Hydraulic conductivity is not reported: the saturated thickness was not measured.',
-    'Leaky (Hantush), unconfined delayed-yield (Neuman), partial-penetration, well-bore-storage and boundary models are not fitted.',
+    'The leaky (Hantush-Jacob) model is fitted only to diagnose leakage and, when diagnosed, to give T (and S with an observation well) within the stated tolerance; aquitard storage (Hantush 1960), unconfined delayed-yield (Neuman), partial-penetration, well-bore-storage and boundary models are not fitted.',
   );
 
   const out: TimeSeriesAnalysis = {
     ...base, status: transmissivity ? 'analysed' : 'insufficient',
-    theis, cooperJacob, recovery, recoveryNotAnalysed, transmissivity, storativity, storativityStatement, planningEstimate,
+    theis, cooperJacob, recovery, recoveryNotAnalysed, leakage, transmissivity, storativity, storativityStatement, planningEstimate,
     limitations, warnings, insufficientEvidence, required: transmissivity ? null : FIELD_REQUIRED, rows: [],
   };
   out.rows = buildRows(out);
@@ -719,6 +898,10 @@ function buildRows(a: TimeSeriesAnalysis): Row[] {
     rows.push(['Cooper-Jacob straight line: T', m2(cj.T_m2d), `${E}Slope ${sig(cj.slopePerLogCycle_m)} m per log cycle over ${cj.segment.readings} readings (${sig(cj.segment.from_min, 4)}-${sig(cj.segment.to_min, 4)} min), R² ${cj.r2.toFixed(4)}; segment choice gives ${sig(cj.segmentSensitivity_T_m2d[0])}-${sig(cj.segmentSensitivity_T_m2d[1])} m²/day. ${cj.note}`]);
     rows.push(['Cooper-Jacob validity (u < 0.01)', cj.uCheck.met ? 'met' : 'NOT met', E + cj.uCheck.statement]);
   }
+  if (a.leakage) {
+    const lk = a.leakage;
+    rows.push(['Leakage (Hantush-Jacob)', lk.diagnosed ? (lk.usable ? `DIAGNOSED: T ${m2(lk.T_m2d)}` : 'DIAGNOSED: T not determined') : 'not diagnosed', E + lk.statement]);
+  }
   if (a.recovery) rows.push(['Theis recovery: T', m2(a.recovery.T_m2d), `${E}Recovery slope ${sig(a.recovery.slopePerLogCycle_m)} m per log cycle of t/t'. ${a.recovery.note}`]);
   else if (a.recoveryNotAnalysed) rows.push(['Theis recovery', 'not analysed', N + a.recoveryNotAnalysed]);
   rows.push(['Storativity', a.storativity ? sci(a.storativity.value) : 'not determined', (a.storativity ? E : N) + a.storativityStatement]);
@@ -726,7 +909,7 @@ function buildRows(a: TimeSeriesAnalysis): Row[] {
   rows.push(['Planning estimate', a.planningEstimate.status === 'presented' ? `${sig(a.planningEstimate.projectedDrawdown_m as number)} m drawdown at ${a.planningEstimate.horizon_days} days` : 'withheld', (a.planningEstimate.status === 'presented' ? P : N) + [a.planningEstimate.statement, ...a.planningEstimate.assumptions.map((x) => `Assumes: ${x}`)].join(' ')]);
   rows.push(['Sustainable yield', 'not stated', N + 'Not derived from aquifer parameters: it needs recharge, interference, water-quality and WRA permit considerations by a registered hydrogeologist.']);
   for (const w of a.warnings) rows.push(['Warning', '', w]);
-  rows.push(['Method and references', a.version, R + 'Theis (1935); Cooper & Jacob (1946); Kruseman & de Ridder (1994) 2nd ed. Assumptions: confined, homogeneous, infinite aquifer; constant rate; fully penetrating well.']);
+  rows.push(['Method and references', a.version, R + 'Theis (1935); Cooper & Jacob (1946); Hantush & Jacob (1955); Kruseman & de Ridder (1994) 2nd ed. Assumptions: confined (or, when leakage is diagnosed, leaky without aquitard storage), homogeneous, infinite aquifer; constant rate; fully penetrating well.']);
   return rows;
 }
 
