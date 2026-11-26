@@ -190,3 +190,33 @@ describe('S46: provenance rows, risk-decision text and the JSON export carry no 
     expect(ui).not.toMatch(/\{p\.val\}%/);
   });
 });
+
+// Review of 10d3a15e, section 8: the full PDF, the summary header and every tab.
+describe('S46: full PDF text, the results header and the tabs carry no probability or chance wording for the score', () => {
+  // Customer-visible wording (case-sensitive so code identifiers such as predictedProbability: are not matched).
+  const BAD = /USE THIS PROBABILITY|chance-of-water|\b[Cc]hance of (success|water|a productive)|[Ss]uccess probability|Probability Breakdown|Probability:<\/strong>|Probability: \d|Probability Consensus|GPI vs Probability|left out of the probability|\d+\s?[–-]\s?\d+\s?%[^.\n]{0,30}(success|score|probab)/;
+  it('the full PDF (every page) has none of it', async () => {
+    pdfText.length = 0; saved.length = 0;
+    await generatePDFReport({ ...full }, 'professional');
+    const t = pdfText.join('\n');
+    expect(t.match(BAD)?.[0] ?? null).toBeNull();
+    expect(t).toMatch(/UNCALIBRATED SCREENING INDICATOR/);
+  });
+  it('the results header, the customer tabs and the technical tabs (index.tsx) have none of it', () => {
+    const ui = fs.readFileSync(path.resolve('external/borehole-ai-engine/src/index.tsx'), 'utf8');
+    const visible = ui.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    expect(visible.match(BAD)?.[0] ?? null).toBeNull();
+    expect(visible).toContain('<strong>Screening score range:</strong>');
+    expect(visible).toContain("probability: 'Success score (uncalibrated)'");
+    expect(visible).toContain('% data confidence (not a success score)');
+    expect(visible).not.toMatch(/probabilityRange\[1\]\s?\*\s?100\)[^<]{0,20}\}%/);
+  });
+  it('the verification check names and the source notes say "success score"', () => {
+    const src = ['preReportVerification.ts', 'boreholeAnalyzer.ts'].map((f) => fs.readFileSync(path.resolve('external/borehole-ai-engine/src', f), 'utf8')).join('\n');
+    expect(src).not.toMatch(/'Probability Consensus'|'GPI vs Probability'|left out of the probability/);
+    for (const r of [screening, full]) {
+      const t = JSON.stringify(r.verificationReport?.checks ?? []) + JSON.stringify(r.fallbacksUsed ?? r.dataSourcesNote ?? '');
+      expect(t.match(/Probability Consensus|GPI vs Probability|left out of the probability|\d+(\.\d)?% (success )?probability/)?.[0] ?? null).toBeNull();
+    }
+  });
+});

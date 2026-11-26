@@ -459,20 +459,20 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
       const values = sources.map(s => s.value);
       const maxSpread = Math.max(...values) - Math.min(...values);
       if (maxSpread <= 0.15) {
-        checks.push(pass('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Probability Consensus',
-          `${sources.length} probability sources agree within ±${(maxSpread * 100).toFixed(0)}%: ${sources.map(s => `${s.name}=${(s.value * 100).toFixed(1)}%`).join(', ')}`,
+        checks.push(pass('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Success Score Consensus',
+          `${sources.length} success-score sources agree within ±${Math.round(maxSpread * 100)} points: ${sources.map(s => `${s.name}=${Math.round(s.value * 100)}/100`).join(', ')}`,
           'Multi-model ensemble'));
       } else if (maxSpread <= 0.30) {
-        checks.push(warn('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Probability Consensus',
-          `Moderate spread across ${sources.length} probability sources (±${(maxSpread * 100).toFixed(0)}%): ${sources.map(s => `${s.name}=${(s.value * 100).toFixed(1)}%`).join(', ')}`,
-          `spread <15%`, `spread ${(maxSpread * 100).toFixed(0)}%`));
+        checks.push(warn('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Success Score Consensus',
+          `Moderate spread across ${sources.length} success-score sources (±${Math.round(maxSpread * 100)} points): ${sources.map(s => `${s.name}=${Math.round(s.value * 100)}/100`).join(', ')}`,
+          `spread <15 points`, `spread ${Math.round(maxSpread * 100)} points`));
       } else {
-        checks.push(warn('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Probability Consensus',
-          `Wide spread across probability models (±${(maxSpread * 100).toFixed(0)}%): ${sources.map(s => `${s.name}=${(s.value * 100).toFixed(1)}%`).join(', ')}. Multi-model divergence is expected for desktop analysis.`,
-          `spread <15%`, `spread ${(maxSpread * 100).toFixed(0)}%`));
+        checks.push(warn('XV-PROB-CONSENSUS', 'CROSS_VALIDATION', 'Success Score Consensus',
+          `Wide spread across success-score models (±${Math.round(maxSpread * 100)} points): ${sources.map(s => `${s.name}=${Math.round(s.value * 100)}/100`).join(', ')}. Multi-model divergence is expected for desktop analysis.`,
+          `spread <15 points`, `spread ${Math.round(maxSpread * 100)} points`));
       }
     } else {
-      checks.push(skip('XV-PROB', 'CROSS_VALIDATION', 'Probability Consensus', 'Fewer than 2 probability sources available'));
+      checks.push(skip('XV-PROB', 'CROSS_VALIDATION', 'Success Score Consensus', 'fewer than 2 success-score sources available'));
     }
   }
 
@@ -508,13 +508,13 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
       const gpiNorm = gpi / 100;
       const diff = Math.abs(gpiNorm - prob);
       if (diff <= 0.25) {
-        checks.push(pass('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Probability',
+        checks.push(pass('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Success Score',
           `Satellite GPI (${gpi}/100) and success score (${Math.round(prob * 100)}/100 (uncalibrated, not a probability)) are coherent (diff: ${(diff * 100).toFixed(0)}%)`,
           'Satellite Remote Sensing vs Bayesian Ensemble'));
       } else {
-        checks.push(warn('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Probability',
-          `Satellite GPI (${gpi}/100) and probability (${(prob * 100).toFixed(1)}%) diverge by ${(diff * 100).toFixed(0)}%. Different input data or weightings.`,
-          `GPI=${gpi}`, `prob=${(prob * 100).toFixed(1)}%`));
+        checks.push(warn('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Success Score',
+          `Satellite GPI (${gpi}/100) and modelled success score (${Math.round(prob * 100)}/100) diverge by ${Math.round(diff * 100)} points. Different input data or weightings.`,
+          `GPI=${gpi}`, `score=${Math.round(prob * 100)}/100`));
       }
     }
   }
@@ -528,9 +528,9 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
     const p = result.probability;
     if (p != null) {
       if (p >= 0 && p <= 1) {
-        checks.push(pass('IC-PROB-RANGE', 'RANGE_BOUND', 'Probability Range', `Probability ${(p * 100).toFixed(1)}% is in valid [0,1] range`));
+        checks.push(pass('IC-PROB-RANGE', 'RANGE_BOUND', 'Success Score Range', `Modelled success score ${Math.round(p * 100)}/100 is in the valid range`));
       } else {
-        checks.push(fail('IC-PROB-RANGE', 'RANGE_BOUND', 'Probability Range', `Probability ${p} OUTSIDE [0,1] range`, '0-1', `${p}`));
+        checks.push(fail('IC-PROB-RANGE', 'RANGE_BOUND', 'Success Score Range', `Modelled success score ${p} OUTSIDE [0,1] range`, '0-1', `${p}`));
       }
     }
   }
@@ -710,15 +710,15 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
     const recharge = result.gldasGroundwater?.waterBudget?.recharge ?? result.rechargeModel?.estimatedRecharge_mm_year;
     if (prob != null && recharge != null) {
       if (prob > 0.75 && recharge < 10) {
-        checks.push(warn('PHY-PROB-RECHARGE', 'PHYSICS', 'Probability vs Recharge Coherence',
-          `High probability (${(prob * 100).toFixed(1)}%) but near-zero recharge (${recharge.toFixed(0)}mm/yr). Aquifer may rely on fossil water or lateral flow.`,
-          `recharge >10mm for P>75%`, `recharge=${recharge.toFixed(0)}mm`));
+        checks.push(warn('PHY-PROB-RECHARGE', 'PHYSICS', 'Success Score vs Recharge Coherence',
+          `High modelled success score (${Math.round(prob * 100)}/100) but near-zero recharge (${recharge.toFixed(0)}mm/yr). Aquifer may rely on fossil water or lateral flow.`,
+          `recharge >10mm for a score above 75/100`, `recharge=${recharge.toFixed(0)}mm`));
       } else if (prob > 0.60 && recharge < 5) {
-        checks.push(warn('PHY-PROB-RECHARGE', 'PHYSICS', 'Probability vs Recharge Coherence',
-          `Moderate probability (${(prob * 100).toFixed(1)}%) but very low recharge (${recharge.toFixed(0)}mm/yr)`));
+        checks.push(warn('PHY-PROB-RECHARGE', 'PHYSICS', 'Success Score vs Recharge Coherence',
+          `Moderate modelled success score (${Math.round(prob * 100)}/100) but very low recharge (${recharge.toFixed(0)}mm/yr)`));
       } else {
-        checks.push(pass('PHY-PROB-RECHARGE', 'PHYSICS', 'Probability vs Recharge Coherence',
-          `Probability (${(prob * 100).toFixed(1)}%) and recharge (${recharge?.toFixed(0) ?? '?'}mm/yr) are coherent`));
+        checks.push(pass('PHY-PROB-RECHARGE', 'PHYSICS', 'Success Score vs Recharge Coherence',
+          `Modelled success score (${Math.round(prob * 100)}/100) and recharge (${recharge?.toFixed(0) ?? '?'}mm/yr) are coherent`));
       }
     }
   }

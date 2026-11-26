@@ -1610,7 +1610,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       y += doc.splitTextToSize(dr.prospectStatement, pw).length * 3.6 + 3;
     }
 
-    const threeScoreNote = 'This assessment reports THREE separate scores so each question gets an honest answer. DESKTOP PRE-FEASIBILITY READINESS (headline) = how complete and convergent the desktop evidence is — a well-evidenced site legitimately scores 80+ with no field visit. NEARBY WATER-POINT EVIDENCE = whether groundwater occurs in the area (not a success rate; the modelled success score is the one chance-of-water figure). FIELD & REGULATORY READINESS (below) = the remaining field work — the ERT survey, survey-grade peg, professional sign-off and WRA authorisation that only a site visit can close. No desktop score, however high, is authority to mobilise a rig.';
+    const threeScoreNote = 'This assessment reports THREE separate scores so each question gets an honest answer. DESKTOP PRE-FEASIBILITY READINESS (headline) = how complete and convergent the desktop evidence is — a well-evidenced site legitimately scores 80+ with no field visit. NEARBY WATER-POINT EVIDENCE = whether groundwater occurs in the area (not a success rate; the modelled success score is an uncalibrated screening indicator, not a probability of finding water). FIELD & REGULATORY READINESS (below) = the remaining field work — the ERT survey, survey-grade peg, professional sign-off and WRA authorisation that only a site visit can close. No desktop score, however high, is authority to mobilise a rig.';
     doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(90, 90, 90);
     doc.text(doc.splitTextToSize(threeScoreNote, pw), margin, y);
     y += doc.splitTextToSize(threeScoreNote, pw).length * 3.4 + 4;
@@ -2116,7 +2116,8 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.text(_cond, margin + 47, y + 63);
 
     doc.setFontSize(6.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(239,68,68);
-    doc.text('\u2191 USE THIS PROBABILITY FOR INVESTMENT DECISIONS. Other values are sub-model outputs, not the final verdict.', margin + 6, y + 73);
+    // S46 (review of 10d3a15e): an uncalibrated screening indicator, never an instruction to invest on it.
+    doc.text(`\u2191 THE MODELLED SUCCESS SCORE ABOVE IS AN UNCALIBRATED SCREENING INDICATOR: ${SCORE_NOT_PROBABILITY}. Other values are sub-model outputs, not the final verdict.`, margin + 6, y + 73);
 
     doc.setFontSize(6); doc.setFont('helvetica', 'italic'); doc.setTextColor(100,116,139);
     doc.text('This report is a filter, not a final decision-maker. Saves money before mistakes happen. Measured performance: see the public validation ledger. Upgrade path: ERT + pump test + lab.', margin + 6, y + 83);
@@ -4333,7 +4334,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       startY: y,
       head: [['Metric', 'Ensemble Value', 'Confidence']],
       body: [
-        ['Modelled Success Score', `${sf((ens.probability ?? 0) * 100, 1)}%`, `${ens.confidence}%`],
+        ['Modelled Success Score', `${Math.round((ens.probability ?? 0) * 100)}/100 (uncalibrated)`, `${ens.confidence}%`],
         ['Recommended Depth', `${sf(ens.depth_m)}m`, `${ens.confidence}%`],
         ['Estimated Yield', `${sf(ens.yield_m3h, 1)} m³/h`, `${ens.confidence}%`],
       ],
@@ -7149,7 +7150,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     // site, so they are not printed (2026-10-27 audit). The section lists the
     // methods, costs and time for planning a survey.
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(80, 80, 80);
-    const planLines = doc.splitTextToSize('Survey planning only: the methods that could be used here, with typical costs and field time. It does not predict how much a survey would raise the chance of success; that depends on what the survey finds.', 170);
+    const planLines = doc.splitTextToSize('Survey planning only: the methods that could be used here, with typical costs and field time. It does not predict how much a survey would change the modelled success score; that depends on what the survey finds.', 170);
     doc.text(planLines, margin, y); y += planLines.length * 3.5 + 5;
     void sra; void integrated;
 

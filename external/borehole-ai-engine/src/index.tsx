@@ -2025,7 +2025,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             ['\u2601\uFE0F','Climate Modeling','Rainfall, drought cycles, best drilling season'],
             ['\u{1F4DD}','Report Tiers','Basic / Professional / Expert reports'],
             ['\u{1F3AF}','Scenario Simulation','Depth vs yield vs cost trade-offs'],
-            ['\u{1F4CA}','Probability Breakdown','Aquifer hit, yield improvement, recharge'],
+            ['\u{1F4CA}','Success Score Breakdown (uncalibrated)','Aquifer hit, yield improvement, recharge'],
             ['\u2696\uFE0F','Simple Outputs','Water table stability, recharge, 5yr risk'],
             ['\u{1F6E0}\uFE0F','Drilling Strategy','Season, method, casing, screen, duration'],
             ['\u{1F30D}','Data Integration','Rainfall, soil maps, satellite moisture, records'],
@@ -2349,6 +2349,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
       overview: 'Summary', 'borehole-records': 'Nearby boreholes', climate: 'Rain & climate', water: 'Water quality risk',
       costs: 'Costs', solar: 'Solar pump', roi: 'Payback', strategy: 'Drilling plan', scenarios: 'Depth options',
       risk: 'Risks', 'data-provenance': 'Data sources', methodology: 'How it works', report: 'Report',
+      // S46: the tab shows the uncalibrated score, not a probability.
+      probability: 'Success score (uncalibrated)',
     };
     // Removed outright (2026-10-18 tool audit): these presented capabilities a
     // desktop pre-screen does not have — deep-learning models "applied to this
@@ -2447,7 +2449,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:fcColor,lineHeight:1}}>{Math.round(fc.successProbability*100)}<span style={{fontSize:14}}>/100</span></div>
                   <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Modelled Success Score ({SCORE_NOT_PROBABILITY})</div>
-                  <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {(fc.probabilityRange[0]*100).toFixed(0)}–{(fc.probabilityRange[1]*100).toFixed(0)}%</div>
+                  <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {Math.round(fc.probabilityRange[0]*100)}–{Math.round(fc.probabilityRange[1]*100)}/100 (uncalibrated)</div>
                 </div>
                 <div style={{textAlign:'center',minWidth:100,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
                   <div style={{fontSize:28,fontWeight:800,color:'#a78bfa',lineHeight:1}}>{fc.confidenceLevel}<span style={{fontSize:14}}>%</span></div>
@@ -2506,7 +2508,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           return (
         <div style={{background:tierBg,border:`2px solid ${tierBorder}`,padding:'14px 18px',borderRadius:12,marginBottom:16}}>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
-            <div style={{fontWeight:700,fontSize:14,color:tierColor}}>{isField ? '\u2705' : '\uD83D\uDCCA'} {tierLabel} — {confOv}% Confidence</div>
+            <div style={{fontWeight:700,fontSize:14,color:tierColor}}>{isField ? '\u2705' : '\uD83D\uDCCA'} {tierLabel} — {confOv}% data confidence (not a success score)</div>
             <div style={{fontSize:11,padding:'2px 8px',borderRadius:6,background:tierColor,color:'#fff',fontWeight:600}}>{(result as any).dataSources || 11} Data Sources</div>
           </div>
           <div style={{fontSize:12,color:'var(--text-secondary)',lineHeight:1.6}}>Rule-based desktop scoring that combines satellite, geological, and hydrological data. Predictions derived from physics-based models (Thiem, Cooper-Jacob, Dar Zarrouk) constrained by {(result as any).dataSources || 11} sources, not all independent. {confOv < 90 ? 'ERT integration and pump test calibration available to upgrade confidence.' : ''}</div>
@@ -2519,7 +2521,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <strong>Yield:</strong> {(() => { const y = displayYield(result); return y.shown ? (y.range ? `${y.range[0]}–${y.range[1]} m³/hr` : `${y.value} m³/hr`) : y.text; })()}
               </div>
               <div style={{padding:'6px 12px',borderRadius:8,background:'rgba(251,191,36,0.1)',fontSize:12}}>
-                <strong>Probability:</strong> {Math.round(result.uncertainty.probabilityRange[0]*100)}–{Math.round(result.uncertainty.probabilityRange[1]*100)}%
+                <strong>Screening score range:</strong> {Math.round(result.uncertainty.probabilityRange[0]*100)}–{Math.round(result.uncertainty.probabilityRange[1]*100)}/100 (uncalibrated; not a probability)
               </div>
             </div>
           )}
@@ -5524,7 +5526,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         shown (2026-10-27 audit). This tab plans a survey; the
                         survey itself is what measures the ground. */}
                     <div style={{padding:'12px 16px',borderRadius:12,background:'rgba(59,130,246,0.06)',border:'1px solid rgba(59,130,246,0.25)',marginBottom:20,fontSize:12,lineHeight:1.6}}>
-                      <strong>Survey planning only.</strong> This tab lists geophysical methods that could be used at this site, with typical costs and field time. It does not predict how much a survey would raise the chance of success: that depends on what the survey finds.
+                      <strong>Survey planning only.</strong> This tab lists geophysical methods that could be used at this site, with typical costs and field time. It does not predict how much a survey would change the modelled success score: that depends on what the survey finds.
                     </div>
 
                     {/* Optimal Package */}
@@ -5955,10 +5957,10 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {/* PROBABILITY (#16) */}
           {activeResultTab==='probability' && (
             <div>
-              <h4 className="tab-title">{'\u{1F4CA}'} Probability Breakdown</h4>
+              <h4 className="tab-title">{'\u{1F4CA}'} Success Score Breakdown (uncalibrated screening indicator)</h4>
               <div className="prob-cards">
                 <div className="prob-card"><div className="prob-value">{probabilityBand(prob.success / 100)}</div><div className="prob-label">Modelled success score (uncalibrated)</div></div>
-                {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
+                {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}/100</div><div className="prob-label">Range across the models (uncalibrated; not a probability)</div></div>}
               </div>
               <div className="result-grid">
                 <div className="result-item"><span className="rl">Recharge</span><span className="rv">{prob.rechargePotential}</span></div>
@@ -6135,7 +6137,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         <strong>Yield:</strong> {result.confidenceWeighted.uncertaintyBounds.yield_m3hr.lower}–{result.confidenceWeighted.uncertaintyBounds.yield_m3hr.upper} m³/hr
                       </div>
                       <div style={{padding:'8px 14px',borderRadius:8,background:'rgba(251,191,36,0.08)',fontSize:12}}>
-                        <strong>Probability:</strong> {Math.round(result.confidenceWeighted.uncertaintyBounds.probability.lower*100)}–{Math.round(result.confidenceWeighted.uncertaintyBounds.probability.upper*100)}%
+                        <strong>Success score range:</strong> {Math.round(result.confidenceWeighted.uncertaintyBounds.probability.lower*100)}–{Math.round(result.confidenceWeighted.uncertaintyBounds.probability.upper*100)}/100 (uncalibrated; not a probability)
                       </div>
                     </div>
                   )}
@@ -6317,7 +6319,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='drill-map' && (
             <div>
               <h4 className="tab-title">{'\u{1F5FA}\uFE0F'} Probabilistic Drilling Map</h4>
-              <p className="tab-desc">Spatial probability heatmap with ranked drilling points and modifier analysis.</p>
+              <p className="tab-desc">Spatial screening-score heatmap (uncalibrated relative scores) with ranked drilling points and modifier analysis.</p>
               {result.drillMap ? (
                 <div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
@@ -7150,7 +7152,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {/* Per-prediction quality */}
                   <h4 style={{marginBottom:8}}>Prediction-Specific Quality</h4>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:8,marginBottom:16}}>
-                    {[['Depth',dq.depthPredictionQuality],['Yield',dq.yieldPredictionQuality],['Water Quality',dq.waterQualityPredictionQuality],['Probability',dq.probabilityQuality]].map(([label,val]: any) => (
+                    {[['Depth',dq.depthPredictionQuality],['Yield',dq.yieldPredictionQuality],['Water Quality',dq.waterQualityPredictionQuality],['Success score',dq.probabilityQuality]].map(([label,val]: any) => (
                       <div key={label} className="result-item"><span className="rl">{label}</span><span className="rv" style={{fontWeight:700,color:val>=75?'#16a34a':val>=50?'#f59e0b':'#ef4444'}}>{val}/100</span></div>
                     ))}
                   </div>
