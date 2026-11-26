@@ -90,6 +90,8 @@ const nextConfig: NextConfig = {
     '/api/aquascan/soil': ['./data/aquascan/soil/**'],
     '/api/building/soil': ['./data/aquascan/soil/**'],
     '/api/borehole/nearby-boreholes': ['./data/osm/kenya-points-v1/**'],
+    // Marketplace orders are priced server-side from the stock file (2026-11-26).
+    '/api/orders/create': ['./lib/parts/inventory-2026-07-22.csv'],
   },
 
   // ═══════════════════════════════════════════════════════════════════

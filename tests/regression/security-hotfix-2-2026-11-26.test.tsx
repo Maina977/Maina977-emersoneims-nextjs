@@ -124,7 +124,10 @@ describe('/api/orders/create: validated, returns only this order', () => {
   const body = (over: Record<string, unknown> = {}) => ({
     customerId: 'CUST-1764100000000', customerPhone: '0712345678', customerEmail: 'buyer@test.example',
     customerName: 'TEST Buyer', shippingLocation: 'Nairobi', paymentMethod: 'mpesa',
-    items: [{ partCode: 'TEST-P2', partName: 'TEST belt', quantity: 2, unitPrice: 1500, subtotal: 1 }],
+    // Order-abuse hotfix (CA-42/43): a real stock code (ABR-1, KES 1,153 in the
+    // stock file) is priced by the server, and the checkout's fill time is sent.
+    items: [{ partCode: 'ABR-1', partName: 'TEST belt', quantity: 2, unitPrice: 1500, subtotal: 1 }],
+    website: '', formStartedAt: Date.now() - 60_000,
     ...over,
   });
   const post = (b: unknown) => createOrder(new Request('https://site.test/api/orders/create', {
@@ -135,9 +138,9 @@ describe('/api/orders/create: validated, returns only this order', () => {
     const res = await post(body());
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(Object.keys(data).sort()).toEqual(['message', 'orderId', 'shippingCost', 'subtotal', 'success', 'tax', 'total']);
-    expect(data.subtotal).toBe(3000);
-    expect(data.total).toBe(3000 + 480 + 500);
+    expect(Object.keys(data).sort()).toEqual(['message', 'orderId', 'priceConfirmed', 'shippingCost', 'subtotal', 'success', 'tax', 'total']);
+    expect(data.subtotal).toBe(2 * 1153); // server price, not the client's 1500 or subtotal 1
+    expect(data.total).toBe(2306 + Math.round(2306 * 0.16) + 500);
     noPII(JSON.stringify(data));
     expect(sent).toHaveLength(1);
     expect(sent[0][0]).toBe('buyer@test.example');
@@ -230,8 +233,11 @@ describe('marketplace pages handle the retired routes', () => {
   });
   it('checkout still places an order through the real create route', async () => {
     localStorage.setItem('cart', JSON.stringify([{ part: { id: 'p1', code: 'TEST-P3', name: 'TEST injector', sellingPrice: 2500 }, quantity: 2 }]));
+    const t0 = Date.now();
+    let nowSpy: { mockRestore: () => void } | null = null;
     fetchSpy.mockImplementation(async (url: unknown, initArg?: RequestInit) => {
       expect(String(url)).toBe('/api/orders/create');
+      nowSpy = vi.spyOn(Date, 'now').mockReturnValue(t0 + 10_000); // the customer took 10 s (minimum fill time)
       return createOrder(new Request('https://site.test/api/orders/create', initArg));
     });
     render(<CheckoutPage />);
@@ -243,5 +249,6 @@ describe('marketplace pages handle the retired routes', () => {
     fireEvent.click(screen.getByText(/Place Order & Pay/));
     await waitFor(() => expect(screen.getByText('Order Created Successfully!')).toBeInTheDocument());
     expect(screen.getByText(/^ORD-\d{8}-\d{4}$/)).toBeInTheDocument();
+    nowSpy?.mockRestore();
   });
 });

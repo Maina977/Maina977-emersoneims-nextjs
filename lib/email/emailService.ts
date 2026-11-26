@@ -46,7 +46,8 @@ export async function sendEmail(emailData: EmailData): Promise<{ success: boolea
     const data = await response.json();
     return { success: true, messageId: data.id };
   } catch (error: any) {
-    console.error('Email send error:', error);
+    // No recipient or provider message in logs: they can contain the address (2026-11-26).
+    console.error('Email send error:', error instanceof Error ? error.name : 'unknown');
     return { success: false, error: error.message };
   }
 }

@@ -53,7 +53,9 @@ describe('order routes: no data, identical for every id', () => {
 });
 
 describe('order create: validation and email HTML', () => {
-  const good = { customerId: 'CUST-1795700000000', customerPhone: '0712 345 678', customerEmail: 'test@example.com', customerName: 'TEST Wanjiku', items: [{ partCode: 'P-1', partName: 'Filter', quantity: 2, unitPrice: 1500, subtotal: 1 }], shippingLocation: 'Nairobi', paymentMethod: 'mpesa' };
+  // Adapted for the order-abuse hotfix (CA-42/43): a real stock code priced by
+  // the server (ABR-1, KES 1,153) and the checkout's honeypot + fill time.
+  const good = { customerId: 'CUST-1795700000000', customerPhone: '0712 345 678', customerEmail: 'test@example.com', customerName: 'TEST Wanjiku', items: [{ partCode: 'ABR-1', partName: 'Filter', quantity: 2, unitPrice: 1500, subtotal: 1 }], shippingLocation: 'Nairobi', paymentMethod: 'mpesa', website: '', formStartedAt: Date.now() - 60_000 };
   const post = async (b: unknown, raw?: string) => {
     const { POST } = await import('@/app/api/orders/create/route');
     const res = await POST(new Request('http://localhost/api/orders/create', { method: 'POST', body: raw ?? JSON.stringify(b), headers: { 'content-type': 'application/json' } }));
@@ -62,7 +64,7 @@ describe('order create: validation and email HTML', () => {
   it('checkout shape accepted; subtotal recomputed server-side', async () => {
     const { status, j } = await post(good);
     expect(status).toBe(200);
-    expect(j.subtotal).toBe(3000);
+    expect(j.subtotal).toBe(2 * 1153); // server price, not the client's
   });
   it('rejects injection / bad shapes', async () => {
     const bad: unknown[] = [
