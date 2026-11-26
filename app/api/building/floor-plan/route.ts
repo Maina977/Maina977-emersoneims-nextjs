@@ -14,6 +14,7 @@ import {
   floorPlanGenerator,
   floorPlanRenderer,
   publicPlan,
+  withoutElectricalPoints,
   NOT_FROM_A_DESCRIPTION,
   type GenerationInput
 } from '@/lib/building/building/floorPlanGenerator';
@@ -67,10 +68,12 @@ export async function POST(request: NextRequest) {
       constraints,
     });
 
-    // Generate SVG for each floor
+    // Generate SVG for each floor: rooms, walls and openings only. Socket and
+    // light positions are not drawn (review 2026-11-26: general sockets were
+    // placed in bathrooms; positions need an electrical design).
     const floorPlanSVGs: Record<string, string> = {};
     for (const floorPlan of buildingPlan.floorPlans) {
-      floorPlanSVGs[floorPlan.name] = floorPlanRenderer.render(floorPlan);
+      floorPlanSVGs[floorPlan.name] = floorPlanRenderer.render(withoutElectricalPoints(floorPlan));
     }
 
     // Prepare response based on output format
@@ -149,7 +152,7 @@ export async function GET() {
         'Multi-floor building support',
         'Room layout optimization',
         'Wall and opening placement',
-        'Electrical layout generation',
+        // 'Electrical layout generation' is not offered: point positions and ratings need an electrical design (review 2026-11-26).
         'Plumbing layout generation',
         // 'BOQ calculation' and 'Cost estimation' are not offered from a description (audit 2026-11-26).
         'SVG floor plan rendering',

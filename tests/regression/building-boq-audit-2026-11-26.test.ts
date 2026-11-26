@@ -19,8 +19,6 @@ import { emptyForm, calculateTrade, tradeBoqItems, type RoofingForm } from '@/li
 import { draftBoq, buildProject, restoreProject, type ItemDraft } from '@/lib/qs/project';
 import * as c from '@/lib/wizard-api/buildingCalcs';
 
-vi.mock('@/lib/prisma/client', () => ({ prisma: { quotation: { create: () => Promise.reject(new Error('TEST: no database')) } } }));
-
 const p = (value: number, source = 'TEST drawing A-201'): Param => ({ value, source });
 const lin = (id: string, net: number): Quantity => ({ id, kind: 'linear', unit: 'm', gross: net, deductions: 0, net, holes: [] });
 const area = (id: string, net: number): Quantity => ({ id, kind: 'area', unit: 'm²', gross: net, deductions: 0, net, holes: [] });
@@ -192,23 +190,20 @@ describe('DEFECT fixed: the floor-plan API returns no quantities, cost, foundati
   });
 });
 
-describe('DEFECT fixed: quotation totals charge VAT once, after the discount', () => {
-  const post = async (body: Record<string, unknown>) => {
+/*
+ * Defect 4 (quotation VAT) — tests retired with the route (2026-11-26). The VAT
+ * fix of c610206a (VAT once on subtotal − discount, 0 allowed, a disagreeing
+ * total refused; worked example 100,000 − 10,000 + 14,400 = 104,400) is kept in
+ * git history. The independent review then retired /api/building/quotations
+ * (no authentication, no caller): every method answers 410, which is asserted in
+ * tests/regression/building-routes-hotfix-2026-11-26.test.ts. If the route is
+ * ever reinstated, restore its VAT handler from c610206a and these three tests
+ * from that commit.
+ */
+describe('Defect 4 retired with its route: quotation POST answers 410, no totals computed', () => {
+  it('POST with a subtotal and discount is refused as Gone', async () => {
     const { POST } = await import('@/app/api/building/quotations/route');
-    const res = await POST(new NextRequest('http://localhost/api/building/quotations', { method: 'POST', body: JSON.stringify({ projectId: 'TEST', items: [{ d: 'TEST' }], ...body }), headers: { 'content-type': 'application/json' } }));
-    return { status: res.status, j: await res.json() };
-  };
-  it('subtotal 100,000, discount 10,000, VAT not given → VAT 16 % × 90,000 = 14,400; total 104,400', async () => {
-    const { status, j } = await post({ subtotal: 100000, discount: 10000 });
-    expect(status).toBe(201);
-    expect([j.data.subtotal, j.data.discount, j.data.vat, j.data.total]).toEqual([100000, 10000, 14400, 104400]);
-  });
-  it('VAT 0 (exempt) stays 0: total = 90,000 (was 16 % added: 106,000)', async () => {
-    const { j } = await post({ subtotal: 100000, discount: 10000, vat: 0 });
-    expect([j.data.vat, j.data.total]).toEqual([0, 90000]);
-  });
-  it('a stated total that disagrees, or no subtotal, is refused (no VAT on a VAT-inclusive total)', async () => {
-    expect((await post({ subtotal: 100000, total: 116000, discount: 10000 })).status).toBe(400);
-    expect((await post({ total: 116000 })).status).toBe(400);
+    const res = await (POST as unknown as (r: NextRequest) => Promise<Response>)(new NextRequest('http://localhost/api/building/quotations', { method: 'POST', body: JSON.stringify({ projectId: 'TEST', items: [{ d: 'TEST' }], subtotal: 100000, discount: 10000 }), headers: { 'content-type': 'application/json' } }));
+    expect(res.status).toBe(410);
   });
 });

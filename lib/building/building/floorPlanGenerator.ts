@@ -1424,21 +1424,35 @@ export const floorPlanRenderer = new FloorPlanSVGRenderer();
  * it is the same class of output that was withdrawn from
  * /api/building/comprehensive-report on 2026-11-13. The code is kept; the
  * response carries none of it. The layout (rooms, walls, openings, SVG) stays.
+ *
+ * Per-room electrical points are withheld too (independent review 2026-11-26,
+ * R1c): they carried "15A" socket ratings (Kenyan socket outlets are 13 A,
+ * BS 1363), a "30A" kitchen outlet, lighting watts per room, and general
+ * socket outlets placed in bathrooms, which IEC 60364-7-701 / BS 7671
+ * Section 701 restrict near baths and showers. rooms[].electrical is null.
  */
 export const NOT_FROM_A_DESCRIPTION = {
   boq: 'Quantities need measured drawings: use the measured take-off (/solutions/building/takeoff).',
   estimatedCost: 'A cost needs measured quantities and sourced, dated rates: request a quotation (0768 860 665).',
   foundation: 'Foundation type, depth and reinforcement need a site investigation and a structural design by a registered engineer.',
-  electrical: 'Maximum demand, main switch and circuit protection need an electrical design to IEC 60364 / BS 7671 by a licensed electrician.',
+  electrical: 'Maximum demand, main switch, circuit protection and the position, type and rating of every light, switch and socket outlet (including the bathroom zones of IEC 60364-7-701 / BS 7671 Section 701) need an electrical design by a qualified person (licensed electrical contractor / engineer).',
 } as const;
 
-export type PublicBuildingPlan = Omit<BuildingPlan, 'boqSummary' | 'estimatedCost' | 'foundation' | 'electrical'> & {
+export type PublicRoom = Omit<Room, 'electrical'> & { electrical: null };
+export type PublicBuildingPlan = Omit<BuildingPlan, 'boqSummary' | 'estimatedCost' | 'foundation' | 'electrical' | 'floorPlans'> & {
+  floorPlans: Array<Omit<FloorPlan, 'rooms'> & { rooms: PublicRoom[] }>;
   boqSummary: null; estimatedCost: null; foundation: null; electrical: null;
   notAvailable: typeof NOT_FROM_A_DESCRIPTION;
 };
 
 export function publicPlan(plan: BuildingPlan): PublicBuildingPlan {
-  const { boqSummary: _b, estimatedCost: _c, foundation: _f, electrical: _e, ...rest } = plan;
+  const { boqSummary: _b, estimatedCost: _c, foundation: _f, electrical: _e, floorPlans, ...rest } = plan;
   void _b; void _c; void _f; void _e;
-  return { ...rest, boqSummary: null, estimatedCost: null, foundation: null, electrical: null, notAvailable: NOT_FROM_A_DESCRIPTION };
+  const floors = floorPlans.map((f) => ({ ...f, rooms: f.rooms.map((r): PublicRoom => ({ ...r, electrical: null })) }));
+  return { ...rest, floorPlans: floors, boqSummary: null, estimatedCost: null, foundation: null, electrical: null, notAvailable: NOT_FROM_A_DESCRIPTION };
+}
+
+/** A floor with no electrical points, for the public SVG: the drawing shows rooms, walls and openings, not socket or light positions. */
+export function withoutElectricalPoints(f: FloorPlan): FloorPlan {
+  return { ...f, rooms: f.rooms.map((r) => ({ ...r, electrical: { outlets: [], switches: [], lights: [] } })) };
 }
