@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Card, SectionHeading, SampleBadge, HubConnectStrip } from '@/components/hub/HubShell';
 import { KPICard, Gauge, StatusBar, LockedChart } from '@/components/charts/dataviz';
 import { UpsTopologyBoard } from '@/components/hub/cockpit/UpsTopologyBoard';
+import { GRID_CO2_KG_PER_KWH } from '@/lib/solar/sizing';
+import { upsRuntimeMinutes, UPS_RUNTIME_DOD } from '@/lib/hub/upsMath';
 
 /**
  * Solar + UPS section pages — combined under one route with two tabs.
@@ -15,8 +17,11 @@ type Tab = 'solar' | 'ups';
 
 const HOURS = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
 
-// PV generation (sample, kW)
-const PV_GEN = [0,0,0,0,0,0,4,18,42,72,98,118,128,124,110,88,60,28,8,0,0,0,0,0];
+// PV generation (sample, kW). Audit 2026-11-26: the old curve summed to
+// 898 kWh and peaked at 128 kW on a 120 kWp array while the card beside it
+// said 540 kWh; it is scaled (× 540/898) so the curve, the card and the
+// performance ratio agree: Σ = 540 kWh, peak 77 kW.
+export const PV_GEN = [0,0,0,0,0,0,2,11,25,43,59,71,77,75,66,53,36,17,5,0,0,0,0,0];
 // Site demand (sample, kW)
 const SITE   = [82,78,75,72,70,71,84,110,132,145,158,162,160,158,154,150,148,156,168,162,142,122,104,92];
 
@@ -52,9 +57,12 @@ export default function SolarUpsClient() {
 
 function SolarSection() {
   const arrayKwp = 120;
-  const dailyKwh = 540;
+  // Today's generation is the area under the sample curve below (kWh = Σ kW × 1 h).
+  const dailyKwh = PV_GEN.reduce((a, b) => a + b, 0);
   const performanceRatio = 0.81;
-  const co2KgPerKwh = 0.45; // Kenya grid factor (sample)
+  // The repo's sourced Kenya grid factor (Climate Watch / KPLC 2023), the one
+  // every other solar tool uses; 0.45 had no source and doubled the CO₂.
+  const co2KgPerKwh = GRID_CO2_KG_PER_KWH;
 
   return (
     <>
@@ -62,7 +70,7 @@ function SolarSection() {
         <KPICard label="Array size"        value={arrayKwp}             unit="kWp" />
         <KPICard label="Today's generation" value={dailyKwh}             unit="kWh" thresholds={{ danger: 200, warning: 350, success: 500 }} />
         <KPICard label="Performance ratio" value={performanceRatio*100} unit="%"   decimals={1} thresholds={{ danger: 65, warning: 75, success: 80 }} />
-        <KPICard label="Avoided CO₂"        value={dailyKwh * co2KgPerKwh / 1000} unit="t" decimals={2} caption="Today, grid factor 0.45 kg/kWh" />
+        <KPICard label="Avoided CO₂"        value={dailyKwh * co2KgPerKwh / 1000} unit="t" decimals={2} caption={`Today, grid factor ${co2KgPerKwh} kg/kWh (Kenya grid, Climate Watch / KPLC 2023)`} />
       </div>
 
       <Card>
@@ -110,6 +118,7 @@ function SolarSection() {
           <StatusBar label="Self-consumption"       value={72} max={100} unit="%"  thresholds={{ danger: 30, warning: 50, success: 70 }} />
         </div>
         <p className="mt-3 text-xs text-ink-muted">
+          Solar values on this tab are a sample site, not a measurement.{' '}
           Browse models in <Link href="/hub/product-intelligence" className="text-ink-link">Product Intelligence</Link>;
           run a full sizing in <Link href="/hub/simulator" className="text-ink-link">Smart Sizing</Link>.
         </p>
@@ -125,6 +134,11 @@ function UpsSection() {
   const loadKva = 4.1;
   const loadPct = (loadKva / ratedKva) * 100;
   const efficiency = 95.2;
+  const batteryKwh = 1.4;
+  const loadKw = loadKva * 0.9;
+  // Same runtime rule as the UPS Live Lab (audit 2026-11-26: a fixed 14 min
+  // was shown for a 1.4 kWh battery that gives about 19.5 min at this load).
+  const runtimeMin = upsRuntimeMinutes(batteryKwh * 1000, loadKw * 1000, efficiency / 100, UPS_RUNTIME_DOD);
 
   return (
     <>
@@ -158,7 +172,7 @@ function UpsSection() {
           <div className="space-y-4">
             <Gauge label="State of charge" value={84} min={0} max={100} unit="%" decimals={0}
               thresholds={{ danger: 20, warning: 40, success: 80 }} />
-            <StatusBar label="Autonomy at current load" value={14} max={30} unit="min"
+            <StatusBar label="Autonomy at current load" value={Math.round(runtimeMin)} max={30} unit="min"
               thresholds={{ danger: 5, warning: 10, success: 15 }} />
             <StatusBar label="Battery age" value={2.8} max={5} unit="years"
               thresholds={{ warning: 3, danger: 4.5, invert: true }} />
@@ -180,11 +194,11 @@ function UpsSection() {
             mainsPresent: true,
             upsCount: 1,
             upsCapacityKw: ratedKva * 0.9,
-            loadKw: loadKva * 0.9,
-            inputKw: (loadKva * 0.9) / (efficiency / 100),
-            outputKw: loadKva * 0.9,
-            batteryKwh: 1.4,
-            runtimeMin: 14,
+            loadKw,
+            inputKw: loadKw / (efficiency / 100),
+            outputKw: loadKw,
+            batteryKwh,
+            runtimeMin,
             overloaded: loadPct > 100,
             highLoad: loadPct > 85,
             topologyLabel: 'Online double-conversion',
@@ -209,7 +223,8 @@ function UpsSection() {
       </Card>
 
       <p className="text-xs text-ink-muted">
-        UPS values are sample. Specify model and battery string in
+        UPS values are sample. Autonomy assumes {Math.round(UPS_RUNTIME_DOD * 100)} % of the battery usable at the
+        UPS efficiency, before high-rate losses. Specify model and battery string in
         {' '}<Link href="/hub/product-intelligence" className="text-ink-link">Product Intelligence</Link> and
         confirm autonomy in <Link href="/hub/simulator" className="text-ink-link">Smart Sizing</Link>.
       </p>
