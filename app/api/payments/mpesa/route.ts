@@ -10,6 +10,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyOrderToken } from '@/lib/payments/orderToken';
+import { allow, clientIp, hashKey, tooMany } from '@/lib/security/requestGuard';
+
+const MPESA_IP_LIMIT = 5; // STK prompts started per IP per 10 minutes
+const MPESA_PHONE_LIMIT = 3; // STK prompts per phone per hour
+const MPESA_QUERY_LIMIT = 20; // status queries per IP per minute
+
+/** One generic refusal: never says which check failed. */
+function refused() {
+  return NextResponse.json({ success: false, error: 'Payment could not be started.' }, { status: 400 });
+}
 
 interface MpesaSTKRequest {
   phoneNumber: string;      // Format: 254XXXXXXXXX
@@ -111,10 +122,30 @@ function formatPhoneNumber(phone: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: MpesaSTKRequest = await request.json();
-    const { phoneNumber, amount, accountReference, transactionDesc } = body;
+    // Security sweep 2026-11-26 (H7). This route used to take the phone and
+    // the amount from the request with no sign-in, so anyone could send an
+    // M-Pesa prompt for up to KES 150,000 to any phone. Now:
+    //  - per-IP limit before anything else (generic 429);
+    //  - the amount comes only from a server-issued order token
+    //    (lib/payments/orderToken.ts: HMAC over a server-priced order); no
+    //    valid token -> generic 400. No token issuer is wired yet and
+    //    ORDER_TOKEN_SECRET is not set, so every request is refused today:
+    //    payments stay inactive and no payment configuration is changed;
+    //  - Kenyan mobile number required, and a per-phone limit (hashed);
+    //  - no phone number in logs, no configuration details in answers.
+    if (!allow('mpesa-stk-ip', clientIp(request), MPESA_IP_LIMIT, 600)) return tooMany();
 
-    // Check configuration
+    let body: Record<string, unknown>;
+    try { body = await request.json(); } catch { return refused(); }
+    if (!body || typeof body !== 'object') return refused();
+
+    const order = verifyOrderToken(body.orderToken);
+    if (!order) return refused();
+
+    const phoneNumber = typeof body.phoneNumber === 'string' ? body.phoneNumber : '';
+    const formattedPhone = formatPhoneNumber(phoneNumber);
+    if (phoneNumber.length > 20 || !/^254(7|1)\d{8}$/.test(formattedPhone)) return refused();
+
     const requiredEnvVars = [
       'MPESA_CONSUMER_KEY',
       'MPESA_CONSUMER_SECRET',
@@ -122,34 +153,18 @@ export async function POST(request: NextRequest) {
       'MPESA_SHORTCODE',
       'MPESA_CALLBACK_URL',
     ];
-
-    const missingVars = requiredEnvVars.filter(v => !process.env[v]);
-
-    if (missingVars.length > 0) {
+    if (requiredEnvVars.some(v => !process.env[v])) {
       return NextResponse.json(
-        {
-          success: false,
-          error: `M-Pesa not configured. Missing: ${missingVars.join(', ')}`,
-          configRequired: true,
-        },
+        { success: false, error: 'Payments are not available right now.', configRequired: true },
         { status: 503 }
       );
     }
 
-    // Validate input
-    if (!phoneNumber || !amount || !accountReference) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: phoneNumber, amount, accountReference' },
-        { status: 400 }
-      );
-    }
+    if (!allow('mpesa-stk-phone', hashKey(formattedPhone), MPESA_PHONE_LIMIT, 3600)) return tooMany();
 
-    if (amount < 1 || amount > 150000) {
-      return NextResponse.json(
-        { success: false, error: 'Amount must be between KES 1 and KES 150,000' },
-        { status: 400 }
-      );
-    }
+    const amount = order.amount; // server-priced, from the token
+    const accountReference = order.orderId;
+    const transactionDesc = 'EmersonEIMS order';
 
     // Get access token
     const accessToken = await getAccessToken();
@@ -164,7 +179,6 @@ export async function POST(request: NextRequest) {
     // Prepare STK Push request
     const timestamp = getTimestamp();
     const password = generatePassword(timestamp);
-    const formattedPhone = formatPhoneNumber(phoneNumber);
 
     const stkPushRequest = {
       BusinessShortCode: process.env.MPESA_SHORTCODE,
@@ -177,10 +191,10 @@ export async function POST(request: NextRequest) {
       PhoneNumber: formattedPhone,
       CallBackURL: process.env.MPESA_CALLBACK_URL,
       AccountReference: accountReference.substring(0, 12), // Max 12 chars
-      TransactionDesc: (transactionDesc || 'SolarGenius Pro Payment').substring(0, 13), // Max 13 chars
+      TransactionDesc: transactionDesc.substring(0, 13), // Max 13 chars
     };
 
-    console.log(`[M-Pesa] Initiating STK Push for ${formattedPhone}, KES ${amount}`);
+    console.log(`[M-Pesa] Initiating STK Push for order ${order.orderId}, KES ${amount}`);
 
     const response = await fetch(
       `${getBaseUrl()}/mpesa/stkpush/v1/processrequest`,
@@ -211,23 +225,14 @@ export async function POST(request: NextRequest) {
         },
       });
     } else {
-      console.error('[M-Pesa] STK Push failed:', data);
-      return NextResponse.json(
-        {
-          success: false,
-          error: data.errorMessage || data.ResponseDescription || 'STK Push failed',
-        },
-        { status: 400 }
-      );
+      console.error('[M-Pesa] STK Push failed:', typeof data?.ResponseCode === 'string' ? data.ResponseCode : 'no code');
+      return refused();
     }
 
   } catch (error) {
-    console.error('[M-Pesa] Error:', error);
+    console.error('[M-Pesa] Error:', error instanceof Error ? error.name : 'unknown');
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'M-Pesa transaction failed'
-      },
+      { success: false, error: 'Payment could not be started.' },
       { status: 500 }
     );
   }
@@ -235,10 +240,11 @@ export async function POST(request: NextRequest) {
 
 // Query transaction status
 export async function GET(request: NextRequest) {
+  if (!allow('mpesa-query-ip', clientIp(request), MPESA_QUERY_LIMIT, 60)) return tooMany();
   const { searchParams } = new URL(request.url);
   const checkoutRequestId = searchParams.get('checkoutRequestId');
 
-  if (!checkoutRequestId) {
+  if (!checkoutRequestId || !/^[A-Za-z0-9_-]{1,64}$/.test(checkoutRequestId)) {
     return NextResponse.json(
       { success: false, error: 'Missing checkoutRequestId parameter' },
       { status: 400 }
@@ -291,12 +297,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[M-Pesa] Query error:', error);
+    console.error('[M-Pesa] Query error:', error instanceof Error ? error.name : 'unknown');
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to query transaction'
-      },
+      { success: false, error: 'Failed to query transaction' },
       { status: 500 }
     );
   }

@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { ipHeaders, limitPaidKeyRoute } from '@/lib/security/requestGuard';
 
 interface ElevationRequest {
   latitude: number;
@@ -137,6 +138,9 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
 }
 
 export async function POST(request: NextRequest) {
+  // Paid/quota API key behind this route: per-IP limit (security sweep 2026-11-26; lib/security/requestGuard.ts).
+  const limited = limitPaidKeyRoute(request, 'solar-elevation', 20);
+  if (limited) return limited;
   try {
     const body: ElevationRequest = await request.json();
     const { latitude, longitude, includeSlope = true, gridSize = 30 } = body;
@@ -293,7 +297,7 @@ export async function GET(request: NextRequest) {
   const mockRequest = new Request(request.url, {
     method: 'POST',
     body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...ipHeaders(request) },
   });
 
   return POST(mockRequest as NextRequest);

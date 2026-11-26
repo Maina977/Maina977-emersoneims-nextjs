@@ -517,9 +517,26 @@ async function storeLead(data: ContactFormData & { ip: string; userAgent: string
   }
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Shared branded HTML for lead-alert emails (used by both the SMTP own-server
 // channel and the Resend channel).
-function buildLeadEmailHtml(data: ContactFormData, leadId: number): string {
+function buildLeadEmailHtml(raw: ContactFormData, leadId: number): string {
+  // Security sweep 2026-11-26: every caller-supplied field is HTML-escaped
+  // before it goes into the staff email (a message could carry a working
+  // link or markup into the team inbox, with replyTo set to the sender).
+  const esc = (v?: string) => escapeHtml(v ?? '');
+  const data = {
+    name: esc(raw.name),
+    email: esc(raw.email),
+    phone: raw.phone ? esc(raw.phone) : '',
+    company: raw.company ? esc(raw.company) : '',
+    location: raw.location ? esc(raw.location) : '',
+    message: esc(raw.message),
+  };
+  const service = esc(serviceLabel(raw.service));
   return `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 20px; text-align: center;">
@@ -558,7 +575,7 @@ function buildLeadEmailHtml(data: ContactFormData, leadId: number): string {
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Service:</td>
                   <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
                     <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px;">
-                      ${serviceLabel(data.service)}
+                      ${service}
                     </span>
                   </td>
                 </tr>

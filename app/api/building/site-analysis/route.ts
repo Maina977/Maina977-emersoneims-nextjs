@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { ipHeaders, limitPaidKeyRoute } from '@/lib/security/requestGuard';
 import { overpassQuery, OSM_ATTRIBUTION } from '@/lib/data-sources/overpass';
 import { geocodeReverse, OSM_GEOCODE_ATTRIBUTION } from '@/lib/data-sources/nominatim';
 
@@ -419,6 +420,9 @@ function identifyRisks(
 }
 
 export async function POST(request: NextRequest) {
+  // Paid/quota API key behind this route: per-IP limit (security sweep 2026-11-26; lib/security/requestGuard.ts).
+  const limited = limitPaidKeyRoute(request, 'building-site-analysis', 10);
+  if (limited) return limited;
   const startTime = Date.now();
 
   try {
@@ -580,7 +584,7 @@ export async function GET(request: NextRequest) {
   const mockRequest = new Request(request.url, {
     method: 'POST',
     body: JSON.stringify({ latitude: parseFloat(lat), longitude: parseFloat(lng) }),
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...ipHeaders(request) },
   });
 
   return POST(mockRequest as NextRequest);
