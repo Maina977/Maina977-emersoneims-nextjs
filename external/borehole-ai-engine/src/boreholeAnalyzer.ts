@@ -843,7 +843,7 @@ export class BoreholeAnalyzer {
     // A failed source stays empty: no latitude-made values (2026-10-27 audit:
     // a constant "losing" storage trend subtracted 5 points at every site).
     if (!graceData) {
-      fallbacksUsed.push('GRACE-FO water storage: not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('GRACE-FO water storage: not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
 
     if (!nearbyWells) {
@@ -871,13 +871,13 @@ export class BoreholeAnalyzer {
 
     // Nairobi CBD and Lodwar both got "dense vegetation" from latitude (2026-10-27 audit).
     if (!vegetationGWProxy) {
-      fallbacksUsed.push('Vegetation-groundwater proxy (MODIS NDVI): not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('Vegetation-groundwater proxy (MODIS NDVI): not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
     if (!satelliteVegetation) {
-      fallbacksUsed.push('Satellite vegetation (MODIS): not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('Satellite vegetation (MODIS): not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
     if (!nasaPowerMoisture) {
-      fallbacksUsed.push('NASA POWER soil moisture: not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('NASA POWER soil moisture: not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
 
     // Extract SoilGrids data for downstream modules
