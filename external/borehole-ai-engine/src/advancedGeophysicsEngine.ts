@@ -1326,7 +1326,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   const technicalSummary = [
     `Site: ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° | Elevation: ${input.elevationM}m`,
     `Geology: ${rockType} (${isCrystalline ? (/basalt|phonolite|trachyte|tuff|volcanic|lava/i.test(rockType) ? 'volcanic hard rock' : 'crystalline basement') : isSedimentary ? 'sedimentary' : isKarst ? 'karst' : 'mixed'})`,
-    `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
+    `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, success score ${Math.round(Number(aiOnlySuccess) || 0)}/100 (uncalibrated, not a probability)`,
     `Weathering: ${weatheringDepth_m}m | Water table: ${waterTableDepth_m}m | Bedrock: ${input.bedrockDepth_m}m`,
     `Optimal survey: ${optimalPackage.name} (${methodCount} methods, $${optimalPackage.cost_usd.toLocaleString()})`,
     `Projected siting/information confidence if surveys confirm the model: ${expectedSuccessRate}% (desktop-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%) — NOT a drilling-success guarantee`,

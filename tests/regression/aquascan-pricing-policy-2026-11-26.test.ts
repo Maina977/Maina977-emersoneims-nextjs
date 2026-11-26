@@ -32,6 +32,9 @@ const site = (o: { depth: number; rock?: string; pricing?: any }) => ({
   ...(o.pricing ? { projectPricing: o.pricing } : {}),
 }) as any;
 const GOV = { category: 'government_tender', quotations: [] };
+// MAJOR-3 (review of ef8f6b2e): no result can carry a tender category any more (projectPricingOf reads
+// every stored category as private). The tender code path is exercised by giving costSourcing the pricing directly.
+const asTender = <T extends object>(eco: T): T => ({ ...eco, pricing: GOV } as T);
 const kesOf = (cs: ReturnType<typeof costSourcing>, key: string) => cs.lines.find((l) => l.key === key)!;
 
 describe('C + B: worked cost examples, by hand from the code\'s own rate tables, to the shilling', () => {
@@ -52,7 +55,7 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
     //           array = max(1, round(0.69/0.85 x 1.2, 1)) = 1.0 kW x $1,500 = $1,500 x 129 = 193,500 (indicative)
     //  screen, pump, installation: "Use the applicable tender BOQ" (no tender rate)
     //  subtotal  2,675,500;  contingency 25% (hard rock) = 668,875;  total 3,344,375
-    const eco = computeCanonicalEconomics(site({ depth: 120, rock: 'basalt', pricing: GOV }));
+    const eco = asTender(computeCanonicalEconomics(site({ depth: 120, rock: 'basalt' })));
     const cs = costSourcing(eco);
     const expectKes: Record<string, number> = { survey: 85000, permits: 135000, drilling: 1260000, casing: 420000, gravelPack: 91000, development: 150000, testPumping: 228000, labTest: 28000, capFinishing: 85000, solar: 193500 };
     for (const [k, v] of Object.entries(expectKes)) expect(kesOf(cs, k).kes, k).toBe(v);
@@ -72,7 +75,7 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
     //  solar     head = round(150 x 0.5 + 10) = 85 m; kW = round(2 x 85 x 9.81/3600/0.55, 2) = 0.84;
     //            array = round(0.84/0.85 x 1.2, 1) = 1.2 kW x $1,500 = $1,800 x 129 = 232,200 (indicative)
     //  subtotal  2,644,700;  contingency 15% (soft ground) = 396,705;  total 3,041,405
-    const eco = computeCanonicalEconomics(site({ depth: 150, rock: 'alluvial sand and gravel', pricing: GOV }));
+    const eco = asTender(computeCanonicalEconomics(site({ depth: 150, rock: 'alluvial sand and gravel' })));
     const cs = costSourcing(eco);
     const expectKes: Record<string, number> = { survey: 85000, permits: 135000, drilling: 1045000, casing: 546000, gravelPack: 110500, development: 150000, testPumping: 228000, labTest: 28000, capFinishing: 85000, solar: 232200 };
     for (const [k, v] of Object.entries(expectKes)) expect(kesOf(cs, k).kes, k).toBe(v);
@@ -91,7 +94,7 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
     //  development 150,000; test pumping 228,000; lab 28,000; cap 85,000
     //  solar     head = 60 m; kW = round(2 x 60 x 9.81/3600/0.55, 2) = 0.59; array = max(1, 0.8) = 1.0 kW x $1,500 x 129 = 193,500
     //  subtotal  2,368,500;  contingency 25% (pricing assumption: ground conditions unknown) = 592,125;  total 2,960,625
-    const eco = computeCanonicalEconomics(site({ depth: 100, pricing: GOV }));
+    const eco = asTender(computeCanonicalEconomics(site({ depth: 100 })));
     const cs = costSourcing(eco);
     const expectKes: Record<string, number> = { survey: 85000, permits: 135000, drilling: 1050000, casing: 336000, gravelPack: 78000, development: 150000, testPumping: 228000, labTest: 28000, capFinishing: 85000, solar: 193500 };
     for (const [k, v] of Object.entries(expectKes)) expect(kesOf(cs, k).kes, k).toBe(v);
@@ -106,7 +109,7 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
   });
 
   it('Example 4, UNKNOWN rock, PRIVATE project, 100 m, with entered figures: no tender rate on any line', () => {
-    //  survey    verified project quotation TEST-Q-17 (2026-11-20)          60,000
+    //  survey    the user's own rate TEST-Q-17 (2026-11-20; stored as "verified", read as user-entered: MAJOR-3)  60,000
     //  drilling  the user's own indicative rate TEST-OWN-1 (2026-11-21)    700,000  (indicative — not a binding offer)
     //  solar     own cited source: IRENA 2023, 1.0 kW x $1,500 x 129       193,500  (indicative)
     //  permits, mobilisation, casing, screen, gravel pack, development, test pumping, lab test, cap,
@@ -117,11 +120,11 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
       { item: 'drilling', amountKES: 700000, reference: 'TEST-OWN-1', date: '2026-11-21', label: 'indicative rate entered by the user' },
     ] };
     const cs = costSourcing(computeCanonicalEconomics(site({ depth: 100, pricing })));
-    expect(kesOf(cs, 'survey').state).toBe('verified');
+    expect(kesOf(cs, 'survey').state).toBe('indicative');
     expect(kesOf(cs, 'survey').kes).toBe(60000);
     expect(kesOf(cs, 'drilling').state).toBe('indicative');
     expect(kesOf(cs, 'drilling').kes).toBe(700000);
-    expect(costLineText(kesOf(cs, 'drilling')).basis).toBe('indicative — not a binding offer: rate entered by the user (TEST-OWN-1, dated 2026-11-21). Applies to this project only');
+    expect(costLineText(kesOf(cs, 'drilling')).basis).toBe('indicative — not a binding offer: entered by the user, not verified by EmersonEIMS (TEST-OWN-1, dated 2026-11-21). Applies to this project only');
     expect(kesOf(cs, 'solar').kes).toBe(193500);
     for (const k of ['permits', 'casing', 'screen', 'gravelPack', 'development', 'testPumping', 'labTest', 'capFinishing', 'pump', 'installation']) {
       expect(kesOf(cs, k).kes, k).toBeNull();
@@ -139,6 +142,7 @@ describe('C + B: worked cost examples, by hand from the code\'s own rate tables,
     expect(cs.category).toBe('private');
     for (const l of cs.lines) if (l.key !== 'solar') { expect(l.kes, l.key).toBeNull(); expect(l.priceText, l.key).toBe(PRICE_STATE.REQUEST); }
     expect(cs.sourcedSubtotalKES).toBe(193500); // the IRENA-cited solar line only
+    expect(cs.totalLabel).toBe('Total: request a quotation (only the solar benchmark is priced)');
     expect(JSON.stringify(cs)).not.toMatch(/signed tender|Baringo/);
   });
 });
@@ -148,9 +152,11 @@ describe('B: unknown geology stays unknown (management, 2026-11-26)', () => {
     const r = { ...site({ depth: 100 }), siteEvidence: { depth: true, yield: true, methods: [] } };
     const cs = costSourcing(computeCanonicalEconomics(r));
     const wording = 'Ground conditions: unknown (no geological evidence). Costing uses the conservative hard-rock contingency (25%) as a pricing assumption, not a finding.';
-    expect(cs.notes.some((n) => n.startsWith(wording) && n.includes('The drilling line uses the conservative hard-rock rate on the same assumption.'))).toBe(true);
+    // MINOR (review of ef8f6b2e): on a private project the drilling line is "Request a quotation", so the note does not claim a hard-rock rate.
+    expect(cs.notes.some((n) => n === wording)).toBe(true);
+    expect(costSourcing(asTender(computeCanonicalEconomics(r))).notes.some((n) => n.startsWith(wording) && n.includes('The drilling line uses the conservative hard-rock rate on the same assumption.'))).toBe(true);
     expect(cs.contingencyLabel).toBe('Contingency (25% of the priced items, pricing assumption: ground conditions unknown)');
-    expect(costLineText(costSourcing(computeCanonicalEconomics({ ...r, projectPricing: GOV })).lines.find((l) => l.key === 'drilling')!).basis).toMatch(/pricing assumption: no rock type classified/);
+    expect(costLineText(costSourcing(asTender(computeCanonicalEconomics(r))).lines.find((l) => l.key === 'drilling')!).basis).toMatch(/pricing assumption: no rock type classified/);
     const texts = [
       JSON.stringify(cs),
       governingSummary(r, 'x').find((s) => s.title.startsWith('Costs'))!.rows.concat().flat().join(' | ') + (governingSummary(r, 'x').find((s) => s.title.startsWith('Costs'))!.notes ?? []).join(' '),
@@ -174,11 +180,15 @@ describe('C: pricing policy rules', () => {
   it('C1 a category selector exists; default = private project', () => {
     expect(projectPricingOf({}).category).toBe('private');
     expect(projectPricingOf({ projectPricing: { category: 'nonsense' } }).category).toBe('private');
-    expect(projectPricingOf({ projectPricing: GOV }).category).toBe('government_tender');
+    // MAJOR-3: a stored tender category (page, saved file or import) is read as private.
+    expect(projectPricingOf({ projectPricing: GOV }).category).toBe('private');
+    expect(projectPricingOf({ projectPricing: { category: 'private', quotations: [{ item: 'survey', amountKES: 1, reference: 'r', date: '2026-01-01', label: 'verified project quotation' }] } }).quotations[0].label).toBe('indicative rate entered by the user');
     const ui = fs.readFileSync(path.resolve('external/borehole-ai-engine/src/index.tsx'), 'utf8');
     expect(ui).toContain('data-testid="pricing-category"');
-    expect(ui).toContain('<option value="private">{PRICING_CATEGORY_LABEL.private}</option>');
-    expect(ui).toContain('<option value="government_tender">{PRICING_CATEGORY_LABEL.government_tender}</option>');
+    // MAJOR-3: the public page offers the private category only, and only the user's own rate (no "verified" kind).
+    expect(ui).toContain('Pricing category: <strong>{PRICING_CATEGORY_LABEL.private}</strong>');
+    expect(ui).not.toMatch(/<option value="government_tender">|<option value=\{ENTRY_LABEL\.verified\}>|PRICING_CATEGORY_LABEL\.government_tender/);
+    expect(ui).toContain('{ENTRY_LABEL.indicative} ({USER_ENTERED_LABEL}; {PRICE_STATE.INDICATIVE})');
   });
 
   it('C2 the tender survey/permit figures are never applied to a private project; under a tender they cite their documented source', () => {
@@ -189,7 +199,7 @@ describe('C: pricing policy rules', () => {
     // NEMA case (yield >= 5) also stays a quotation for a private project.
     const nema = costSourcing(computeCanonicalEconomics({ ...site({ depth: 120, rock: 'basalt' }), estimatedYield: 6 }));
     expect(nema.lines.find((l) => l.key === 'permits')!.kes).toBeNull();
-    const gov = costSourcing(computeCanonicalEconomics({ ...site({ depth: 120, rock: 'basalt', pricing: GOV }), estimatedYield: 6 }));
+    const gov = costSourcing(asTender(computeCanonicalEconomics({ ...site({ depth: 120, rock: 'basalt' }), estimatedYield: 6 })));
     expect(gov.lines.find((l) => l.key === 'permits')!.kes).toBe(240000);
     expect(gov.lines.find((l) => l.key === 'survey')!.source).toContain(EIMS_RATES_KES.source);
     expect(TENDER_RATE_SOURCE).toMatch(/costModel\.ts EIMS_RATES_KES, commit 9d5c6c13/);
@@ -198,16 +208,19 @@ describe('C: pricing policy rules', () => {
     expect(gov.notes.join(' ')).toContain(TENDER_RATE_SOURCE);
   });
 
-  it('C3 + C4 a verified project quotation prices that item for that project only (amount, reference, date, label)', () => {
+  it('C3 + C4 an entered rate prices that item for that project only; on the public page it is the user\'s own, never "verified" (MAJOR-3)', () => {
     const q = validateQuotation({ item: 'survey', amountKES: '60,000', reference: 'TEST-Q-17', date: '2026-11-20' });
     expect(q.ok).toBe(true);
     const withQ = site({ depth: 100, pricing: { category: 'private', quotations: [(q as any).value] } });
     const cs = costSourcing(computeCanonicalEconomics(withQ));
     const s = cs.lines.find((l) => l.key === 'survey')!;
-    expect(s.state).toBe('verified');
+    expect(s.state).toBe('indicative');
     expect(s.kes).toBe(60000);
-    expect(s.source).toBe(`${PRICE_STATE.VERIFIED}: TEST-Q-17, dated 2026-11-20. Applies to this project only`);
-    expect(cs.sourcedSubtotalKES).toBe(60000 + 193500); // the verified survey + the IRENA-cited solar line
+    expect(s.source).toBe(`${PRICE_STATE.INDICATIVE}: entered by the user, not verified by EmersonEIMS (TEST-Q-17, dated 2026-11-20). Applies to this project only`);
+    expect(cs.sourcedSubtotalKES).toBe(60000 + 193500); // the user's survey rate + the IRENA-cited solar line
+    // The verified-quotation code path still works when given directly (no public path sets it).
+    const ver = costSourcing({ ...computeCanonicalEconomics(site({ depth: 100 })), pricing: { category: 'private', quotations: [{ ...(q as any).value, label: 'verified project quotation' }] } } as any);
+    expect(ver.lines.find((l) => l.key === 'survey')!.state).toBe('verified');
     // Another project (no quotation on its result) is not affected.
     const other = costSourcing(computeCanonicalEconomics(site({ depth: 100 })));
     expect(other.lines.find((l) => l.key === 'survey')!.kes).toBeNull();
@@ -226,8 +239,7 @@ describe('C: pricing policy rules', () => {
     expect(REFERENCE_QUOTATION_83.lines.map((l) => l.amountKES)).toEqual([50000, 80000]);
     expect(REFERENCE_QUOTATION_TEXT).toMatch(/^Reference: one verified 2026 private-project quotation/);
     expect(REFERENCE_QUOTATION_TEXT).toMatch(/not a rate, not a market price or statutory fee, and not applied to this project/);
-    for (const r of [site({ depth: 100 }), site({ depth: 120, rock: 'basalt', pricing: GOV })]) {
-      const cs = costSourcing(computeCanonicalEconomics(r));
+    for (const cs of [costSourcing(computeCanonicalEconomics(site({ depth: 100 }))), costSourcing(asTender(computeCanonicalEconomics(site({ depth: 120, rock: 'basalt' }))))]) {
       for (const l of cs.lines) { expect(l.kes, l.key).not.toBe(50000); expect(l.kes, l.key).not.toBe(80000); expect(String(l.source)).not.toMatch(/#83/); }
     }
     // No client name, phone or address in the source tree.

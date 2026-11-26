@@ -157,3 +157,36 @@ describe('S36: the pump-cost assumption carries no number and stays with the pum
     expect(gs).not.toMatch(/half the planned depth/);
   });
 });
+
+// MAJOR-4 (review of ef8f6b2e): the provenance row, the risk engine and the JSON export.
+describe('S46: provenance rows, risk-decision text and the JSON export carry no probability claim', () => {
+  const readableOf = (json: string) => { const s: string[] = []; JSON.parse(json, (_k, v) => { if (typeof v === 'string') s.push(v); return v; }); return s.join('\n'); };
+  it('the provenance item for the success score: uncalibrated, out of 100, never "CALIBRATED" or a probability', () => {
+    for (const r of [screening, full]) {
+      const items: any[] = r.engineerConfidence?.provenance?.items ?? [];
+      expect(items.some((i) => /Drilling Success Probability/i.test(i.parameter))).toBe(false);
+      const it0 = items.find((i) => /success score/i.test(i.parameter));
+      if (it0) {
+        expect(it0.parameter).toBe('Modelled success score (uncalibrated screening indicator)');
+        expect(it0.tier).not.toBe('CALIBRATED');
+        expect(it0.unit).toBe('/100');
+        expect(it0.limitations).toContain('Not a probability of success — not calibrated against drilled outcomes');
+      }
+    }
+  });
+  it('the JSON export (screening and full): no "% chance of", no "% probability", no "success probability", no CALIBRATED success item', async () => {
+    for (const r of [screening, full]) {
+      const t = readableOf(JSON.stringify(jsonReportData(r)));
+      const hit = t.match(/\d+(\.\d+)?\s?% chance of|\d+(\.\d+)?\s?% (success )?probability|success probability|Drilling Success Probability/i);
+      expect(hit?.[0] ?? null).toBeNull();
+      const rd = r.riskDecision;
+      if (rd?.recommendation?.headline) expect(rd.recommendation.headline).toMatch(/screening indicator \(score \d+\/100; not a probability of success/);
+      for (const risk of rd?.risks ?? rd?.riskFactors ?? []) if (risk?.description) expect(String(risk.description)).not.toMatch(/% chance/);
+    }
+  });
+  it('the technical risk-decision tab shows scores out of 100, not "Success 50%"', () => {
+    const ui = fs.readFileSync(path.resolve('external/borehole-ai-engine/src/index.tsx'), 'utf8');
+    expect(ui).toContain("{label:'Success score',val:result.riskDecision.successProbability");
+    expect(ui).not.toMatch(/\{p\.val\}%/);
+  });
+});

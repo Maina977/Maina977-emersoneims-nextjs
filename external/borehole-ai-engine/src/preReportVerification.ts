@@ -1127,7 +1127,7 @@ const CONCLUSION_BY_CHECK: [RegExp, string][] = [
   [/^API-GLDAS/, 'Recharge and the water budget are unverified (they may be estimates)'],
   [/^XV-DEPTH/, 'The drilling depth is not cross-checked against nearby drilled boreholes'],
   [/^XV-YIELD/, 'The yield is not cross-checked against nearby boreholes'],
-  [/^XV-PROB/, 'The success probability is not cross-checked across models'],
+  [/^XV-PROB/, 'The success score is not cross-checked across models'],
 ];
 const conclusionFor = (id: string, name: string) => (CONCLUSION_BY_CHECK.find(([re]) => re.test(id))?.[1]) ?? `${name}: the related figures are unverified`;
 

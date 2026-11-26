@@ -1,7 +1,7 @@
 ﻿import { inKenya } from './kenyaLand';
 import { evidenceGate, evidenceChecklist, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
 import { costSourcing, costLineText } from './costSources';
-import { PRICE_STATE, PRICING_CATEGORY_LABEL, COST_ITEMS, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT, ENTRY_LABEL, projectPricingOf, validateQuotation, fmtKES } from './projectPricing';
+import { PRICE_STATE, PRICING_CATEGORY_LABEL, COST_ITEMS, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT, ENTRY_LABEL, USER_ENTERED_LABEL, projectPricingOf, validateQuotation, fmtKES } from './projectPricing';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { governingSummary, last12Months, probabilityBand, SCORE_NOT_PROBABILITY } from './governingSummary';
@@ -681,7 +681,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult|null>(null);
   // Verified project quotation entry (pricing policy 2026-11-26).
-  const [quoteForm, setQuoteForm] = useState<{ item: string; amountKES: string; reference: string; date: string; label: string }>({ item: 'survey', amountKES: '', reference: '', date: '', label: 'verified project quotation' });
+  const [quoteForm, setQuoteForm] = useState<{ item: string; amountKES: string; reference: string; date: string; label: string }>({ item: 'survey', amountKES: '', reference: '', date: '', label: 'indicative rate entered by the user' });
   const [quoteError, setQuoteError] = useState('');
   const [analyzer, setAnalyzer] = useState<BoreholeAnalyzer|null>(null);
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
@@ -2314,6 +2314,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
     const ecoSrc = eco ? costSourcing(eco) : null;
     const ecoPriced = !!ecoSrc && ecoSrc.quotationItems.length === 0;
     const ecoTotal = ecoSrc ? ecoSrc.sourcedTotal : cost.total + solar.totalSolar;
+    // MINOR (review of ef8f6b2e): no borehole item priced -> "Total: request a quotation", not a solar-only figure.
+    const boreholePriced = !!ecoSrc && ecoSrc.lines.some((l) => l.kes != null && l.key !== 'solar');
+    const ecoTotalText = boreholePriced ? fmtUSD(ecoTotal) : 'Total: request a quotation';
     const evG = evidenceGate(result);
     const needsEvidence = (what: string) => (
       <div className="tab-desc" style={{padding:12,borderRadius:8,border:'1px solid var(--border)'}}>
@@ -2398,7 +2401,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {(() => { const g = evidenceGate(result); return (<>
           <div className="summary-card depth"><div className="summary-value" style={g.depth ? undefined : {fontSize:15}}>{gated(g.depth, `${result.recommendedDepth.toFixed(0)}m`, DEPTH_NEEDS)}</div><div className="summary-label">Drilling depth{g.depth ? ' (from your field survey)' : ''}{g.citations.depth && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.depth}</span>}</div></div>
           <div className="summary-card yield-card"><div className="summary-value" style={g.yield ? undefined : {fontSize:15}}>{gated(g.yield, result.estimatedYield.toFixed(1), YIELD_NEEDS)}</div><div className="summary-label">Yield (m³/h){g.yield ? ' (from your pumping test)' : ''}{g.citations.yield && <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>{g.citations.yield}</span>}</div></div>
-          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, fmtUSD(ecoTotal), COST_NEEDS)}</div><div className="summary-label">{g.cost && ecoSrc?.quotationItems.length ? `Project cost, sourced items only (by quotation: ${ecoSrc.quotationItems.join(', ')})` : 'Project cost'}</div></div>
+          <div className="summary-card cost-card"><div className="summary-value" style={g.cost ? undefined : {fontSize:15}}>{gated(g.cost, ecoTotalText, COST_NEEDS)}</div><div className="summary-label">{g.cost && ecoSrc?.quotationItems.length ? `Project cost, sourced items only (by quotation: ${ecoSrc.quotationItems.join(', ')})` : 'Project cost'}</div></div>
           {g.cost && <div className="summary-card solar-card"><div className="summary-value">{fmtUSD(eco ? eco.solarCost : solar.totalSolar)}</div><div className="summary-label">of which solar pump power{(result as any).pumpHeadAssumption ? ' (water level assumed)' : ''}</div></div>}
           {g.cost && <div className="summary-card roi-card"><div className="summary-value" style={ecoPriced ? undefined : {fontSize:15}}>{!ecoPriced ? 'After quotation' : ecoPayback >= 240 ? 'None' : `${ecoPayback}mo`}</div><div className="summary-label">Payback Period</div></div>}
           </>); })()}
@@ -5772,24 +5775,20 @@ const AIBoreholeAnalyzer: React.FC = () => {
           {activeResultTab==='costs' && evG.cost && (
             <div>
               <h4 className="tab-title">{'\u{1F4B5}'} Project Cost (same figures as the PDF report)</h4>
-              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Each item shows its basis: a {PRICE_STATE.VERIFIED}, a {PRICE_STATE.TENDER} (government tender projects only), a figure that is {PRICE_STATE.INDICATIVE}, or &quot;{PRICE_STATE.REQUEST}&quot;.</p>
+              <p className="tab-desc">Priced on the field evidence entered: {[evG.citations.depth, evG.citations.yield].filter(Boolean).join('; ')}. Each item shows its basis: your own indicative rate ({USER_ENTERED_LABEL}), a figure with its own cited source that is {PRICE_STATE.INDICATIVE}, or &quot;{PRICE_STATE.REQUEST}&quot;.</p>
               {/* Pricing policy 2026-11-26 (management decision C): category selector and verified project quotations, stored with this result. */}
               <div data-testid="pricing-controls" style={{display:'flex',flexWrap:'wrap',gap:12,alignItems:'center',margin:'8px 0 12px'}}>
-                <label style={{fontSize:13}}>Pricing category:{' '}
-                  <select data-testid="pricing-category" value={projectPricingOf(result).category} onChange={(e)=>{ const category = e.target.value === 'government_tender' ? 'government_tender' : 'private'; setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), category } } as any) : r); }}>
-                    <option value="private">{PRICING_CATEGORY_LABEL.private}</option>
-                    <option value="government_tender">{PRICING_CATEGORY_LABEL.government_tender}</option>
-                  </select>
-                </label>
+                {/* MAJOR-3 (review of ef8f6b2e): the public page offers the private category only; tender pricing has no staff path yet. */}
+                <div data-testid="pricing-category" style={{fontSize:13}}>Pricing category: <strong>{PRICING_CATEGORY_LABEL.private}</strong></div>
               </div>
               <details data-testid="quotation-entry" style={{margin:'0 0 12px',fontSize:13}}>
-                <summary style={{cursor:'pointer'}}>Enter a {PRICE_STATE.VERIFIED} (EmersonEIMS) or your own indicative rate for this project</summary>
+                <summary style={{cursor:'pointer'}}>Enter your own indicative rate for this project ({USER_ENTERED_LABEL})</summary>
                 <div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'flex-end',marginTop:8}}>
                   <label>Item<br/><select value={quoteForm.item} onChange={(e)=>setQuoteForm((f)=>({...f,item:e.target.value}))}>{COST_ITEMS.map((k)=>(<option key={k} value={k}>{COST_ITEM_LABEL[k]}</option>))}</select></label>
                   <label>Amount (KSh)<br/><input inputMode="numeric" value={quoteForm.amountKES} onChange={(e)=>setQuoteForm((f)=>({...f,amountKES:e.target.value}))} style={{width:120}} /></label>
                   <label>Quotation reference<br/><input value={quoteForm.reference} onChange={(e)=>setQuoteForm((f)=>({...f,reference:e.target.value}))} style={{width:180}} /></label>
                   <label>Date<br/><input type="date" value={quoteForm.date} onChange={(e)=>setQuoteForm((f)=>({...f,date:e.target.value}))} /></label>
-                  <label>Kind<br/><select data-testid="quotation-kind" value={quoteForm.label} onChange={(e)=>setQuoteForm((f)=>({...f,label:e.target.value}))}><option value={ENTRY_LABEL.verified}>{ENTRY_LABEL.verified} (EmersonEIMS)</option><option value={ENTRY_LABEL.indicative}>{ENTRY_LABEL.indicative} ({PRICE_STATE.INDICATIVE})</option></select></label>
+                  <div data-testid="quotation-kind" style={{fontSize:12}}>Kind<br/>{ENTRY_LABEL.indicative} ({USER_ENTERED_LABEL}; {PRICE_STATE.INDICATIVE})</div>
                   <button type="button" className="btn btn-secondary" style={{fontSize:12}} onClick={()=>{ const v = validateQuotation(quoteForm); if (!v.ok) { setQuoteError(v.error); return; } setQuoteError(''); setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), quotations: [...projectPricingOf(r).quotations, v.value] } } as any) : r); setQuoteForm((f)=>({...f,amountKES:'',reference:''})); }}>Add to this project</button>
                 </div>
                 {quoteError && <div role="alert" style={{color:'#ef4444',fontSize:12,marginTop:4}}>{quoteError}</div>}
@@ -5802,7 +5801,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     ))}
                   </ul>
                 )}
-                <div style={{fontSize:11,color:'#94a3b8',marginTop:6}}>A verified project quotation applies to this project only. {REFERENCE_QUOTATION_TEXT}</div>
+                <div style={{fontSize:11,color:'#94a3b8',marginTop:6}}>A rate you enter applies to this project only and is {USER_ENTERED_LABEL}. {REFERENCE_QUOTATION_TEXT}</div>
               </details>
               <div className="cost-table">
                 <table>
@@ -6039,16 +6038,17 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 <div>
                   {/* Probability Breakdown */}
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:10,marginBottom:20}}>
+                    {/* S46: modelled scores from an uncalibrated model, out of 100; never probabilities. */}
                     {[
-                      {label:'Success',val:result.riskDecision.successProbability,color:'#22c55e'},
+                      {label:'Success score',val:result.riskDecision.successProbability,color:'#22c55e'},
                       {label:'Low Yield',val:result.riskDecision.lowYieldProbability,color:'#f59e0b'},
                       {label:'Dry Borehole',val:result.riskDecision.dryBoreholeProbability,color:'#ef4444'},
                       {label:'Poor Quality',val:result.riskDecision.poorQualityProbability,color:'#8b5cf6'},
                       {label:'Collapse Risk',val:result.riskDecision.collapseRiskProbability,color:'#6b7280'},
                     ].map(p=>(
                       <div key={p.label} style={{padding:14,borderRadius:12,background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
-                        <div style={{fontSize:24,fontWeight:800,color:p.color}}>{p.val}%</div>
-                        <div style={{fontSize:11,color:'var(--text-secondary)',marginTop:4}}>{p.label}</div>
+                        <div style={{fontSize:24,fontWeight:800,color:p.color}}>{Math.round(Number(p.val) || 0)}/100</div>
+                        <div style={{fontSize:11,color:'var(--text-secondary)',marginTop:4}}>{p.label} (modelled, uncalibrated; not a probability)</div>
                       </div>
                     ))}
                   </div>
@@ -7369,7 +7369,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Screen Interval:</strong> {gated(evG.depth, `${dd.screenInterval_m[0]}-${dd.screenInterval_m[1]}m`, DEPTH_NEEDS)}</div>
                       <div><strong>Pump Type:</strong> {dd.pumpType}</div>
-                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{fmtUSD(ecoTotal)} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'priced items only; the rest: Request a quotation'})</span></> : COST_NEEDS}</div>
+                      <div><strong>Estimated Cost:</strong> {evG.cost ? <>{ecoTotalText} <span style={{opacity:0.7}}>({ecoPriced ? 'same basis as the summary' : 'priced items only; the rest: Request a quotation'})</span></> : COST_NEEDS}</div>
                     </div>
                   </div>
                   {dd.alternativePoints?.length ? (
