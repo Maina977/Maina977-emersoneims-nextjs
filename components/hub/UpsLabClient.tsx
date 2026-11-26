@@ -30,6 +30,7 @@ import { DigitalReadout } from '@/components/hub/cockpit/DigitalReadout';
 import { AlarmController, type AlarmSignal } from '@/components/hub/cockpit/AlarmController';
 import { UpsTopologyBoard, type UpsTopologyState } from '@/components/hub/cockpit/UpsTopologyBoard';
 import { SimpleUpsBoard } from '@/components/hub/cockpit/SimpleUpsBoard';
+import { upsRuntimeMinutes, surgeWatts, UPS_RUNTIME_DOD } from '@/lib/hub/upsMath';
 
 type UpsViewMode = 'simple' | 'engineering';
 
@@ -100,7 +101,7 @@ const LOAD_TYPES: LoadType[] = [
 interface UpsRow { modelId: string; qty: number }
 interface LoadRow { kind: LoadKind; qty: number }
 
-interface Composition {
+export interface Composition {
   ups: UpsRow[];
   loads: LoadRow[];
   mainsPresent: boolean;
@@ -120,6 +121,8 @@ interface LiveResult {
   upsCapacityW: number;     // sum of model.kVA × pf × 1000
   upsBatteryWh: number;     // sum of model.batteryWh
   upsAvgEff: number;
+  /** Quantity-weighted output power factor of the UPS units. */
+  upsAvgPf: number;
   loadContinuousW: number;
   loadStartingW: number;
   loadAdvisedW: number;     // load actually appropriate for UPS
@@ -135,7 +138,7 @@ interface LiveResult {
   topology: Topology[];
 }
 
-function compute(c: Composition): LiveResult {
+export function compute(c: Composition): LiveResult {
   const ups = c.ups.map((r) => ({ row: r, model: UPS_MODELS.find((m) => m.id === r.modelId)! })).filter((x) => x.model);
   const loads = c.loads.map((r) => ({ row: r, type: LOAD_TYPES.find((t) => t.id === r.kind)! })).filter((x) => x.type);
 
@@ -145,11 +148,13 @@ function compute(c: Composition): LiveResult {
     ? 0.94
     : ups.reduce((a, x) => a + x.model.efficiency * x.row.qty, 0) / Math.max(1, ups.reduce((a, x) => a + x.row.qty, 0));
 
+  const upsQty = ups.reduce((a, x) => a + x.row.qty, 0);
+  const upsAvgPf = upsQty === 0 ? 0 : ups.reduce((a, x) => a + x.model.pf * x.row.qty, 0) / upsQty;
+
   const loadContinuousW = loads.reduce((a, x) => a + x.type.watts * x.row.qty, 0);
-  const loadStartingW = Math.max(
-    loadContinuousW,
-    loads.reduce((peak, x) => Math.max(peak, x.type.watts * x.row.qty * x.type.startMult), 0),
-  );
+  // Everything running plus the largest group's inrush (audit 2026-11-26: the
+  // running loads were left out of the surge, so an overload went unflagged).
+  const loadStartingW = surgeWatts(loads.map((x) => ({ watts: x.type.watts, qty: x.row.qty, startMult: x.type.startMult })));
   const loadAdvisedW = loads
     .filter((x) => x.type.upsAdvised)
     .reduce((a, x) => a + x.type.watts * x.row.qty, 0);
@@ -166,8 +171,7 @@ function compute(c: Composition): LiveResult {
   const headroomPct = upsCapacityW > 0 ? Math.max(-100, ((upsCapacityW - loadContinuousW) / upsCapacityW) * 100) : 0;
 
   // Battery runtime — usable energy at avg efficiency, 90 % DoD, sample heuristic.
-  const usableWh = upsBatteryWh * 0.9 * upsAvgEff;
-  const runtimeMin = loadContinuousW > 0 ? (usableWh / loadContinuousW) * 60 : Infinity;
+  const runtimeMin = upsRuntimeMinutes(upsBatteryWh, loadContinuousW, upsAvgEff, UPS_RUNTIME_DOD);
 
   const signals: AlarmSignal[] = [];
   if (hasNoUps && !hasNoLoad) signals.push({ id: 'no-ups',   severity: 'fault', label: 'No UPS in the system',          detail: 'Add a UPS to support the connected loads.' });
@@ -179,7 +183,7 @@ function compute(c: Composition): LiveResult {
 
   const topology = Array.from(new Set(ups.map((x) => x.model.topology)));
   return {
-    upsCapacityW, upsBatteryWh, upsAvgEff,
+    upsCapacityW, upsBatteryWh, upsAvgEff, upsAvgPf,
     loadContinuousW, loadStartingW, loadAdvisedW,
     inputW, outputW, headroomPct, runtimeMin,
     isOverloaded, isMismatched: motorOrHeatOnUps, hasNoUps, hasNoLoad,
@@ -291,7 +295,7 @@ export default function UpsLabClient() {
             unit="kW"
             decimals={2}
             status={result.hasNoUps ? 'fault' : 'ok'}
-            caption={`Σ rating · pf ${(result.upsAvgEff*100/100).toFixed(2)} eff ${(result.upsAvgEff*100).toFixed(0)} %`}
+            caption={`Σ rating · pf ${result.upsAvgPf.toFixed(2)} eff ${(result.upsAvgEff*100).toFixed(0)} %`}
             size="lg"
           />
           <DigitalReadout
@@ -405,13 +409,15 @@ export default function UpsLabClient() {
                 Drop the mains to see how runtime, alarms and output respond. The UPS keeps delivering output from its battery for as long as autonomy allows.
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <DigitalReadout label="Battery autonomy" value={result.upsBatteryWh / 1000} unit="kWh" decimals={2} status="info" />
+                {/* Energy, not autonomy: autonomy is the runtime beside it (audit 2026-11-26). */}
+                <DigitalReadout label="Battery energy" value={result.upsBatteryWh / 1000} unit="kWh" decimals={2} status="info" />
                 <DigitalReadout
                   label="Runtime @ load"
                   value={Number.isFinite(result.runtimeMin) ? result.runtimeMin : null}
                   unit="min"
                   decimals={1}
                   status={result.runtimeMin < 5 ? 'warn' : 'ok'}
+                  caption={`Assumed: battery Wh × ${Math.round(UPS_RUNTIME_DOD * 100)} % usable × UPS efficiency ÷ load; real runtime at high load is shorter.`}
                 />
               </div>
               <div className="rounded-md border px-2 py-1.5 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
