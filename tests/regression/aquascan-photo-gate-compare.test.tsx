@@ -96,7 +96,9 @@ describe('compare flow (required behaviour)', () => {
     expect(t).toMatch(/Yield \(25\) and depth \(10\) count only for a site with a field survey and a pumping test/);
     expect(t).not.toMatch(/CLAY LOAM/);
     expect(t).toMatch(/Unknown until drilled/);
-    expect(t).toMatch(/Chance of success \(planning estimate\)/);
+    // Updated 2026-11-26 (S46, P1-C §4): the uncalibrated score is no longer called a chance.
+    expect(t).toMatch(/Modelled success score \(uncalibrated\)/);
+    expect(t).not.toMatch(/\bin 10\b|Chance of success/);
     expect(t).not.toMatch(/Export Comparison PDF/);
     expect(t).toMatch(/A comparison report needs a field survey and a pumping test at every site/);
   });

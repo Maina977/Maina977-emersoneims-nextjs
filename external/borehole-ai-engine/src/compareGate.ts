@@ -43,7 +43,7 @@ export function compareCardFigures(r: AnalysisResult): { chance: string; depth: 
 /** The recommendation sentence, without ungated figures. */
 export function compareVerdictSentence(r: AnalysisResult, name: string, score: number): string {
   const g = evidenceGate(r);
-  const parts = [`${name} has the highest composite score (${score}/100), from desktop data. It has ${probabilityBand(r.probability)} chance of success (planning estimate).`];
+  const parts = [`${name} has the highest composite score (${score}/100), from desktop data. Its modelled success score: ${probabilityBand(r.probability)}.`];
   if (g.yield) parts.push(`Estimated yield ${r.estimatedYield.toFixed(1)} m³/h (pumping test).`);
   if (g.depth) parts.push(`Depth ${r.recommendedDepth.toFixed(0)} m (field survey).`);
   if (!g.depth || !g.yield) parts.push('Depth and yield need a geophysical survey and a pumping test at the site; they are not shown.');

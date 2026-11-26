@@ -118,7 +118,10 @@ function within(a: number | null | undefined, b: number | null | undefined, tol:
 
 /** A source label that says the value is an estimate / fallback / default, not a live answer. */
 export function isFallbackSource(source: unknown): boolean {
-  return /estimat|unavailable|fallback|default|no data|did not answer|assumed|placeholder/i.test(String(source ?? ''));
+  // MAJOR-2 (review of 56acf032): a stored baseline measured at ANOTHER place
+  // ("EmersonEIMS baseline — SRTM measured at <place> (<d> km away)") is not
+  // the site's value, so comparing a re-query with it is not a check.
+  return /estimat|unavailable|fallback|default|no data|did not answer|assumed|placeholder|baseline|measured at|not at this site/i.test(String(source ?? ''));
 }
 
 /**
@@ -506,7 +509,7 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
       const diff = Math.abs(gpiNorm - prob);
       if (diff <= 0.25) {
         checks.push(pass('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Probability',
-          `Satellite GPI (${gpi}/100) and success probability (${(prob * 100).toFixed(1)}%) are coherent (diff: ${(diff * 100).toFixed(0)}%)`,
+          `Satellite GPI (${gpi}/100) and success score (${Math.round(prob * 100)}/100 (uncalibrated, not a probability)) are coherent (diff: ${(diff * 100).toFixed(0)}%)`,
           'Satellite Remote Sensing vs Bayesian Ensemble'));
       } else {
         checks.push(warn('XV-GPI-PROB', 'CROSS_VALIDATION', 'GPI vs Probability',

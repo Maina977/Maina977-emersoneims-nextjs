@@ -77,7 +77,11 @@ export function rockClassForCost(rockType?: string): 'hard' | 'soft' | 'unknown'
 /** Drilling cost in KES for a hole of `depth` metres at the EmersonEIMS rates. */
 export function drillingCostKES(depth: number, rockType?: string): number {
   const d = Math.max(0, depth);
-  if (rockClassForCost(rockType) === 'hard') return d * EIMS_RATES_KES.drillHardRockPerM;
+  // M-4 (review of 56acf032): no classified rock type is priced at the conservative
+  // hard-rock rate (a pricing assumption, not a geological finding), consistent
+  // with the conservative contingency.
+  const cls = rockClassForCost(rockType);
+  if (cls === 'hard' || cls === 'unknown') return d * EIMS_RATES_KES.drillHardRockPerM;
   let cost = 0, from = 0;
   for (const [to, rate] of EIMS_RATES_KES.drillSoftBandsPerM) {
     if (d <= from) break;

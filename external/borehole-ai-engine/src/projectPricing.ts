@@ -21,9 +21,12 @@
  *     never applied to any project automatically and never shown as a rate.
  *  6. Survey, permits, drilling, casing, development and testing stay separate
  *     items; totals sum only priced items and name the items still to quote.
- *  7. Preliminary figures for a private project come only from entered
- *     quotations or sourced indicative rates, labelled "indicative — not a
- *     binding offer".
+ *  7. A private project never uses the tender's per-item rates (2026-11-26,
+ *     management: "Remove the automatic application of government-tender
+ *     rates to private customers"). Each line reads "Request a quotation"
+ *     unless EmersonEIMS enters a verified project quotation, the user enters
+ *     their own indicative rate ("indicative — not a binding offer"), or the
+ *     line has its own cited non-tender source (the IRENA solar benchmark).
  *
  * No price in this file is invented: the only amounts are the reference
  * record's own figures, copied from the quotation.
@@ -85,8 +88,11 @@ export interface VerifiedQuotation {
   reference: string;
   /** ISO date of the quotation, YYYY-MM-DD. */
   date: string;
-  label: 'verified project quotation';
+  /** A verified EmersonEIMS quotation, or the user's own indicative rate. */
+  label: 'verified project quotation' | 'indicative rate entered by the user';
 }
+
+export const ENTRY_LABEL = { verified: 'verified project quotation', indicative: 'indicative rate entered by the user' } as const;
 
 export interface ProjectPricing {
   category: PricingCategory;
@@ -96,7 +102,7 @@ export interface ProjectPricing {
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Checks one quotation entry; returns the clean record or the reason it is refused. */
-export function validateQuotation(input: { item?: unknown; amountKES?: unknown; reference?: unknown; date?: unknown }):
+export function validateQuotation(input: { item?: unknown; amountKES?: unknown; reference?: unknown; date?: unknown; label?: unknown }):
   { ok: true; value: VerifiedQuotation } | { ok: false; error: string } {
   const item = String(input.item ?? '') as CostItemKey;
   if (!(COST_ITEMS as readonly string[]).includes(item)) return { ok: false, error: 'Choose the cost item the quotation prices.' };
@@ -106,7 +112,8 @@ export function validateQuotation(input: { item?: unknown; amountKES?: unknown; 
   if (!reference) return { ok: false, error: 'Enter the quotation reference (for example the estimate number).' };
   const date = String(input.date ?? '').trim();
   if (!ISO_DATE.test(date) || Number.isNaN(Date.parse(date))) return { ok: false, error: 'Enter the quotation date (YYYY-MM-DD).' };
-  return { ok: true, value: { item, amountKES: Math.round(amount), reference: reference.slice(0, 120), date, label: 'verified project quotation' } };
+  const label = input.label === ENTRY_LABEL.indicative ? ENTRY_LABEL.indicative : ENTRY_LABEL.verified;
+  return { ok: true, value: { item, amountKES: Math.round(amount), reference: reference.slice(0, 120), date, label } };
 }
 
 /** The pricing stored with this project's result; default: private project, no quotations. */
@@ -130,7 +137,9 @@ export function quotationFor(pricing: ProjectPricing, item: CostItemKey): Verifi
 export const fmtKES = (kes: number) => `KSh ${Math.round(kes).toLocaleString('en-KE')}`;
 
 /** The basis text of a verified quotation line. */
-export const quotationBasis = (q: VerifiedQuotation) => `${PRICE_STATE.VERIFIED}: ${q.reference}, dated ${q.date}. Applies to this project only`;
+export const quotationBasis = (q: VerifiedQuotation) => q.label === ENTRY_LABEL.indicative
+  ? `${PRICE_STATE.INDICATIVE}: rate entered by the user (${q.reference}, dated ${q.date}). Applies to this project only`
+  : `${PRICE_STATE.VERIFIED}: ${q.reference}, dated ${q.date}. Applies to this project only`;
 
 /**
  * Quotation #83 (management decision C5): a dated, project-specific reference
