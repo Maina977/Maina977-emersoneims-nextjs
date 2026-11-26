@@ -463,10 +463,14 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between mb-6">
-                <span className="text-white font-bold text-lg">Total</span>
+              <div className="flex justify-between mb-2">
+                <span className="text-white font-bold text-lg">Estimated total</span>
                 <span className="text-amber-400 font-bold text-2xl">KES {total.toLocaleString()}</span>
               </div>
+              {/* The cart figures come from the browser; the server prices the order (review A1, 2026-11-26). */}
+              <p className="text-xs text-gray-400 mb-6" data-testid="estimate-note">
+                Estimate — the confirmed price is calculated by EmersonEIMS
+              </p>
 
               <div className="text-xs text-gray-500 text-center">
                 Returns and warranty terms are confirmed on your invoice
