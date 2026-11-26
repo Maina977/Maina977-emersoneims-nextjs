@@ -78,6 +78,22 @@ describe('P1-A section 4 quarantine: general practice is UNVERIFIED and never ou
     expect(isUnverifiedReference('Perkins 1100 Series Operation and Maintenance Manual SEBU8311, edition 2019, p. 54 (NOT VERIFIED against a held copy)')).toBe(true);
   });
 
+  it('edition (review 2026-11-27): a bare year-like number is not an edition; an explicit marker or "standard:year" is', () => {
+    // not an edition
+    expect(isUnverifiedReference('ISO 2000 p.5')).toBe(true);
+    expect(isUnverifiedReference('Reverse-power relay guide, table 3')).toBe(true); // "rev" inside "Reverse" is not a revision
+    expect(isUnverifiedReference('Alternator manual 1999 series, p. 12')).toBe(true);
+    // explicit edition markers
+    expect(isUnverifiedReference('Alternator manual AM-200, Ed. 3, p. 12')).toBe(false);
+    expect(isUnverifiedReference('Alternator manual AM-200, 2nd edition, p. 12')).toBe(false);
+    expect(isUnverifiedReference('Controller manual DSE7320, rev. B, section 4.2')).toBe(false);
+    expect(isUnverifiedReference('Controller manual DSE7320, revision 4, section 4.2')).toBe(false);
+    // year joined to the standard number
+    expect(isUnverifiedReference('ISO 8528-5:2013, clause 7.2')).toBe(false);
+    expect(isUnverifiedReference('IEC 60034-1:2017, table 8')).toBe(false);
+    expect(isUnverifiedReference('ISO 8528-5:2013 (clause 7.2; NOT VERIFIED against a held copy)')).toBe(true);
+  });
+
   it('every ranked cause carries the flag; a supported verified cause would always be listed first', () => {
     for (const f of FAMILIES) {
       const variants: Array<Record<string, string | number>> = [screenNo];

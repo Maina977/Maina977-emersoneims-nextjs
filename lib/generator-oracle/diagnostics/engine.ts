@@ -213,8 +213,12 @@ export const isGeneralPracticeOnly = (reference: string) => GENERAL_PRACTICE.tes
 const MARKED_NOT_VERIFIED = /\bnot verified\b|\bunverified\b|\bcited by title only\b/i;
 /** A specific clause, section, table or page ... */
 const CLAUSE_OR_PAGE = /\b(clause|cl\.|section|sect\.|table|page|p\.|pp\.)\s*[A-Z]?\d/i;
-/** ... and the edition or year it applies to. */
-const EDITION = /\b(edition|ed\.|rev(ision)?\.?)\s*\S|\b(19|20)\d{2}\b/i;
+/**
+ * ... and the edition it applies to: an explicit marker ("edition 3", "Ed. 2", "2nd edition", "rev. B",
+ * "revision 4") or a year joined to the document number in the standard form "ISO 8528-5:2013".
+ * A bare number such as the 2000 in "ISO 2000 p.5" is not an edition.
+ */
+const EDITION = /\b(edition|ed\.|rev\.|revision)\s*[A-Z0-9]|\b\d+(st|nd|rd|th)\s+(edition|ed\b)|\b[A-Z]{2,}[A-Z/]*\s?\d[\d.-]*(-\d+)*:(19|20)\d{2}\b/i;
 /**
  * Management rule (2026-11-27): an unverified source is never presented as confirmed. A cause reference counts
  * as a verified published source only when it names a specific clause/section/table/page AND an edition or
