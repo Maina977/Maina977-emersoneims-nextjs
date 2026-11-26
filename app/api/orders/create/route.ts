@@ -32,6 +32,10 @@ const MAX_ITEMS = 100;
 
 const isStr = (v: unknown, min: number, max: number): v is string =>
   typeof v === 'string' && v.trim().length >= min && v.length <= max;
+/** Plain ASCII email only: letters, digits and . _ % + ' - in the local part (no leading, trailing or doubled dot);
+ *  ASCII labels of letters, digits and hyphens in the domain, at least two labels, no trailing dot. */
+const isPlainEmail = (e: string): boolean =>
+  /^[A-Za-z0-9_%+'-]+(\.[A-Za-z0-9_%+'-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(e);
 
 // Only the part code and quantity are taken from the request. A client
 // partName/unitPrice/subtotal may be sent (the checkout does) but is ignored.
@@ -90,10 +94,12 @@ export async function POST(request: Request) {
     if (
       !isStr(customerId, 1, 64) || !/^[A-Za-z0-9_-]+$/.test(customerId) ||
       !isStr(customerName, 1, 100) || /[<>]/.test(customerName) ||
-      // Review of 0421aa80: quoted local parts ("victim"@…), address literals (@[…]), backslashes and a trailing-dot
-      // domain are valid-looking forms that the same inbox accepts but the per-recipient limiter would key separately.
-      // No ordinary customer address needs them, so they are refused here, before any limiter or email.
-      !isStr(customerEmail, 3, 254) || !/^[^\s@<>"[\]\\]+@[^\s@<>"[\]\\]+\.[^\s@<>"[\]\\.]+$/.test(customerEmail.trim()) ||
+      // Reviews of 0421aa80 and 53a503a6: an ASCII ALLOWLIST, not a blocklist. Quoted local parts, address literals,
+      // backslashes, comments "(x)", Unicode full stops (。｡．, which IDNA turns into a trailing dot), zero-width and
+      // soft-hyphen characters and trailing/doubled dots are all forms one inbox may accept but the per-recipient
+      // limiter would key separately. No ordinary customer address needs them (an internationalised domain can be
+      // entered in its xn-- form), so anything outside this pattern is refused before any limiter or email.
+      !isStr(customerEmail, 3, 254) || !isPlainEmail(customerEmail.trim()) ||
       !isStr(customerPhone, 7, 20) || !/^\+?[0-9 ()-]{7,20}$/.test(customerPhone) ||
       typeof shippingLocation !== 'string' || !SHIPPING_LOCATIONS.has(shippingLocation) ||
       typeof method !== 'string' || !PAYMENT_METHODS.has(method) ||
