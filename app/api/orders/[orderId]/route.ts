@@ -1,25 +1,14 @@
-import { ordersRepository } from '@/lib/db/orders';
+/**
+ * Order lookup by id: RETIRED (security hotfix 2026-11-26). See lib/security/retiredRoute.ts.
+ *
+ * It returned the whole order (customer name, phone, email, items) to anyone
+ * who supplied the order id, with no sign-in or secret. Order ids are
+ * ORD-YYYYMMDD-NNNN (10,000 per day, Math.random), so they can be guessed.
+ * Nothing was exposed: /api/orders/create has never stored an order, so the
+ * in-memory store behind this route was always empty and it always answered
+ * 404. It is retired so that storing orders later cannot expose them. The
+ * order tracker shows a notice instead.
+ */
+import { retired } from '@/lib/security/retiredRoute';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { orderId: string } }
-) {
-  try {
-    const order = await ordersRepository.findById(params.orderId);
-
-    if (!order) {
-      return Response.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
-    }
-
-    return Response.json({ order });
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    return Response.json(
-      { error: 'Failed to fetch order' },
-      { status: 500 }
-    );
-  }
-}
+export const GET = () => retired('Online order lookup');

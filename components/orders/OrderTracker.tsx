@@ -25,19 +25,25 @@ export default function OrderTracker({ orderId }: OrderTrackerProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  // Online lookup was retired (security hotfix 2026-11-26): the API answers 410.
+  const [lookupRetired, setLookupRetired] = useState(false);
 
   useEffect(() => {
     fetchOrder();
-    if (autoRefresh) {
+    if (autoRefresh && !lookupRetired) {
       const interval = setInterval(fetchOrder, 30000); // Refresh every 30s
       return () => clearInterval(interval);
     }
-  }, [orderId, autoRefresh]);
+  }, [orderId, autoRefresh, lookupRetired]);
 
   const fetchOrder = async () => {
+    if (lookupRetired) return;
     try {
-      const response = await fetch(`/api/orders/${orderId}`);
-      if (response.ok) {
+      const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}`);
+      if (response.status === 410) {
+        setLookupRetired(true);
+        setOrder(null);
+      } else if (response.ok) {
         const data = await response.json();
         setOrder(data.order);
       }
@@ -50,6 +56,15 @@ export default function OrderTracker({ orderId }: OrderTrackerProps) {
 
   if (loading) {
     return <div className="text-center text-gray-400">Loading order status...</div>;
+  }
+
+  if (lookupRetired) {
+    return (
+      <div className="text-center text-gray-300" role="status">
+        Online order tracking is not available. Keep your order number ({orderId}) from your confirmation and{' '}
+        <a href="/contact" className="text-amber-400 underline">contact us</a> to check its status.
+      </div>
+    );
   }
 
   if (!order) {

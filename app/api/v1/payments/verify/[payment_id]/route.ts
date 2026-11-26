@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { trustedSelfOrigin } from '@/lib/security/selfOrigin';
 
 interface VerifyResponse {
   success: boolean;
@@ -14,12 +15,6 @@ interface VerifyResponse {
   provider: string;
   raw?: unknown;
   error?: string;
-}
-
-function siteOrigin(req: NextRequest): string {
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https';
-  const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000';
-  return `${proto}://${host}`;
 }
 
 export async function GET(
@@ -52,7 +47,15 @@ export async function GET(
     );
   }
 
-  const origin = siteOrigin(request);
+  // Self-call origin from an exact host allowlist, never from raw request
+  // headers (security hotfix 2026-11-26; see lib/security/selfOrigin.ts).
+  const origin = trustedSelfOrigin(request);
+  if (!origin) {
+    return NextResponse.json(
+      { success: false, status: 'unknown', payment_id: decoded, provider, error: 'Unrecognised host' } satisfies VerifyResponse,
+      { status: 400 },
+    );
+  }
 
   try {
     if (provider === 'mpesa') {
