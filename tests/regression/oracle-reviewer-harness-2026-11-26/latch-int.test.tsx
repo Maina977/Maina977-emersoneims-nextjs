@@ -8,8 +8,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, fireEvent, cleanup, act } from '@testing-library/react';
 import V3Panel, { GD_STORE, CLEARANCE_NOT_RESTART } from '@/components/generator-oracle/panels/GuidedDiagnosisPanel';
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
-import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
-import type { Answers, FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
+import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });

@@ -19,7 +19,7 @@ import {
 } from '@/lib/generator-oracle/diagnostics/stopLatch';
 import { SCREEN_BUCKET, SCREEN_QUESTIONS } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import {
-  LATCHED_STOP_PREFIX, READINGS_NOT_TAKEN_STOP, jobCardReport, mergeGuidedSafety, openJobCard, transition, cardContentHash,
+  LATCHED_STOP_PREFIX, READINGS_NOT_TAKEN_STOP, jobCardReport, mergeGuidedSafety, recordHoldReassessment, openJobCard, transition, cardContentHash,
   type Asset, type JobCard,
 } from '@/lib/generator-oracle/service/maintenance';
 import { jobCardToPdf } from '@/lib/generator-oracle/service/jobCardPdf';
@@ -213,9 +213,19 @@ describe('R-INT-3: the SAFETY HOLD is recorded as a hold, and blocks completion'
     expect(card.findings).not.toContain(`STOP: ${SAFETY_HOLD_TEXT}`);
     expect(() => complete(card, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
     expect(complete({ ...card, findings: `${card.findings}\n${READINGS_NOT_TAKEN_STOP}` }).status).toBe('COMPLETED');
-    // A later record made with a readable safety record resolves the hold.
+    // R-INT-7: a later record made with a readable safety record does NOT resolve the hold.
     const later = { ...card, guidedSafety: mergeGuidedSafety(card.guidedSafety, { stops: [], clearances: [], hold: null }, '2026-11-26T09:00:00.000Z') };
-    expect(complete(later, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] }).status).toBe('COMPLETED');
+    expect(() => complete(later, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
+    // Only an in-person reassessment recorded on the card (name, reason >= 10 characters, confirmation) does.
+    expect(() => recordHoldReassessment(card.guidedSafety, { at: T, by: 'JK', reason: 'short', confirmed: true })).toThrow(/at least 10 characters/);
+    expect(() => recordHoldReassessment(card.guidedSafety, { at: T, by: '', reason: 'Inspected the set in person', confirmed: true })).toThrow(/name or initials/);
+    expect(() => recordHoldReassessment(card.guidedSafety, { at: T, by: 'JK', reason: 'Inspected the set in person', confirmed: false })).toThrow(/confirm/);
+    const reassessed = { ...card, guidedSafety: recordHoldReassessment(card.guidedSafety, { at: T, by: 'JK', reason: 'Inspected the set in person', confirmed: true }) };
+    expect(reassessed.guidedSafety.holds[0].resolvedAt).toBe(T);
+    expect(reassessed.guidedSafety.holds).toHaveLength(1);
+    expect(jobCardReport(reassessed, asset)).toMatch(/Reassessment recorded .* by JK \(typed name, UNVERIFIED\): Inspected the set in person/);
+    expect(complete(reassessed, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }] }).status).toBe('COMPLETED');
+    expect(cardContentHash(reassessed, 'S', T)).not.toBe(cardContentHash(card, 'S', T));
     expect((await pdfText(card)).indexOf('SAFETY HOLD')).toBeLessThan((await pdfText(card)).indexOf('ASSET'));
   });
 });
@@ -327,4 +337,31 @@ describe('reviewer I3: random sessions through the integrated panel (with the sa
     }
     expect(stops).toBeGreaterThan(20); expect(free).toBeGreaterThan(10);
   }, 300_000);
+});
+
+describe('R-INT-6: a STOP on a card always has a structured STOP; a pending value is flushed, not dropped', () => {
+  it('the record\'s own STOP (nothing latched in the browser) goes into guidedSafety and blocks completion; a later clearance of that STOP resolves it', () => {
+    const session = { 'low-oil-pressure': { oemMinOilPressure: '150', oilPressure: '100' } };
+    const g = guardedSessionRecord(F('low-oil-pressure'), session, {}, { latched: [], cleared: [], hold: false });
+    expect(g.record.findings.split('\n')[0]).toMatch(/^STOP/);
+    const own = g.safety.stops.filter((s) => s.fromRecord);
+    expect(own.length).toBeGreaterThan(0);
+    expect(own[0].key.startsWith('low-oil-pressure|')).toBe(true);
+    const base = openJobCard({ id: 'JC1', assetId: 'A1', opened: '2026-11-26', reportedFault: 'x', technician: 'T' });
+    const card = { ...base, ...guardedCardUpdate({ findings: '', readings: [] }, g), guidedSafety: mergeGuidedSafety(undefined, g.safety, T) } as JobCard;
+    expect(() => complete(card, { readings })).toThrow(/still latched/);
+    const later = '2026-11-26T09:00:00.000Z';
+    const cleared = { ...card, guidedSafety: mergeGuidedSafety(card.guidedSafety, { stops: [], clearances: [{ ...own[0], since: later, clearedAt: later, by: 'JK', reason: 'TEST pressure restored' }], hold: null }, later) };
+    expect(complete(cleared, { readings }).status).toBe('COMPLETED');
+  });
+  it('page hidden with an uncommitted out-of-limit reading: the STOP is latched and stored at once', () => {
+    const { container: c } = render(<Panel />);
+    tab(c, F('low-oil-pressure')); setA(c, 'oemMinOilPressure', '150'); fireEvent.blur(inputOf(c, 'oemMinOilPressure'));
+    setA(c, 'oilPressure', '100');
+    expect(JSON.parse(localStorage.getItem(GD_STORE)!).latched).toEqual([]);
+    const vis = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState');
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    try { act(() => { document.dispatchEvent(new Event('visibilitychange')); }); } finally { if (vis) Object.defineProperty(document, 'visibilityState', vis); else delete (document as unknown as Record<string, unknown>).visibilityState; }
+    expect(JSON.parse(localStorage.getItem(GD_STORE)!).latched.some((l: { key: string }) => l.key.startsWith('low-oil-pressure|'))).toBe(true);
+  });
 });

@@ -74,4 +74,8 @@ export function ToolPanelArea({ children }: { children: ReactNode }) {
 }
 
 /** A `loading` function for resilient() / next/dynamic. */
-export const toolPlaceholder = (tool: ReservedTool, name: string) => () => <ToolPlaceholder tool={tool} name={name} />;
+export const toolPlaceholder = (tool: ReservedTool, name: string) => {
+  const Loading = () => <ToolPlaceholder tool={tool} name={name} />;
+  Loading.displayName = `ToolPlaceholderLoading(${tool})`;
+  return Loading;
+};

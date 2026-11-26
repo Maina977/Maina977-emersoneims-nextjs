@@ -7,7 +7,7 @@
  * Errors are the engine's own messages, passed through unchanged.
  */
 import {
-  cardIntegrityProblems, dueList, mergeGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
+  cardIntegrityProblems, dueList, mergeGuidedSafety, recordHoldReassessment, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
   type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
 } from './maintenance';
@@ -45,6 +45,8 @@ export type ServiceAction =
   | { type: 'reopen'; cardId: string; by: string; at: string; reason: string }
   /** R-INT-2: adds the Guided Diagnosis safety state to the card (merge-only; nothing is removed). */
   | { type: 'recordGuidedSafety'; cardId: string; at: string; safety: GuidedSafetyAdd }
+  /** R-INT-7: an in-person reassessment recorded on the card releases its SAFETY HOLD (append-only). */
+  | { type: 'recordHoldReassessment'; cardId: string; at: string; by: string; reason: string; confirmed: boolean }
   | { type: 'recordService'; cardId: string; planTaskIds: string[] };
 
 /** Next free id like "JC-3" for a prefix. */
@@ -180,6 +182,11 @@ export function reduce(s: ServiceState, a: ServiceAction): ServiceState {
       if (Number.isNaN(Date.parse(a.at))) throw new Error('When is required to record the guided safety state');
       return replaceCard(s, { ...c, guidedSafety: mergeGuidedSafety(c.guidedSafety, a.safety, a.at) });
     }
+    case 'recordHoldReassessment': {
+      const c = findCard(s, a.cardId);
+      if (!isEditable(c)) throw new Error(`A ${c.status} job card cannot be edited`);
+      return replaceCard(s, { ...c, guidedSafety: recordHoldReassessment(c.guidedSafety, a) });
+    }
     case 'reopen':
       return replaceCard(s, reopenJobCard(findCard(s, a.cardId), a.by, a.at, a.reason));
     case 'recordService': {
@@ -222,10 +229,11 @@ const isStr = (v: unknown): v is string => typeof v === 'string';
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const optNum = (v: unknown) => v === undefined || isNum(v);
 const isRef = (v: unknown) => isObj(v) && isStr(v.document) && isStr(v.edition) && isStr(v.page);
-const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isStr(v.since) && isStr(v.message) && (v.label === undefined || isStr(v.label));
+const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isStr(v.since) && isStr(v.message) && (v.label === undefined || isStr(v.label)) && (v.fromRecord === undefined || v.fromRecord === true);
 const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.stops.every(isGStop)
   && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason))
-  && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)));
+  && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)))
+  && (v.reassessments === undefined || (Array.isArray(v.reassessments) && v.reassessments.every((r) => isObj(r) && isStr(r.at) && isStr(r.by) && isStr(r.reason) && r.confirmed === true)));
 const isHash = (v: unknown) => isStr(v) && /^[0-9a-f]{64}$/.test(v);
 const isRev = (v: unknown) => Number.isInteger(v) && (v as number) >= 1;
 

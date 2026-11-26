@@ -25,7 +25,7 @@ import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
 import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { guardedCardUpdate, guardedSessionRecord, latchRecordLines, readStore, safetyStateOf, type SafetyState } from '@/lib/generator-oracle/diagnostics/stopLatch';
-import { LATCHED_STOP_PREFIX, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
+import { HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, LATCHED_STOP_PREFIX, unresolvedGuidedSafety, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -270,7 +270,8 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft, safety: Gui
   const fam = available.find((f) => f.id === familyId) ?? null;
   // Same function as the Guided Diagnosis tab: screen merged in, other families' STOPs carried in.
   // R-INT-1: uncleared latched STOPs and the SAFETY HOLD are external STOPs for the engine, so the body withholds running checks.
-  const guarded = useMemo(() => (fam ? guardedSessionRecord(fam, session, equipment, safetyState) : null), [fam, session, equipment, safetyState]);
+  // Computed on each render (no useMemo: the React Compiler could not preserve that memoization).
+  const guarded = fam ? guardedSessionRecord(fam, session, equipment, safetyState) : null;
   const rec = guarded?.record ?? null;
   const add = () => {
     if (!rec || !guarded) return;
@@ -305,6 +306,27 @@ function GuidedRecord({ d, onAdd }: { d: Draft; onAdd: (next: Draft, safety: Gui
         </>
       )}
       <button type="button" className="text-xs text-slate-400 underline" onClick={() => { setSession(loadGuidedSession(getStore(), FAMILIES)); setEquipment(loadGuidedEquipment(getStore())); setSafetyState(safetyStateOf(readStore())); }}>Reload saved answers</button>
+    </div>
+  );
+}
+
+/**
+ * Review R-INT-7: a SAFETY HOLD on the card is released only by "Readings not taken: STOP in force"
+ * or by an in-person reassessment recorded here (typed name, UNVERIFIED, append-only).
+ */
+function HoldReassessment({ card, dispatch }: { card: JobCard; dispatch: Dispatch }) {
+  const [by, setBy] = useState('');
+  const [reason, setReason] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  if (!unresolvedGuidedSafety(card).hold) return null;
+  return (
+    <div data-testid="card-hold-reassessment" className="space-y-1 rounded-lg border border-amber-500/60 bg-amber-950/40 p-2 text-xs text-amber-100">
+      <p className="font-semibold">SAFETY HOLD recorded on this card: the previous diagnostic safety status could not be verified.</p>
+      <p>{HOLD_REASSESSMENT_NOTICE}</p>
+      <label className="flex items-start gap-2"><input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} /><span>{HOLD_REASSESSMENT_LABEL}</span></label>
+      <Field label="Name or initials of the qualified technician (reassessment)"><input className={inp} value={by} onChange={(e) => setBy(e.target.value)} /></Field>
+      <Field label="What was checked in person"><textarea rows={2} className={inp} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+      <button type="button" className={btn2} onClick={() => dispatch({ type: 'recordHoldReassessment', cardId: card.id, at: new Date().toISOString(), by, reason, confirmed })}>Record reassessment on this card (UNVERIFIED)</button>
     </div>
   );
 }
@@ -402,6 +424,7 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
             <p className="text-xs text-red-200 break-words">Do not test-run a set with an unresolved STOP. Record instead: <button type="button" className="underline text-red-100" onClick={() => setD({ ...d, findings: d.findings.toLowerCase().includes(READINGS_NOT_TAKEN_STOP.toLowerCase()) ? d.findings : [d.findings.trim(), READINGS_NOT_TAKEN_STOP].filter(Boolean).join('. ') })}>{READINGS_NOT_TAKEN_STOP}</button></p>
           </div>
           <Field label="Findings"><textarea rows={3} className={inp} value={d.findings} onChange={(e) => setD({ ...d, findings: e.target.value })} /></Field>
+          <HoldReassessment card={card} dispatch={dispatch} />
           <GuidedRecord d={d} onAdd={(next, safety) => {
             // R-INT-2: the structured safety record goes on the card first (merge-only), then the findings.
             if (!dispatch({ type: 'recordGuidedSafety', cardId: card.id, at: new Date().toISOString(), safety })) return;

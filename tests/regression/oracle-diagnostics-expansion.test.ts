@@ -6,7 +6,6 @@ import { answersFromRaw, cleanSession } from '@/lib/generator-oracle/diagnostics
 import { reduce, emptyState, type ServiceAction, type ServiceState } from '@/lib/generator-oracle/service/store';
 import { jobCardReport } from '@/lib/generator-oracle/service/maintenance';
 import type { Answers, Condition, FaultFamily, NumberQuestion } from '@/lib/generator-oracle/diagnostics/types';
-import { readingFlags } from '@/lib/generator-oracle/service/maintenance';
 
 // All numeric OEM figures below are TEST values typed by the "technician" in the
 // test, never real OEM data. Worked examples are SYNTHETIC: hand-derived from the

@@ -15,7 +15,8 @@ import { diagnosisRecord, recordInputs, recordSafety, recordToCardUpdate, sessio
 import type { RawAnswers } from './session';
 import type { FaultFamily } from './types';
 import type { ExternalStop } from './sessionSafety';
-import { clearanceLine, LATCHED_STOP_PREFIX, latchedStopLine, type GuidedSafetyAdd, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { clearanceLine, LATCHED_STOP_PREFIX, latchedStopLine, type GuidedSafetyAdd, type GuidedSafetyStop, type JobCard } from '@/lib/generator-oracle/service/maintenance';
+import { SCREEN_BUCKET } from './safetyScreen';
 import type { CardUpdate } from '@/lib/generator-oracle/service/store';
 
 /** Browser storage key for answers, latched STOPs and the clearance record. */
@@ -113,7 +114,7 @@ export function withLatchedStops(rec: DiagnosisRecord, lines: string[]): Diagnos
   // external STOPs: no running check and no running-only Next check under a latch or the hold.
   const st = (lines as unknown as Record<symbol, SafetyState | undefined>)[LINES_STATE];
   const inp = recordInputs(rec);
-  if (st && inp) return guardCore((extra) => diagnosisRecord(inp.family, inp.raw, inp.equipment, inp.session, [...inp.extraStops, ...extra]), st).record;
+  if (st && inp) return guardCore((extra) => diagnosisRecord(inp.family, inp.raw, inp.equipment, inp.session, [...inp.extraStops, ...extra]), st, inp.family).record;
   return prefixLines(rec, lines);
 }
 function prefixLines(rec: DiagnosisRecord, lines: string[]): DiagnosisRecord {
@@ -160,10 +161,10 @@ export interface GuardedRecord {
  * The latch lines (latched STOPs, clearances, or the hold) are written first.
  */
 export function guardedSessionRecord(family: FaultFamily, session: RawAnswers, equipment: Equipment, st: SafetyState): GuardedRecord {
-  return guardCore((extra) => sessionRecord(family, session, equipment, extra), st);
+  return guardCore((extra) => sessionRecord(family, session, equipment, extra), st, family);
 }
 
-function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: SafetyState): GuardedRecord {
+function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: SafetyState, family: FaultFamily): GuardedRecord {
   const base = build([]);
   const shown = new Set(base.result.stops.filter((s) => s.level === 'STOP').map((s) => s.message));
   const open = st.latched.filter((l) => !st.cleared.some((c) => sameStop(c, l)));
@@ -188,11 +189,29 @@ function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: Safety
   ];
   const strip = (l: StoredLatched) => { const label = labelFor(l); return { key: l.key, from: l.from, since: l.since, message: l.message, ...(label ? { label } : {}) }; };
   const safety: GuidedSafetyAdd = {
-    stops: st.latched.map(strip),
+    // R-INT-6: the record's own STOPs (from the diagnosis the record is built from) go on the card too,
+    // so a card never carries a STOP line without a structured STOP, even if the browser has not latched it.
+    stops: [...st.latched.map(strip), ...recordStops(base, family).filter((r) => !st.latched.some((l) => l.key === r.key && !st.cleared.some((c) => sameStop(c, l))))],
     clearances: st.cleared.map((c) => ({ ...strip(c), clearedAt: c.clearedAt, by: c.by, reason: c.reason })),
     hold: st.hold ? { text: SAFETY_HOLD_TEXT, why: SAFETY_HOLD_WHY } : null,
   };
   return { record: withRecordSafety(prefixLines(rec, latchLines), { add: safety, holdOnly }), holdOnly, safety };
+}
+
+/** The STOPs a record's own diagnosis shows, keyed as the panel latches them (R-INT-6). */
+function recordStops(rec: DiagnosisRecord, family: FaultFamily): GuidedSafetyStop[] {
+  const since = new Date().toISOString();
+  const out: GuidedSafetyStop[] = [];
+  for (const s of rec.result.stops) {
+    if (s.level !== 'STOP') continue;
+    const other = s.origin === 'other-family' ? FAMILIES.find((f) => f.title === s.from) : undefined;
+    const stop: GuidedSafetyStop = s.origin === 'screen'
+      ? { key: `${SCREEN_BUCKET}|${s.message}`, from: 'Safety screen', since, message: s.message, fromRecord: true }
+      : { key: `${(other ?? family).id}|${s.message}`, from: s.from ?? family.title, since, message: s.message, fromRecord: true };
+    if (s.label) stop.label = s.label;
+    if (!out.some((x) => x.key === stop.key)) out.push(stop);
+  }
+  return out;
 }
 
 /** The findings/readings update for a guarded record (hold wording for a hold-only record, R-INT-3). */

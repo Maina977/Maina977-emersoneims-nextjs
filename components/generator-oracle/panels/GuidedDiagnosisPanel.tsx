@@ -264,6 +264,37 @@ export default function GuidedDiagnosisPanel() {
   // 150 kPa minimum does not latch "1" or "16". A committed value at or beyond a limit latches as before.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const liveStops = useMemo(() => (committed === raw ? liveNow : stopsOf(committed)), [committed, raw, liveNow, equipment]);
+  // Review R-INT-6: a value not yet committed (typed less than 0.8 s ago) is FLUSHED, not dropped,
+  // when the panel is left (unmount: another module or tab) or the page is hidden or closed: every
+  // STOP the answers on screen show is latched and written to the safety record at once.
+  const flushPending = useRef<() => void>(() => {});
+  flushPending.current = () => {
+    const cur = latest.current;
+    if (!cur.loaded) return;
+    const add = stopsOf(cur.raw).filter((s) => !cur.latched.some((l) => l.key === s.key));
+    if (!add.length) return;
+    const since = new Date().toISOString();
+    const mine = [...cur.latched, ...add.map((s) => ({ ...s, since }))];
+    try {
+      const s = readStore();
+      if (s.blocked) return; // never write over a record that cannot be read
+      const mergedCleared = mergeCleared(cur.cleared, s.unreadable ? [] : s.cleared);
+      const mergedLatched = mergeLatched(mine, s.unreadable ? [UNREADABLE_STOP()] : s.latched, mergedCleared);
+      localStorage.setItem(GD_STORE, JSON.stringify({ v: 2, raw: { ...(s.raw ?? {}), ...cur.raw }, equipment: cur.equipment, latched: mergedLatched, cleared: mergedCleared }));
+    } catch { /* storage refused: the SAFETY HOLD path applies on the next visit */ }
+  };
+  useEffect(() => {
+    const onHidden = () => { if (document.visibilityState === 'hidden') { flushPending.current(); commit(); } };
+    const onPageHide = () => { flushPending.current(); };
+    document.addEventListener('visibilitychange', onHidden);
+    addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden);
+      removeEventListener('pagehide', onPageHide);
+      flushPending.current();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     if (!loaded) return;
     const add = liveStops.filter((s) => !latched.some((l) => l.key === s.key));

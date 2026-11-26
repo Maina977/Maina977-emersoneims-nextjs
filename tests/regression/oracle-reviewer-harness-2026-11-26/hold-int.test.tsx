@@ -8,8 +8,7 @@ import { render, fireEvent, cleanup, act } from '@testing-library/react';
 import { Profiler } from 'react';
 import NewPanel, { GD_STORE, SAFETY_HOLD_TEXT, SAFETY_HOLD_WHY } from '@/components/generator-oracle/panels/GuidedDiagnosisPanel';
 import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
-import { diagnose } from '@/lib/generator-oracle/diagnostics/engine';
-import type { Answers, FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
+import type { FaultFamily } from '@/lib/generator-oracle/diagnostics/types';
 
 const SPEC = "SAFETY HOLD — Previous diagnostic safety status cannot be verified. Do not continue guided operational checks until the machine's condition has been reassessed by a qualified technician.";
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
