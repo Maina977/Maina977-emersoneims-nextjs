@@ -42,7 +42,7 @@ export interface UnitEntry { q: string; text: string; entered: string; unit: str
 export interface UnitConversion {
   /** The answers with every unit-bearing value converted to the rules' unit; refused values removed. */
   raw: Record<string, string>;
-  refused: Array<{ q: string; reason: string }>;
+  refused: Array<{ q: string; reason: string; cause: 'no-unit' | 'unknown-unit' | 'not-number'; value: string }>;
   entered: UnitEntry[];
 }
 
@@ -57,11 +57,11 @@ export function convertUnits(family: FaultFamily, raw: Record<string, string> | 
     const unit = (raw?.[unitKey(q.id)] ?? '').trim();
     const tk = tolKey(q.id);
     if (v === undefined || v.trim() === '') { delete out[tk]; continue; }
-    const why = (r: string) => { refused.push({ q: q.id, reason: `${q.text}: ${r} The value is not used, so it cannot clear or avoid a STOP; the check stays open.` }); delete out[q.id]; delete out[tk]; };
-    if (!unit) { why(`choose the unit (${UNIT_OPTIONS[kind].join(', ')}) for "${v.trim()}" — there is no default unit.`); continue; }
-    if (!UNIT_OPTIONS[kind].includes(unit)) { why(`unit "${unit}" is not one of ${UNIT_OPTIONS[kind].join(', ')}.`); continue; }
+    const why = (r: string, cause: 'no-unit' | 'unknown-unit' | 'not-number') => { refused.push({ q: q.id, reason: `${q.text}: ${r} The value is not used, so it cannot clear or avoid a STOP; the check stays open.`, cause, value: v.trim() }); delete out[q.id]; delete out[tk]; };
     const p = parseDecimal(v);
-    if (!p.ok) { why(p.why + '.'); continue; }
+    if (!p.ok) { why(p.why + '.', 'not-number'); continue; }
+    if (!unit) { why(`choose the unit (${UNIT_OPTIONS[kind].join(', ')}) for "${v.trim()}" — there is no default unit.`, 'no-unit'); continue; }
+    if (!UNIT_OPTIONS[kind].includes(unit)) { why(`unit "${unit}" is not one of ${UNIT_OPTIONS[kind].join(', ')}.`, 'unknown-unit'); continue; }
     const c = toCanonical(kind, unit, p.n)!;
     out[q.id] = String(round(c));
     entered.push({ q: q.id, text: q.text, entered: v.trim(), unit, canonical: round(c), canonicalUnit: CANONICAL[kind] });

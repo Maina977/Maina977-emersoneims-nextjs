@@ -194,6 +194,7 @@ function guardCore(build: (extra: ExternalStop[]) => DiagnosisRecord, st: Safety
     stops: [...st.latched.map(strip), ...recordStops(base, family).filter((r) => !st.latched.some((l) => l.key === r.key && !st.cleared.some((c) => sameStop(c, l))))],
     clearances: st.cleared.map((c) => ({ ...strip(c), clearedAt: c.clearedAt, by: c.by, reason: c.reason })),
     hold: st.hold ? { text: SAFETY_HOLD_TEXT, why: SAFETY_HOLD_WHY } : null,
+    family: family.id,
   };
   return { record: withRecordSafety(prefixLines(rec, latchLines), { add: safety, holdOnly }), holdOnly, safety };
 }
@@ -209,6 +210,7 @@ function recordStops(rec: DiagnosisRecord, family: FaultFamily): GuidedSafetySto
       ? { key: `${SCREEN_BUCKET}|${s.message}`, from: 'Safety screen', since, message: s.message, fromRecord: true }
       : { key: `${(other ?? family).id}|${s.message}`, from: s.from ?? family.title, since, message: s.message, fromRecord: true };
     if (s.label) stop.label = s.label;
+    if (s.refusedInput) stop.refusedInput = true;
     if (!out.some((x) => x.key === stop.key)) out.push(stop);
   }
   return out;

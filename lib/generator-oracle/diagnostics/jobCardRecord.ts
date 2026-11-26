@@ -21,6 +21,8 @@
 import { classKey, diagnose, protectiveLimitIds, sourceKey, tolKey } from './engine';
 import { answersFromRaw, mergedRaw, type RawAnswers } from './session';
 import { convertUnits, unitKindOf, unitLine } from './units';
+import { refusedProtectiveStops } from './refusedProtective';
+export { REFUSED_UNIT_ALL, REFUSED_UNIT_SOME, refusedProtectiveText } from './refusedProtective';
 import { externalStopsFor, type ExternalStop } from './sessionSafety';
 import { NOT_VERIFIED, publishedEntryOf, publishedLimitFor, referencesFor, type Equipment } from './oemReferences';
 import { isScreenKey } from './safetyScreen';
@@ -109,11 +111,18 @@ export function diagnosisRecord(family: FaultFamily, raw: Record<string, string>
   const { answers, refused } = guardPublished(family, typed, equipment);
   const base = diagnose(family, answers, { externalStops: [...externalStopsFor(FAMILIES, session, family.id), ...extraStops] });
   let result: DiagnosisResult = { ...base, invalid: [...units.refused, ...refused, ...base.invalid] };
+  // F10-REMAINING (2026-11-26): a refused PROTECTIVE value (reading or limit: no unit, unknown unit,
+  // not a number, out of range, or out of band) is never safer than a typed one. It raises a STOP
+  // first (a labelled safeguard), withholds running checks and blocks the job card until corrected.
+  const refusedStops = refusedProtectiveStops(family, answers, units.refused, result.invalid);
+  if (refusedStops.length) {
+    result = { ...result, stops: [...refusedStops, ...result.stops], stopActive: true };
+  }
   // Safety review F10: a refused pressure or temperature (no unit, unknown unit, not a number, or out
   // of the physical range after conversion) never clears or avoids a STOP: running checks are
   // withheld and the refused question stays the next check until it is entered correctly.
-  const refusedUnitQs = family.questions.filter((q) => unitKindOf(q) && result.invalid.some((i) => i.q === q.id));
-  if (refusedUnitQs.length) {
+  const refusedUnitQs = family.questions.filter((q) => (unitKindOf(q) || refusedStops.length) && result.invalid.some((i) => i.q === q.id));
+  if (refusedUnitQs.length || refusedStops.length) {
     result = {
       ...result,
       runningWithheld: true,

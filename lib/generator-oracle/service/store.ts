@@ -238,7 +238,8 @@ const isStr = (v: unknown): v is string => typeof v === 'string';
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const optNum = (v: unknown) => v === undefined || isNum(v);
 const isRef = (v: unknown) => isObj(v) && isStr(v.document) && isStr(v.edition) && isStr(v.page);
-const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isStr(v.since) && isStr(v.message) && (v.label === undefined || isStr(v.label)) && (v.fromRecord === undefined || v.fromRecord === true);
+const isGStop = (v: unknown) => isObj(v) && isStr(v.key) && isStr(v.from) && isStr(v.since) && isStr(v.message) && (v.label === undefined || isStr(v.label)) && (v.fromRecord === undefined || v.fromRecord === true)
+  && (v.refusedInput === undefined || v.refusedInput === true) && (v.correctedAt === undefined || isStr(v.correctedAt));
 const isGuidedSafety = (v: unknown) => isObj(v) && Array.isArray(v.stops) && v.stops.every(isGStop)
   && Array.isArray(v.clearances) && v.clearances.every((c) => isGStop(c) && isStr((c as Record<string, unknown>).clearedAt) && isStr((c as Record<string, unknown>).by) && isStr((c as Record<string, unknown>).reason))
   && Array.isArray(v.holds) && v.holds.every((h) => isObj(h) && isStr(h.since) && isStr(h.text) && isStr(h.why) && (h.resolvedAt === undefined || isStr(h.resolvedAt)))

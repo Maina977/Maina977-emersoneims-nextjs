@@ -207,6 +207,12 @@ export interface DiagnosisResult {
     origin: 'screen' | 'family' | 'other-family';
     /** For origin 'other-family': the family where the STOP was raised (shown on its own line). */
     from?: string;
+    /**
+     * F10-REMAINING (2026-11-26): a STOP raised because a protective value was refused (no unit,
+     * unknown unit, not a number, out of range or band). It is shown and blocks the job card, but the
+     * panel does not latch it (type-then-choose-unit), and correcting the value clears it.
+     */
+    refusedInput?: true;
   }>;
   /** True when running checks and running-only questions are withheld (any STOP, or a leading "do not run" cause). */
   runningWithheld: boolean;

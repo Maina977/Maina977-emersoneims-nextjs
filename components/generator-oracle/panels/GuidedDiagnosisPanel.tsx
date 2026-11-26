@@ -258,7 +258,8 @@ export default function GuidedDiagnosisPanel() {
     const out: Array<{ key: string; message: string; from: string; label?: string }> = [];
     for (const f of FAMILIES) {
       for (const s of diagnosisRecord(f, mergedRaw(answers, f.id), equipment).result.stops) {
-        if (s.level !== 'STOP' || s.origin === 'other-family') continue;
+        // A STOP from a refused protective value is shown, not latched (F10-REMAINING: type, then choose the unit).
+        if (s.level !== 'STOP' || s.origin === 'other-family' || s.refusedInput) continue;
         // The safeguard label is latched with the STOP so the job card carries it (2026-11-26).
         const label = s.label ? { label: s.label } : {};
         const stop = s.origin === 'screen'

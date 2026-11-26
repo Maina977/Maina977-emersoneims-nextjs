@@ -10,12 +10,12 @@
 import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { render, screen, cleanup, act } from '@testing-library/react';
+import { render, screen, cleanup, act, fireEvent } from '@testing-library/react';
 import GuidedDiagnosisPanel from '@/components/generator-oracle/panels/GuidedDiagnosisPanel';
 import ServiceManagementPanel from '@/components/generator-oracle/panels/ServiceManagementPanel';
 import { CHARGING, LOW_OIL_PRESSURE, OVERHEATING } from '@/lib/generator-oracle/diagnostics/families';
 import { diagnose, SAFEGUARD_LABEL, UNCLASSIFIED_PROTECTIVE } from '@/lib/generator-oracle/diagnostics/engine';
-import { diagnosisRecord } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
+import { diagnosisRecord, REFUSED_UNIT_ALL, REFUSED_UNIT_SOME } from '@/lib/generator-oracle/diagnostics/jobCardRecord';
 import { convertUnits, PSI_TO_KPA } from '@/lib/generator-oracle/diagnostics/units';
 import {
   DEVICE_ONLY_NOTICE, IMPORTED_NOTICE, READINGS_NOT_TAKEN_STOP, SIGNED_OFF_ELSEWHERE, SIGNOFF, cardContentHash, jobCardReport, signOffSummary,
@@ -208,4 +208,75 @@ describe('4. Cross-device: safety status is held on this device only', () => {
     expect(jobCardReport(s.jobCards[0], s.assets[0])).toContain(DEVICE_ONLY_NOTICE);
     expect(await pdfText(s.jobCards[0], s.assets[0])).toContain('Safety status is held on this device only');
   }, 60_000);
+});
+
+describe('F10-REMAINING: a refused protective value is never safer than a typed one', () => {
+  const lop = (raw: Record<string, string>) => diagnosisRecord(LOW_OIL_PRESSURE, raw);
+  it('"1" with no unit vs 150 kPa: a STOP in every unit → the ordinary STOP (latched), running checks withheld', () => {
+    const r = lop({ oilPressure: '1', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' });
+    expect(r.result.stopActive).toBe(true);
+    const s = r.result.stops[0];
+    expect(s.message).toBe(REFUSED_UNIT_ALL);
+    expect(s.refusedInput).toBeUndefined(); // latched like any STOP
+    expect(s.label).toBe(SAFEGUARD_LABEL);
+    expect(r.result.runningWithheld).toBe(true);
+    expect(r.findings.split('\n')[0]).toBe(`STOP: ${REFUSED_UNIT_ALL}`);
+  });
+  it('limit "150" with no unit + 20 psi (137.9 kPa) reaches 150 kPa and 150 psi (150 bar is outside the range) → STOP; "40" with no unit vs 150 kPa: some units → STOP first, not latched', () => {
+    const r = lop({ oilPressure: '20', 'oilPressure.unit': 'psi', oemMinOilPressure: '150' });
+    expect(r.result.stopActive).toBe(true);
+    expect(r.result.stops[0].message).toBe(REFUSED_UNIT_ALL);
+    // 40 kPa and 40 psi (275.8 kPa) differ: 40 kPa reaches, 40 psi does not.
+    const some = lop({ oilPressure: '40', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }).result;
+    expect(some.stopActive).toBe(true);
+    expect(some.stops[0].message).toBe(REFUSED_UNIT_SOME);
+    expect(some.stops[0].refusedInput).toBe(true);
+  });
+  it('a refused protective value that reaches nothing still raises the labelled safeguard STOP (not a number, out of range)', () => {
+    for (const raw of [{ oilPressure: 'abc', 'oilPressure.unit': 'kPa' }, { oilPressure: '2000', 'oilPressure.unit': 'kPa' }]) {
+      const r = lop({ ...raw, oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' });
+      expect(r.result.stops[0].message, JSON.stringify(raw)).toMatch(/^STOP — protective value refused \(Oil pressure measured\)/);
+      expect(r.result.runningWithheld).toBe(true);
+    }
+  });
+  it('24 V system with a 12 V band: refused → conservative STOP, running checks withheld (35 V and 28 V alike)', () => {
+    for (const v of ['35', '28']) {
+      const r = diagnosisRecord(CHARGING, { systemVoltage: '24', runVoltage: v, oemChargeMin: '13', oemChargeMax: '14.4' }).result;
+      expect(r.stopActive, v).toBe(true);
+      expect(r.stops[0].message).toMatch(/^STOP — protective value refused \(Highest regulated charging voltage/);
+      expect(r.runningWithheld).toBe(true);
+    }
+  });
+  it('the job card: a refused value blocks completion with test-run readings; recording again with the unit chosen (inside) clears it', () => {
+    const add = (raw: Record<string, string>): GuidedSafetyAdd => {
+      const rec = diagnosisRecord(LOW_OIL_PRESSURE, raw);
+      const stops = rec.result.stops.filter((s) => s.level === 'STOP').map((s) => ({ key: `low-oil-pressure|${s.message}`, from: LOW_OIL_PRESSURE.title, since: T0, message: s.message, fromRecord: true as const, ...(s.refusedInput ? { refusedInput: true as const } : {}) }));
+      return { stops, clearances: [], hold: null, family: 'low-oil-pressure' };
+    };
+    let s = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: add({ oilPressure: '200', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
+    expect(complete(s)).toMatch(/still latched/);
+    expect(complete(s, `TEST ${READINGS_NOT_TAKEN_STOP}`)).toBeNull();
+    s = go(s, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: add({ oilPressure: '200', 'oilPressure.unit': 'kPa', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
+    expect(complete(s)).toBeNull();
+    // A record for another family does not count as the correction.
+    let t = go(base(), { type: 'recordGuidedSafety', cardId: 'JC-1', at: T0, safety: add({ oilPressure: '200', oemMinOilPressure: '150', 'oemMinOilPressure.unit': 'kPa' }) } as ServiceAction);
+    t = go(t, { type: 'recordGuidedSafety', cardId: 'JC-1', at: T1, safety: { stops: [], clearances: [], hold: null, family: 'charging' } } as ServiceAction);
+    expect(complete(t)).toMatch(/still latched/);
+  });
+  it('the panel: a value typed without its unit shows the STOP first and withholds; choosing the unit (value inside) clears it with nothing latched', async () => {
+    render(<GuidedDiagnosisPanel />);
+    await act(async () => {});
+    screen.getAllByRole('tab').find((x) => x.textContent === LOW_OIL_PRESSURE.title)!.click();
+    await act(async () => {});
+    const set = (label: string | RegExp, v: string) => act(() => { fireEvent.change(screen.getAllByLabelText(label)[0], { target: { value: v } }); });
+    set('Unit: OEM minimum oil pressure at this speed (manual)', 'kPa');
+    set(/^OEM minimum oil pressure at this speed/, '150');
+    set(/^Oil pressure measured/, '40');
+    act(() => { fireEvent.blur(screen.getAllByLabelText(/^Oil pressure measured/)[0]); });
+    expect(screen.getByRole('alert').textContent).toMatch(/^STOP · STOP — protective value entered without its unit: in at least one possible unit it reaches the limit/);
+    expect(screen.queryByTestId('gd-stop-hold')).not.toBeNull();
+    set('Unit: Oil pressure measured', 'psi'); // 40 psi = 275.8 kPa: inside
+    expect(screen.queryByTestId('gd-stop-hold')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('eims-oracle-guided-diagnosis-v1')!).latched).toEqual([]);
+  });
 });

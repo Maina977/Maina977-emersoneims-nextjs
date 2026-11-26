@@ -82,7 +82,15 @@ export function unresolvedLatchedStops(card: Pick<JobCard, 'findings'>): string[
  * made (it may not have been latched in the browser yet). It is resolved by any later recorded
  * clearance of the same STOP (same key), made at or after it was recorded.
  */
-export interface GuidedSafetyStop { key: string; from: string; since: string; message: string; label?: string; fromRecord?: true }
+export interface GuidedSafetyStop {
+  key: string; from: string; since: string; message: string; label?: string; fromRecord?: true;
+  /**
+   * F10-REMAINING (2026-11-26): a STOP raised because a protective value was refused (no unit, not a
+   * number, out of range or band). It blocks completion and sign-off until a later guided-diagnosis
+   * record on this card no longer shows it (the value was corrected) — `correctedAt` — or the phrase.
+   */
+  refusedInput?: true; correctedAt?: string;
+}
 export interface GuidedSafetyClearance extends GuidedSafetyStop { clearedAt: string; by: string; reason: string }
 /** R-INT-3: the SAFETY HOLD (browser storage blocked) is its own record, never worded as a STOP. */
 export interface GuidedSafetyHold { since: string; text: string; why: string; resolvedAt?: string }
@@ -93,11 +101,13 @@ export interface GuidedSafetyHold { since: string; text: string; why: string; re
 export interface GuidedSafetyReassessment { at: string; by: string; reason: string; confirmed: true }
 export interface GuidedSafety { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; holds: GuidedSafetyHold[]; reassessments?: GuidedSafetyReassessment[] }
 /** What one "Record a guided diagnosis" adds: the browser's latched STOPs, the record's own STOPs, its clearances, and the hold if storage was blocked. */
-export interface GuidedSafetyAdd { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null }
+export interface GuidedSafetyAdd { stops: GuidedSafetyStop[]; clearances: GuidedSafetyClearance[]; hold: { text: string; why: string } | null; /** The fault family the record was made for. */ family?: string }
 export const HOLD_REASSESSMENT_LABEL = "A qualified technician has reassessed the machine's condition in person";
 export const HOLD_REASSESSMENT_NOTICE = 'Recorded on this card by typed name: UNVERIFIED (the person is not authenticated). It releases the SAFETY HOLD on this card only; it is NOT authorisation to restart the generator.';
 const sameGuidedStop = (a: GuidedSafetyStop, b: GuidedSafetyStop) => a.key === b.key && a.since === b.since;
 const clears = (c: GuidedSafetyClearance, s: GuidedSafetyStop) => sameGuidedStop(c, s) || (!!s.fromRecord && c.key === s.key && c.clearedAt >= s.since);
+/** A refused-input STOP is resolved when a later record on the card no longer shows it (the value was corrected). */
+const corrected = (s: GuidedSafetyStop, since?: string) => !!s.refusedInput && !!s.correctedAt && (!since || s.correctedAt >= since);
 /**
  * Merge-only: nothing already on the card is removed. A hold stays until an in-person
  * reassessment is recorded on the card (R-INT-7: a later record never resolves it).
@@ -108,7 +118,13 @@ export function mergeGuidedSafety(prev: GuidedSafety | undefined, add: GuidedSaf
   for (const c of add.clearances) if (!clearances.some((x) => sameGuidedStop(x, c) && x.clearedAt === c.clearedAt)) clearances.push({ ...c });
   const open = (x: GuidedSafetyStop) => !clearances.some((c) => clears(c, x));
   // A record's own STOP is not added again while the card already holds that STOP unresolved.
-  for (const s of add.stops) if (!stops.some((x) => sameGuidedStop(x, s) || (s.fromRecord && x.key === s.key && open(x)))) stops.push({ ...s });
+  // F10-REMAINING: a refused-input STOP that a later record no longer shows was corrected (append-only mark).
+  for (let i = 0; i < stops.length; i++) {
+    const x = stops[i];
+    // Only a later record for the same fault family can show the value was corrected.
+    if (x.refusedInput && !x.correctedAt && add.family && x.key.startsWith(`${add.family}|`) && !add.stops.some((s) => s.key === x.key)) stops[i] = { ...x, correctedAt: at };
+  }
+  for (const s of add.stops) if (!stops.some((x) => sameGuidedStop(x, s) || (s.fromRecord && x.key === s.key && open(x) && !corrected(x)))) stops.push({ ...s });
   // A clearance always comes with its STOP, so a card never shows a clearance for a STOP it does not list.
   for (const c of add.clearances) if (!stops.some((x) => sameGuidedStop(x, c))) stops.push({ key: c.key, from: c.from, since: c.since, message: c.message, ...(c.label ? { label: c.label } : {}) });
   const holds = (prev?.holds ?? []).map((h) => ({ ...h }));
@@ -141,12 +157,12 @@ export function unresolvedGuidedSafety(card: Pick<JobCard, 'guidedSafety'> & Par
   const g = card.guidedSafety;
   if (!g) return { stops: [], hold: null };
   const imp = opts.asRecorded ? undefined : card.imported;
-  if (!imp) return { stops: g.stops.filter((s) => !g.clearances.some((c) => clears(c, s))), hold: g.holds.find((h) => !h.resolvedAt) ?? null };
+  if (!imp) return { stops: g.stops.filter((s) => !corrected(s) && !g.clearances.some((c) => clears(c, s))), hold: g.holds.find((h) => !h.resolvedAt) ?? null };
   const fresh = g.clearances.slice(imp.clearances);
   const freshReassessed = (g.reassessments ?? []).slice(imp.reassessments).some((r) => r.at >= imp.at);
   const stops = g.stops.filter((s, i) => {
-    if (i < imp.stops) return !fresh.some((c) => c.key === s.key && c.clearedAt >= imp.at);
-    return !fresh.some((c) => clears(c, s));
+    if (i < imp.stops) return !corrected(s, imp.at) && !fresh.some((c) => c.key === s.key && c.clearedAt >= imp.at);
+    return !corrected(s) && !fresh.some((c) => clears(c, s));
   });
   const hold = g.holds.find((h, i) => (i < imp.holds ? !freshReassessed : !h.resolvedAt)) ?? null;
   return { stops, hold };
