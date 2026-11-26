@@ -1,0 +1,166 @@
+/**
+ * CA-32 / P1-B REQ-23, REQ-25, SG-G: "no unsafe design is ever marked valid".
+ *
+ * 21 SYNTHETIC designs (TEST components and numbers, not project data), each
+ * hand-worked below, run through the full design-to-proposal engine
+ * (buildProposal) and its single-line diagram (designValid). An unsafe design
+ * must come back REFUSED, with the named check refused. A control must not
+ * be refused (DRAFT: no approval is ever attached in tests).
+ *
+ * Types: residential grid-tied (R), commercial (C), off-grid with battery (O),
+ * hybrid with generator (G).
+ *
+ * TEST module: 550 W, Voc 49.5 V, Isc 13.9 A, Vmp 41.5 V, Imp 13.1 A,
+ *   β_Voc −0.27 %/°C, β_Vmp −0.35 %/°C, NOCT 45 °C, max system 1,500 V,
+ *   max series fuse 25 A.
+ * TEST inverter: 15 kW, max DC 1,000 V, MPPT 200–850 V, 2 MPPTs,
+ *   26 A input and 40 A Isc per MPPT.
+ * Site: record low 10 °C, max ambient 35 °C (unless stated).
+ *   Cold Voc per module at 10 °C = 49.5 × (1 + 0.0027 × 15) = 51.505 V.
+ *   Cell at 35 °C = 35 + 25/800 × 1000 = 66.25 °C; hot Vmp per module =
+ *   41.5 × (1 − 0.0035 × 41.25) = 35.508 V. Cold Vmp per module =
+ *   41.5 × (1 + 0.0035 × 15) = 43.679 V.
+ */
+import { describe, it, expect } from 'vitest';
+import { buildProposal, type ProposalInput } from '@/lib/solar/design/proposal';
+import type { Module, Inverter, Battery } from '@/lib/solar/design/validate';
+import type { LibraryEntry } from '@/lib/solar/design/datasheet';
+import type { HourlyResult } from '@/lib/solar/design/hourly';
+import type { HybridResult } from '@/lib/solar/design/hybrid';
+
+const MOD: Module = { model: 'TEST-module-550', pmaxW: 550, vocV: 49.5, iscA: 13.9, vmpV: 41.5, impA: 13.1, betaVocPct: -0.27, betaVmpPct: -0.35, alphaIscPct: 0.048, gammaPmaxPct: -0.35, noctC: 45, maxSystemV: 1500, maxSeriesFuseA: 25, datasheet: 'TEST module rev A' };
+const INV: Inverter = { model: 'TEST-inverter-15', acKw: 15, maxDcV: 1000, mpptMinV: 200, mpptMaxV: 850, mpptCount: 2, maxInputA: 26, maxIscA: 40, generatorCompatibility: null, datasheet: 'TEST inverter rev B' };
+const BAT: Battery = { model: 'TEST-LFP-5', nominalKwh: 5, usableDoD: 0.9, dischargeEfficiency: 0.95, maxDischargeC: 0.5, maxChargeC: 0.5, datasheet: 'TEST battery rev C' };
+const prov = { manufacturer: 'TEST', datasheetUrl: 'https://example.com/test.pdf', datasheetRevision: 'A', datasheetDate: '2026-01-01', enteredBy: 'test', enteredOn: '2026-11-20', verifiedBy: 'test-2', verifiedOn: '2026-11-20' };
+const entry = <T,>(data: T, kind: 'module' | 'inverter' | 'battery'): LibraryEntry<T> => ({ kind, id: `${kind}-test`, data, provenance: prov, status: 'verified', warnings: [] } as LibraryEntry<T>);
+const production = { annualKwh: 20000, monthlyKwh: Array(12).fill(20000 / 12), clippedKwh: 0, hours: 8760, hourlyAcKwh: [], specificYieldKwhPerKwp: 1136, performanceRatio: 0.8, poaKwhM2: 1900, assumptions: ['TEST year'], engineVersion: 'solar-hourly test' } as unknown as HourlyResult;
+const s = (value: number, source = 'TEST source') => ({ value, source });
+const GEN_OK = 'TEST datasheet §4: generator input supported';
+
+type Over = Partial<Omit<ProposalInput, 'module' | 'inverter'>> & { mod?: Partial<Module>; inv?: Partial<Inverter> };
+const design = (o: Over = {}): ProposalInput => {
+  const { mod, inv, ...rest } = o;
+  return {
+    reference: 'TEST-CA32', client: { name: 'TEST client', siteAddress: 'TEST site', lat: -1.29, lon: 36.82 },
+    module: entry({ ...MOD, ...mod }, 'module'), inverter: entry({ ...INV, ...inv }, 'inverter'),
+    design: { modulesPerString: 16, stringsPerMppt: [1, 1] }, inverterCount: 1, temps: { recordLowC: 10, maxAmbientC: 35, source: 'TEST station record' },
+    cables: [], production,
+    bom: [{ item: 'PV modules', model: 'TEST', quantity: 32, unit: 'No', rate: { valueKes: 15000, source: 'TEST quote', date: '2026-11-01' } }],
+    finance: { tariffKesPerKwh: s(25), selfConsumedFraction: s(0.8), tariffEscalationPct: s(0), discountRatePct: s(10), degradationPctPerYear: s(0), omKesPerYear: s(20000), lifetimeYears: 20 },
+    ...rest,
+  };
+};
+const battery = (units: number, need: number) => ({ entry: entry(BAT, 'battery'), units, requiredUsableAcKwh: need });
+const hybridWithGenerator = { hours: 8760, totals: { loadKwh: 20000, pvKwh: 20000, pvToLoadKwh: 12000, pvToBatteryKwh: 0, batteryToLoadKwh: 0, gridImportKwh: 0, gridExportKwh: 0, generatorKwh: 800, generatorToBatteryKwh: 0, generatorDumpedKwh: 0, generatorHours: 120, generatorFuelL: 300, generatorStarts: 60, curtailedKwh: 0, unservedKwh: 0, batteryLossKwh: 0 }, renewableFraction: 0.9, unservedHours: 0, finalSocFrac: null, balanceErrorKwh: 0, assumptions: [], engineVersion: 'solar-hybrid test' } as HybridResult;
+
+interface Case { id: string; type: 'R' | 'C' | 'O' | 'G'; title: string; input: ProposalInput; refuse: string[] | null }
+
+const CASES: Case[] = [
+  // ── Controls ──────────────────────────────────────────────────────────
+  { id: 'C1', type: 'R', title: 'control: 2 × 16 modules — cold Voc 51.505 × 16 = 824.1 ≤ 1,000 V; hot Vmp 35.508 × 16 = 568.1 ≥ 200; cold Vmp 698.9 ≤ 850; Isc 17.4 ≤ 40',
+    input: design(), refuse: null },
+  { id: 'C2', type: 'C', title: 'control cable: 16 mm², It 76 A × 0.87 × 0.8 = 52.9 A ≥ 40 A; drop 2 × 20 × 40 × 0.0225 ÷ 16 = 2.25 V = 0.38 % of 600 V',
+    input: design({ cables: [{ name: 'DC main', lengthM: 20, csaMm2: 16, designCurrentA: 40, systemV: 600, tabulatedAmpacityA: 76, ambientFactor: 0.87, groupingFactor: 0.8, maxDropPct: 3 }] }), refuse: null },
+  { id: 'C3', type: 'O', title: 'control battery: 4 × 5 = 20 kWh ≥ 10 ÷ (0.9 × 0.95) = 11.70 kWh; 8 kW ÷ 20 kWh = 0.40 C ≤ 0.5 C both ways',
+    input: design({ inv: { batteryMaxDischargeKw: 8, batteryMaxChargeKw: 8 }, battery: battery(4, 10) }), refuse: null },
+  { id: 'C4', type: 'G', title: 'control generator: listed compatible, no back-feed, 20 kW set, min site load 8 kW ≥ 30 % × 20 = 6 kW',
+    input: design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8, pvCanBackfeedGenerator: false } }), refuse: null },
+  { id: 'C5', type: 'G', title: 'control (warned, not refused): min site load 4 kW < 6 kW is a wet-stacking WARN',
+    input: design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 4, pvCanBackfeedGenerator: false } }), refuse: null },
+  // ── Unsafe: voltage ───────────────────────────────────────────────────
+  { id: 'U1', type: 'R', title: 'cold Voc over inverter max: 20 × 51.505 = 1,030.1 V > 1,000 V (cold Vmp 873.6 > 850 too)',
+    input: design({ design: { modulesPerString: 20, stringsPerMppt: [1, 1] } }), refuse: ['cold-voc', 'cold-vmp'] },
+  { id: 'U2', type: 'C', title: 'cold Voc over MODULE max system V: 1,500 V inverter, 1,000 V-class module, 20 × 51.505 = 1,030.1 V > min(1,500, 1,000)',
+    input: design({ mod: { maxSystemV: 1000 }, inv: { maxDcV: 1500, mpptMaxV: 1300 }, design: { modulesPerString: 20, stringsPerMppt: [1, 1] } }), refuse: ['cold-voc'] },
+  { id: 'U3', type: 'R', title: 'cold Voc at a −5 °C record low: 19 × 49.5 × (1 + 0.0027 × 30) = 19 × 53.51 = 1,016.7 V > 1,000 V (978.6 V at 10 °C would pass)',
+    input: design({ design: { modulesPerString: 19, stringsPerMppt: [1, 1] }, temps: { recordLowC: -5, maxAmbientC: 35, source: 'TEST station record' } }), refuse: ['cold-voc'] },
+  { id: 'U4', type: 'R', title: 'hot Vmp below MPPT min: 5 × 35.508 = 177.5 V < 200 V',
+    input: design({ design: { modulesPerString: 5, stringsPerMppt: [1, 1] } }), refuse: ['hot-vmp'] },
+  // ── Unsafe: current / fusing ──────────────────────────────────────────
+  { id: 'U5', type: 'C', title: 'Isc × 1.25 over MPPT max: 3 × 13.9 × 1.25 = 52.1 A > 40 A (Imp 39.3 A, 51 % over 26 A)',
+    input: design({ design: { modulesPerString: 16, stringsPerMppt: [3, 1] } }), refuse: ['isc-mppt1', 'imp-mppt1'] },
+  { id: 'U6', type: 'C', title: 'Imp > 10 % over input limit: 2 × 13.1 = 26.2 A on a 22 A input (19 % over); Isc 34.75 ≤ 40',
+    input: design({ inv: { maxInputA: 22 }, design: { modulesPerString: 16, stringsPerMppt: [2, 1] } }), refuse: ['imp-mppt1'] },
+  { id: 'U7', type: 'C', title: 'no valid string-fuse rating: 3 strings need fuses; 1.5 × 13.9 = 20.85 A ≥ module max series fuse 20 A',
+    input: design({ mod: { maxSeriesFuseA: 20 }, inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] } }), refuse: ['fuse-window-mppt1'] },
+  // ── Unsafe: cable ─────────────────────────────────────────────────────
+  { id: 'U8', type: 'C', title: 'undersized cable: 6 mm², It 41 A × 0.87 × 0.8 = 28.5 A < 40 A design current',
+    input: design({ cables: [{ name: 'DC main', lengthM: 20, csaMm2: 6, designCurrentA: 40, systemV: 600, tabulatedAmpacityA: 41, ambientFactor: 0.87, groupingFactor: 0.8, maxDropPct: 3 }] }), refuse: ['ampacity-DC main'] },
+  // ── Unsafe: battery ───────────────────────────────────────────────────
+  { id: 'U9', type: 'O', title: 'battery too small: 2 × 5 = 10 kWh < 10 ÷ (0.9 × 0.95) = 11.70 kWh',
+    input: design({ inv: { batteryMaxDischargeKw: 5, batteryMaxChargeKw: 5 }, battery: battery(2, 10) }), refuse: ['battery-energy'] },
+  { id: 'U10', type: 'O', title: 'battery C-rate exceeded: 10 kW ÷ 10 kWh = 1.0 C > 0.5 C (discharge and charge)',
+    input: design({ inv: { batteryMaxDischargeKw: 10, batteryMaxChargeKw: 10 }, battery: battery(2, 5) }), refuse: ['battery-discharge-c', 'battery-charge-c'] },
+  { id: 'U11', type: 'O', title: 'battery C-rate UNKNOWN: inverter battery power not given — was marked valid before CA-32',
+    input: design({ battery: battery(4, 10) }), refuse: ['battery-discharge-c', 'battery-charge-c'] },
+  // ── Unsafe: generator ─────────────────────────────────────────────────
+  { id: 'U12', type: 'G', title: 'generator with an inverter that has NO compatibility statement — was marked valid before CA-32',
+    input: design({ connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8, pvCanBackfeedGenerator: false } }), refuse: ['gen-compat'] },
+  { id: 'U13', type: 'G', title: 'reverse power: PV can back-feed the running generator — was marked valid before CA-32',
+    input: design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8, pvCanBackfeedGenerator: true } }), refuse: ['gen-reverse-power'] },
+  { id: 'U14', type: 'G', title: 'reverse power not stated (unknown is refused, never assumed safe)',
+    input: design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8 } }), refuse: ['gen-backfeed-stated'] },
+  { id: 'U15', type: 'G', title: 'generator connected with no rating',
+    input: design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, pvCanBackfeedGenerator: false } }), refuse: ['gen-rating'] },
+  { id: 'U16', type: 'G', title: 'hybrid balance runs a generator (800 kWh, 120 h) but no generator connection is stated',
+    input: design({ hybrid: hybridWithGenerator }), refuse: ['gen-rating', 'gen-backfeed-stated', 'gen-compat'] },
+];
+
+describe('CA-32: 21 synthetic designs — no unsafe design is ever marked valid', () => {
+  it('the set covers every required type and has at least 20 designs, unsafe and control', () => {
+    expect(CASES.length).toBeGreaterThanOrEqual(20);
+    for (const t of ['R', 'C', 'O', 'G'] as const) expect(CASES.some((c) => c.type === t)).toBe(true);
+    expect(CASES.filter((c) => c.refuse === null).length).toBeGreaterThanOrEqual(4);
+    expect(new Set(CASES.map((c) => c.id)).size).toBe(CASES.length);
+  });
+
+  for (const c of CASES) {
+    it(`${c.id} [${c.type}] ${c.title}`, () => {
+      const p = buildProposal(c.input);
+      const refusedIds = p.checks.filter((k) => k.verdict === 'REFUSE').map((k) => k.id);
+      if (c.refuse === null) {
+        expect(refusedIds, `${c.id} must not be refused`).toEqual([]);
+        expect(p.status).not.toBe('REFUSED');
+        expect(p.sld.designValid).toBe(true);
+      } else {
+        expect(p.status, `${c.id} must be REFUSED`).toBe('REFUSED');
+        for (const id of c.refuse) expect(refusedIds, `${c.id} must refuse ${id}`).toContain(id);
+        expect(p.sld.designValid).toBe(false);
+        // The reason is stated to the user.
+        expect(p.statusReasons.some((r) => r.startsWith('REFUSE: '))).toBe(true);
+      }
+    });
+  }
+
+  it('C5 carries the light-loading warning; U16 explains the missing connection', () => {
+    const c5 = buildProposal(CASES.find((c) => c.id === 'C5')!.input);
+    expect(c5.checks.find((k) => k.id === 'gen-min-load')?.verdict).toBe('WARN');
+    const u16 = buildProposal(CASES.find((c) => c.id === 'U16')!.input);
+    expect(u16.statusReasons.join(' ')).toMatch(/hybrid balance runs a generator/);
+  });
+  it('an unstated minimum site load is shown as NOT checked (WARN), never as a pass', () => {
+    const p = buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, pvCanBackfeedGenerator: false } }));
+    const k = p.checks.find((x) => x.id === 'gen-min-load');
+    expect(k?.verdict).toBe('WARN');
+    expect(k?.note).toMatch(/NOT checked/);
+    expect(p.status).not.toBe('REFUSED');
+  });
+});
+
+describe('CA-32: the proposal form carries the generator answers to the engine', () => {
+  it('generator yes + back-feed unanswered → null (refused); answered no → false; no generator → no generator fields', async () => {
+    const { connectionsFromForm } = await import('@/lib/solar/design/proposalForm');
+    expect(connectionsFromForm({ 'sld.generator': 'yes', 'hgen.ratedKw': '20' })).toEqual({ grid: null, generator: true, generatorRatedKw: 20, pvCanBackfeedGenerator: null });
+    expect(connectionsFromForm({ 'sld.generator': 'yes', 'hgen.ratedKw': '20', 'sld.pvBackfeed': 'no', 'sld.genMinSiteLoadKw': '8', 'sld.genOemMinLoadPct': '25' }))
+      .toEqual({ grid: null, generator: true, generatorRatedKw: 20, pvCanBackfeedGenerator: false, generatorMinSiteLoadKw: 8, generatorOemMinLoadPct: 25 });
+    expect(connectionsFromForm({ 'sld.grid': 'yes', 'sld.generator': 'no', 'sld.pvBackfeed': 'yes' })).toEqual({ grid: true, generator: false });
+  });
+  it('the request validator accepts the new fields and refuses a wrong type', async () => {
+    const { connectionsFromForm } = await import('@/lib/solar/design/proposalForm');
+    const conn = connectionsFromForm({ 'sld.generator': 'yes', 'hgen.ratedKw': '20', 'sld.pvBackfeed': 'no' })!;
+    // OEM minimum 25 % of 20 kW = 5 kW; no site load given → WARN (not checked), back-feed false, compatible → not refused.
+    const p = buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { ...conn, generatorOemMinLoadPct: 25 } }));
+    expect(p.status).not.toBe('REFUSED');
+    expect(() => buildProposal(design({ connections: { grid: null, generator: true, pvCanBackfeedGenerator: 'maybe' as unknown as boolean } }))).toThrow(/pvCanBackfeedGenerator/);
+  });
+});

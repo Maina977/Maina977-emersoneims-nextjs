@@ -135,7 +135,17 @@ export function connectionsFromForm(f: ProposalForm): SldConnections | undefined
   const grid = tri('sld.grid'), generator = tri('sld.generator');
   const rated = num(f, 'hgen.ratedKw');
   if (grid === null && generator === null) return undefined;
-  return { grid, generator, ...(generator === true && Number.isFinite(rated) && rated > 0 ? { generatorRatedKw: rated } : {}) };
+  const minLoad = num(f, 'sld.genMinSiteLoadKw'), oemMin = num(f, 'sld.genOemMinLoadPct');
+  return {
+    grid, generator,
+    ...(generator === true && Number.isFinite(rated) && rated > 0 ? { generatorRatedKw: rated } : {}),
+    // Generator checks (CA-32): only with a generator; unanswered back-feed stays null (refused).
+    ...(generator === true ? {
+      pvCanBackfeedGenerator: tri('sld.pvBackfeed'),
+      ...(Number.isFinite(minLoad) && minLoad >= 0 ? { generatorMinSiteLoadKw: minLoad } : {}),
+      ...(Number.isFinite(oemMin) && oemMin >= 0 ? { generatorOemMinLoadPct: oemMin } : {}),
+    } : {}),
+  };
 }
 
 /**

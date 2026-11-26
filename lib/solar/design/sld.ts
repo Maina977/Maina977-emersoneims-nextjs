@@ -15,7 +15,7 @@
  * One layout model feeds every output: sldToSvg (screen) and the PDF and
  * Excel exports (proposalExport.ts), so they cannot disagree.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, generatorConnectionChecks } from './validate';
 
 export const SLD_ENGINE_VERSION = 'solar-sld 1.0.0 (2026-11-25)';
 export const TBS = 'to be specified by the engineer';
@@ -26,6 +26,12 @@ export interface SldConnections {
   generator: boolean | null;
   /** Rated kW from the hybrid generator data, when entered. */
   generatorRatedKw?: number;
+  /** Lowest site load while the generator runs, kW (generator checks, CA-32). */
+  generatorMinSiteLoadKw?: number;
+  /** Generator OEM minimum load, %. */
+  generatorOemMinLoadPct?: number;
+  /** Whether PV can back-feed the running generator; null = not stated (refused). */
+  pvCanBackfeedGenerator?: boolean | null;
 }
 export interface SldInput {
   reference: string;
@@ -78,6 +84,8 @@ export function buildSld(i: SldInput): SldModel {
   cableResults.forEach(({ r }) => checks.push(...r.checks));
   const bat = i.battery && i.battery.requiredUsableAcKwh !== undefined ? checkBattery(i.battery.data, i.inverter, i.battery.requiredUsableAcKwh, i.battery.units) : null;
   if (bat) checks.push(...bat.checks);
+  // A connected generator is checked as the proposal checks it (CA-32).
+  if (i.connections?.generator === true) checks.push(...generatorConnectionChecks(i.inverter, i.connections));
   const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length);
   const m = i.module, inv = i.inverter, N = i.design.modulesPerString;
   const cold = find(checks, 'cold-voc');

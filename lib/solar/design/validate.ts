@@ -219,17 +219,61 @@ export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: 
     { id: 'battery-energy', title: 'Installed battery energy', verdict: installed >= required ? 'PASS' : 'REFUSE', value: r2(installed), limit: r2(required), unit: 'kWh', marginPct: margin(installed, required, false),
       formula: `required nominal = usable AC ÷ (DoD × η_discharge) = ${usableAcKwh} ÷ (${battery.usableDoD} × ${battery.dischargeEfficiency})`, reference: 'Energy balance; battery datasheet DoD and efficiency' },
   ];
-  if (inverter.batteryMaxDischargeKw !== undefined) {
+  // CA-32 (2026-11-26): without the inverter's battery power the C-rate was
+  // simply not checked and the design passed. Missing data is never assumed
+  // compliant: the check is refused until the datasheet value is entered.
+  if (inverter.batteryMaxDischargeKw === undefined || !Number.isFinite(inverter.batteryMaxDischargeKw)) {
+    checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: 'REFUSE', value: NaN, limit: battery.maxDischargeC, unit: 'C', marginPct: -100,
+      formula: 'inverter battery discharge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous discharge rate', note: 'Inverter battery discharge power not entered: the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+  } else {
     const c = inverter.batteryMaxDischargeKw / installed;
     checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: c <= battery.maxDischargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxDischargeC, unit: 'C', marginPct: margin(c, battery.maxDischargeC, true),
       formula: `inverter battery kW ÷ installed kWh = ${inverter.batteryMaxDischargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous discharge rate' });
   }
-  if (inverter.batteryMaxChargeKw !== undefined) {
+  if (inverter.batteryMaxChargeKw === undefined || !Number.isFinite(inverter.batteryMaxChargeKw)) {
+    checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: 'REFUSE', value: NaN, limit: battery.maxChargeC, unit: 'C', marginPct: -100,
+      formula: 'inverter charge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous charge rate', note: 'Inverter battery charge power not entered: the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+  } else {
     const c = inverter.batteryMaxChargeKw / installed;
     checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: c <= battery.maxChargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxChargeC, unit: 'C', marginPct: margin(c, battery.maxChargeC, true),
       formula: `inverter charge kW ÷ installed kWh = ${inverter.batteryMaxChargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous charge rate' });
   }
   return { checks, errors, requiredNominalKwh: r2(required) };
+}
+
+/** What a proposal or diagram states about a generator connection (structurally SldConnections). */
+export interface GeneratorConnection {
+  generator: boolean | null;
+  generatorRatedKw?: number;
+  /** Lowest site load while the generator runs, kW. */
+  generatorMinSiteLoadKw?: number;
+  /** Generator OEM minimum load, % (30 % assumed when absent). */
+  generatorOemMinLoadPct?: number;
+  /** true = PV can push power back into the running generator (no export limiting / reverse-power relay); null = not stated. */
+  pvCanBackfeedGenerator?: boolean | null;
+}
+
+/**
+ * Generator checks for a design that has a generator (CA-32, 2026-11-26: the
+ * proposal and diagram never ran checkGenerator, so an inverter with no
+ * generator-compatibility statement, or PV able to back-feed the generator,
+ * was marked valid). Missing data is refused, never assumed safe: no rating,
+ * or no statement about back-feed, is a REFUSE; an unstated minimum site load
+ * is a WARN (not checked).
+ */
+export function generatorConnectionChecks(inverter: Inverter, conn: GeneratorConnection): Check[] {
+  const rated = conn.generatorRatedKw;
+  const refuse = (id: string, title: string, note: string): Check => ({ id, title, verdict: 'REFUSE', value: NaN, limit: NaN, unit: '', marginPct: -100, formula: 'required input', reference: 'P1-B §3 hybrid / generator: never assume parallel operation is safe', note });
+  const out: Check[] = [];
+  if (!(typeof rated === 'number' && Number.isFinite(rated) && rated > 0)) out.push(refuse('gen-rating', 'Generator rating', 'Generator connected but its rated kW is not given'));
+  if (conn.pvCanBackfeedGenerator !== true && conn.pvCanBackfeedGenerator !== false) out.push(refuse('gen-backfeed-stated', 'Reverse power into the generator: stated?', 'State whether PV can feed power back into the running generator (export limiting or a reverse-power relay); unknown is refused'));
+  const gc = checkGenerator(inverter, { ratedKw: typeof rated === 'number' && rated > 0 ? rated : NaN, oemMinLoadPct: conn.generatorOemMinLoadPct }, conn.generatorMinSiteLoadKw ?? NaN, conn.pvCanBackfeedGenerator === true);
+  for (const c of gc) {
+    if (c.id === 'gen-min-load' && !(typeof conn.generatorMinSiteLoadKw === 'number' && Number.isFinite(conn.generatorMinSiteLoadKw) && out.every((x) => x.id !== 'gen-rating'))) {
+      out.push({ ...c, verdict: 'WARN', value: NaN, marginPct: NaN, note: 'Minimum site load (or the generator rating) not given: minimum loading NOT checked' });
+    } else out.push(c);
+  }
+  return out;
 }
 
 /** Hybrid with a generator. Parallel operation is never assumed safe. */

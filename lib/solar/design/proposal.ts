@@ -23,7 +23,7 @@
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
@@ -140,7 +140,10 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   if (!i.temps.source?.trim()) throw new Error('Source of the site temperatures is required');
   const c = i.connections;
   if (c !== undefined && (typeof c !== 'object' || c === null || ![true, false, null].includes(c.grid) || ![true, false, null].includes(c.generator)
-    || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0)))) throw new Error('connections must be { grid: true | false | null, generator: true | false | null, generatorRatedKw?: positive kW }');
+    || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0))
+    || (c.generatorMinSiteLoadKw !== undefined && !(Number.isFinite(c.generatorMinSiteLoadKw) && c.generatorMinSiteLoadKw >= 0))
+    || (c.generatorOemMinLoadPct !== undefined && !(Number.isFinite(c.generatorOemMinLoadPct) && c.generatorOemMinLoadPct >= 0 && c.generatorOemMinLoadPct <= 100))
+    || (c.pvCanBackfeedGenerator !== undefined && ![true, false, null].includes(c.pvCanBackfeedGenerator)))) throw new Error('connections must be { grid: true | false | null, generator: true | false | null, generatorRatedKw?: positive kW, generatorMinSiteLoadKw?: kW ≥ 0, generatorOemMinLoadPct?: 0–100, pvCanBackfeedGenerator?: true | false | null }');
   const shading = i.production.shading ?? null;
   if (shading) {
     const he = horizonErrors(shading.horizon);
@@ -158,6 +161,15 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   if (str.errors.length) reasons.push(...str.errors.map((e) => `Design: ${e}`));
   for (const c of i.cables) { const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`)); }
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
+  // Generator (CA-32, 2026-11-26): checkGenerator was never run here, so an
+  // inverter without a generator-compatibility statement, or PV able to
+  // back-feed the generator, gave a valid design. A generator counts as
+  // connected when stated, or when the hybrid balance ran one.
+  const hybridUsedGenerator = !!i.hybrid && ((i.hybrid.totals.generatorKwh ?? 0) > 0 || (i.hybrid.totals.generatorHours ?? 0) > 0);
+  if (c?.generator === true || hybridUsedGenerator) {
+    checks.push(...generatorConnectionChecks(i.inverter.data, { generator: true, ...(c ?? {}) }));
+    if (hybridUsedGenerator && c?.generator !== true) reasons.push('The hybrid balance runs a generator but the connection data does not say a generator is connected: state it (connections.generator) with its rating and back-feed status');
+  }
   const refused = checks.filter((k) => k.verdict === 'REFUSE');
   refused.forEach((c) => reasons.push(`REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`));
 
@@ -233,7 +245,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const sld = buildSld({
     reference: i.reference, module: i.module.data, inverter: i.inverter.data, design: i.design, inverterCount: i.inverterCount, temps: i.temps,
     ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, requiredUsableAcKwh: i.battery.requiredUsableAcKwh } } : {}),
-    cables: i.cables, ...(i.connections ? { connections: i.connections } : {}),
+    // The diagram shows (and checks) the generator the hybrid balance ran, even
+    // when the connection data did not state one (CA-32).
+    cables: i.cables, ...(i.connections || hybridUsedGenerator ? { connections: hybridUsedGenerator && i.connections?.generator !== true ? { grid: i.connections?.grid ?? null, ...(i.connections ?? {}), generator: true } : i.connections! } : {}),
   });
 
   return {

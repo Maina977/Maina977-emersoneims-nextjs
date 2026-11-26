@@ -45,7 +45,9 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if (i.connections !== undefined) {
     const c = i.connections;
     const tri = (x: unknown) => x === true || x === false || x === null;
-    if (!isObj(c) || !tri(c.grid) || !tri(c.generator) || (c.generatorRatedKw !== undefined && !isNum(c.generatorRatedKw))) e.push('connections must be { grid, generator } with true, false or null');
+    if (!isObj(c) || !tri(c.grid) || !tri(c.generator) || (c.generatorRatedKw !== undefined && !isNum(c.generatorRatedKw))
+      || (c.generatorMinSiteLoadKw !== undefined && !isNum(c.generatorMinSiteLoadKw)) || (c.generatorOemMinLoadPct !== undefined && !isNum(c.generatorOemMinLoadPct))
+      || (c.pvCanBackfeedGenerator !== undefined && !tri(c.pvCanBackfeedGenerator))) e.push('connections must be { grid, generator } with true, false or null');
   }
   if (i.hybrid !== undefined &&(!isObj(i.hybrid) || !isObj(i.hybrid.totals) || !isStr(i.hybrid.engineVersion))) e.push('hybrid must be a hybrid simulation result');
   if (!Array.isArray(i.bom) || !(i.bom as unknown[]).every((l) => isObj(l) && isStr(l.item) && isStr(l.model) && isNum(l.quantity) && isStr(l.unit) && (l.rate === null || isObj(l.rate)))) e.push('bom must be an array of { item, model, quantity, unit, rate | null }');
