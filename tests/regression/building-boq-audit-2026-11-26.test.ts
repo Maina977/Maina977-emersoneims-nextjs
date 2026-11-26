@@ -149,24 +149,24 @@ describe('DEFECT fixed: a trade item follows its measurement when it changes', (
 
 describe('slab concrete and structural desk checks (hand-worked, unchanged code)', () => {
   it('slab: 12 × 8 × 0.15 = 14.40 m³; two 1 × 1 openings deduct 0.30 → 14.10', () => {
-    const out = c.slabConcrete({ length_m: 12, width_m: 8, thickness_m: 0.15, openings: [{ length_m: 1, width_m: 1, count: 2 }] }) as Record<string, number>;
+    const out = c.slabConcrete({ length_m: 12, width_m: 8, thickness_m: 0.15, openings: [{ length_m: 1, width_m: 1, count: 2 }] }) as unknown as Record<string, number>;
     expect([out.gross_volume_m3, out.deductions_m3, out.net_volume_m3]).toEqual([14.4, 0.3, 14.1]);
   });
   it('slab: 5 × 4 × 0.2 = 4.000; 0.6 × 0.6 opening 0.072 → 3.928 m³', () => {
-    const out = c.slabConcrete({ length_m: 5, width_m: 4, thickness_m: 0.2, openings: [{ length_m: 0.6, width_m: 0.6 }] }) as Record<string, number>;
+    const out = c.slabConcrete({ length_m: 5, width_m: 4, thickness_m: 0.2, openings: [{ length_m: 0.6, width_m: 0.6 }] }) as unknown as Record<string, number>;
     expect(out.net_volume_m3).toBe(3.928);
   });
   it('RC beam M_Rd (EC2 §3.1.7): 300 × 450, As 1000, C25, B500 → 173.4 kNm; 250 × 400, As 600, C30 → 96.3 kNm', () => {
     // fcd = 0.85 × 25 / 1.5 = 14.17; fyd = 434.78; x = 1000 × 434.78 / (0.8 × 300 × 14.17) = 127.9; z = 450 − 0.4x = 398.8;
     // M = 1000 × 434.78 × 398.8 = 173.4 kNm. Second: fcd 17.0, x = 76.7, z = 369.3, M = 600 × 434.78 × 369.3 = 96.3 kNm.
-    expect((c.rcBeam({ b_mm: 300, d_mm: 450, As_mm2: 1000, fck_MPa: 25, fyk_MPa: 500 }) as Record<string, number>).M_Rd_kNm).toBe(173.4);
-    expect((c.rcBeam({ b_mm: 250, d_mm: 400, As_mm2: 600, fck_MPa: 30, fyk_MPa: 500 }) as Record<string, number>).M_Rd_kNm).toBe(96.3);
+    expect((c.rcBeam({ b_mm: 300, d_mm: 450, As_mm2: 1000, fck_MPa: 25, fyk_MPa: 500 }) as unknown as Record<string, number>).M_Rd_kNm).toBe(173.4);
+    expect((c.rcBeam({ b_mm: 250, d_mm: 400, As_mm2: 600, fck_MPa: 30, fyk_MPa: 500 }) as unknown as Record<string, number>).M_Rd_kNm).toBe(96.3);
   });
   it('RC shear V_Rd,c (EC2 §6.2.2): 300 × 450, Asl 942, C25 → 70.0 kN; 200 × 300, Asl 402, C30 → 35.6 kN', () => {
     // k = 1 + √(200/450) = 1.667; ρ = 942/135000 = 0.00698; 0.12 × 1.667 × (100 × 0.00698 × 25)^⅓ = 0.519 MPa × 135000 = 70.0 kN.
     // k = 1.816; ρ = 0.0067; 0.12 × 1.816 × 20.1^⅓ = 0.593 MPa (> vmin 0.469) × 60000 = 35.6 kN.
-    expect((c.ec2Shear({ bw_mm: 300, d_mm: 450, fck_MPa: 25, Asl_mm2: 942 }) as Record<string, number>).V_Rd_c_kN).toBe(70);
-    expect((c.ec2Shear({ bw_mm: 200, d_mm: 300, fck_MPa: 30, Asl_mm2: 402 }) as Record<string, number>).V_Rd_c_kN).toBe(35.6);
+    expect((c.ec2Shear({ bw_mm: 300, d_mm: 450, fck_MPa: 25, Asl_mm2: 942 }) as unknown as Record<string, number>).V_Rd_c_kN).toBe(70);
+    expect((c.ec2Shear({ bw_mm: 200, d_mm: 300, fck_MPa: 30, Asl_mm2: 402 }) as unknown as Record<string, number>).V_Rd_c_kN).toBe(35.6);
   });
 });
 
