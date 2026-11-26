@@ -10,4 +10,12 @@
  */
 import { retired } from '@/lib/security/retiredRoute';
 
-export const GET = () => retired('Online order history');
+const gone = () => retired('Online order history');
+// All 7 methods answer 410.
+export const GET = gone;
+export const HEAD = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;
+export const OPTIONS = gone;
