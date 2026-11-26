@@ -31,10 +31,13 @@ describe('AquaScan cost lines: only sourced rates are priced', () => {
     expect(c.sourcedTotalKES).toBe(2730200);
     expect(QUOTATION_TEXT).toBe('Request a quotation');
   });
-  it('a private project: the survey and permits are "Request a quotation" too', () => {
+  it('a private project: no line uses the tender rates; every item is "Request a quotation"', () => {
     const c = costSourcing(eco({ pricing: { category: 'private', quotations: [] } }));
     expect(c.quotationItems.slice(0, 2)).toEqual([expect.stringMatching(/^Hydrogeological survey/), expect.stringMatching(/^Permits and approvals/)]);
-    expect(c.sourcedSubtotalKES).toBe(2482000 - 85000 - 135000);
+    // No tender rate on any line of a private project (management 2026-11-26), and no solar here: nothing priced.
+    expect(c.sourcedSubtotalKES).toBe(0);
+    expect(c.totalLabel).toBe('Total: request a quotation');
+    expect(c.lines.every((l) => l.kes == null && l.priceText === 'Request a quotation')).toBe(true);
   });
   it('every priced line names its source; treatment from a measurement is still unpriced', () => {
     const c = costSourcing(eco({ wqTreatmentCost: 900, defluoridationCost: 400, solarCost: 3000, solarKW: 2 }));

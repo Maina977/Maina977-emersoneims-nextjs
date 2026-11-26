@@ -1,10 +1,10 @@
 ﻿import { inKenya } from './kenyaLand';
 import { evidenceGate, evidenceChecklist, gated, DEPTH_NEEDS, YIELD_NEEDS, COST_NEEDS } from './evidenceGate';
 import { costSourcing, costLineText } from './costSources';
-import { PRICE_STATE, PRICING_CATEGORY_LABEL, COST_ITEMS, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT, projectPricingOf, validateQuotation, fmtKES } from './projectPricing';
+import { PRICE_STATE, PRICING_CATEGORY_LABEL, COST_ITEMS, COST_ITEM_LABEL, REFERENCE_QUOTATION_TEXT, ENTRY_LABEL, projectPricingOf, validateQuotation, fmtKES } from './projectPricing';
 import { geocodeSearchUrl } from '../../../lib/data-sources/geocodeClient';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
-import { governingSummary, last12Months, probabilityBand } from './governingSummary';
+import { governingSummary, last12Months, probabilityBand, SCORE_NOT_PROBABILITY } from './governingSummary';
 import { parseCoordPair } from './coordParse';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { drillRatePerM, mobilisationUSD, countyRateBand, KES_PER_USD } from './costModel';
@@ -681,7 +681,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult|null>(null);
   // Verified project quotation entry (pricing policy 2026-11-26).
-  const [quoteForm, setQuoteForm] = useState<{ item: string; amountKES: string; reference: string; date: string }>({ item: 'survey', amountKES: '', reference: '', date: '' });
+  const [quoteForm, setQuoteForm] = useState<{ item: string; amountKES: string; reference: string; date: string; label: string }>({ item: 'survey', amountKES: '', reference: '', date: '', label: 'verified project quotation' });
   const [quoteError, setQuoteError] = useState('');
   const [analyzer, setAnalyzer] = useState<BoreholeAnalyzer|null>(null);
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
@@ -1884,8 +1884,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                         {/* Two axes side by side: PROSPECT (chance of water) vs READINESS (authority to drill) */}
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
                           <div style={{padding:10,borderRadius:8,border:`1px solid ${prospectColor}`,background:`${prospectColor}10`}}>
-                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Chance of water</div>
-                            <div style={{fontSize:16,fontWeight:800,color:prospectColor}}>{Math.round((result?.probability ?? 0) * 100)}%</div>
+                            <div style={{fontSize:10,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:0.5}}>Modelled success score</div>
+                            <div style={{fontSize:16,fontWeight:800,color:prospectColor}}>{Math.round((result?.probability ?? 0) * 100)}/100<span style={{display:'block',fontSize:9,fontWeight:400}}>{SCORE_NOT_PROBABILITY}</span></div>
                             <div style={{fontSize:9,color:'var(--text-secondary)'}}>{(dr as any).waterPointEvidence}</div>
                           </div>
                           <div style={{padding:10,borderRadius:8,border:`1px solid ${statusColor}`,background:`${statusColor}10`}}>
@@ -2387,12 +2387,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
         )}
         {/* Summary Cards */}
         <div className="results-summary-cards">
-          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Chance of a productive borehole (planning estimate){(() => {
+          <div className="summary-card success"><div className="summary-value">{probabilityBand(result.probability)}</div><div className="summary-label">Modelled success score (uncalibrated){(() => {
             // The county's recorded rate beside it, so a higher figure is explained (audit 2026-11-05).
             const cr = Number((result.boreholeRecords as any)?.countyIntelligence?.successRate);
             if (!(cr > 0)) return null;
-            const diff = Math.round(result.probability * 100) - Math.round(cr * 100);
-            return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of boreholes productive.{Math.abs(diff) >= 10 ? ` This point's estimate is ${diff > 0 ? 'above' : 'below'} it; plan on the lower of the two (${diff > 0 ? 'the county rate' : 'this point'}) until a survey.` : ''}</span>;
+            // S46: the recorded county rate is a measured frequency; the score is not, so they are not compared.
+            return <span style={{display:'block',fontSize:10,marginTop:4,opacity:0.85}}>County record: {Math.round(cr * 100)}% of recorded boreholes productive (recorded outcomes). The score above is not comparable to it: it is not calibrated against drilled outcomes.</span>;
           })()}</div></div>
           {/* Release 5 (2026-11-20): depth, yield, cost and payback only with site field evidence. */}
           {(() => { const g = evidenceGate(result); return (<>
@@ -2442,8 +2442,8 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {fc.yieldRange[0]}–{fc.yieldRange[1]} m³/hr</div>
                 </div>}
                 <div style={{textAlign:'center',minWidth:120,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
-                  <div style={{fontSize:28,fontWeight:800,color:fcColor,lineHeight:1}}>{(fc.successProbability*100).toFixed(1)}<span style={{fontSize:14}}>%</span></div>
-                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Modelled Success Score</div>
+                  <div style={{fontSize:28,fontWeight:800,color:fcColor,lineHeight:1}}>{Math.round(fc.successProbability*100)}<span style={{fontSize:14}}>/100</span></div>
+                  <div style={{fontSize:10,color:'var(--text-secondary)',marginTop:4}}>Modelled Success Score ({SCORE_NOT_PROBABILITY})</div>
                   <div style={{fontSize:9,color:'var(--text-tertiary)'}}>Range: {(fc.probabilityRange[0]*100).toFixed(0)}–{(fc.probabilityRange[1]*100).toFixed(0)}%</div>
                 </div>
                 <div style={{textAlign:'center',minWidth:100,padding:'10px 16px',background:'rgba(255,255,255,0.04)',borderRadius:10,border:'1px solid rgba(255,255,255,0.08)'}}>
@@ -2476,7 +2476,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             </div>
             {result.fallbacksUsed.some((f: string) => /did not answer|failed|timed out/i.test(f)) && (
               <div style={{fontSize:12,fontWeight:700,color:'#b45309',marginBottom:8}}>
-                This run is incomplete: the chance of success and the verdict can change when these sources answer. Run the analysis again in a few minutes before relying on it.
+                This run is incomplete: the modelled success score and the verdict can change when these sources answer. Run the analysis again in a few minutes before relying on it.
               </div>
             )}
             <div style={{fontSize:11,color:'var(--text-secondary)',marginBottom:8}}>
@@ -4124,7 +4124,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{marginBottom:20,background:'rgba(255,152,0,0.04)',borderRadius:12,padding:16,border:'2px solid rgba(255,152,0,0.25)'}}>
                       <h4 style={{margin:'0 0 12px',color:'#FF9800'}}>{'🧮'} Bayesian Multi-Source Ensemble</h4>
                       <div className="result-grid">
-                        <div className="result-item"><span className="rl">Fused Probability</span><span className="rv" style={{fontWeight:900,fontSize:20,color:'#FF9800'}}>{((result.ensembleResult as any).probability*100).toFixed(1)}%</span></div>
+                        <div className="result-item"><span className="rl">Fused score (uncalibrated, not a probability)</span><span className="rv" style={{fontWeight:900,fontSize:20,color:'#FF9800'}}>{Math.round((result.ensembleResult as any).probability*100)}/100</span></div>
                         <div className="result-item"><span className="rl">Fused Depth</span><span className="rv" style={{fontWeight:700}}>{(result.ensembleResult as any).depth_m.toFixed(0)}m</span></div>
                         <div className="result-item"><span className="rl">Fused Yield</span><span className="rv" style={{fontWeight:700}}>{(result.ensembleResult as any).yield_m3h.toFixed(1)} m³/h</span></div>
                         <div className="result-item"><span className="rl">Ensemble Confidence</span><span className="rv" style={{fontWeight:700}}>{(result.ensembleResult as any).confidence}%</span></div>
@@ -4136,12 +4136,12 @@ const AIBoreholeAnalyzer: React.FC = () => {
                           <h5 style={{margin:'0 0 8px',fontSize:12,color:'var(--text-secondary)'}}>Individual Source Estimates</h5>
                           <div className="sci-table-wrap">
                             <table className="sci-table" style={{fontSize:11}}>
-                              <thead><tr><th>Source</th><th>Prob</th><th>Depth</th><th>Yield</th><th>Weight</th><th>Reliability</th></tr></thead>
+                              <thead><tr><th>Source</th><th>Score (uncalibrated)</th><th>Depth</th><th>Yield</th><th>Weight</th><th>Reliability</th></tr></thead>
                               <tbody>
                                 {(result.ensembleResult as any).individualEstimates.map((e: any, i: number) => (
                                   <tr key={i}>
                                     <td>{e.source}</td>
-                                    <td>{e.probability ? `${(e.probability*100).toFixed(0)}%` : '—'}</td>
+                                    <td>{e.probability ? `${Math.round(e.probability*100)}/100` : '—'}</td>
                                     <td>{e.depth_m ? `${e.depth_m.toFixed(0)}m` : '—'}</td>
                                     <td>{e.yield_m3h ? `${e.yield_m3h.toFixed(1)}` : '—'}</td>
                                     <td>{(e.weight*100).toFixed(0)}%</td>
@@ -5096,14 +5096,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <p className="tab-desc">{result.siteSelection.candidatesEvaluated} candidate points evaluated within {result.siteSelection.searchRadius_m}m radius using 8-layer spatial feature fusion (Naghibi et al. 2015).</p>
                   <div className="sci-table-wrap">
                     <table className="sci-table">
-                      <thead><tr><th>Rank</th><th>Coordinates</th><th>Score</th><th>Probability</th><th>Depth</th><th>Yield</th><th>Distance</th><th>Rock</th></tr></thead>
+                      <thead><tr><th>Rank</th><th>Coordinates</th><th>Score</th><th>Success score (uncalibrated)</th><th>Depth</th><th>Yield</th><th>Distance</th><th>Rock</th></tr></thead>
                       <tbody>
                         {result.siteSelection.topSites.map((s,i) => (
                           <tr key={i} style={{background: i===0 ? 'rgba(16,185,129,0.08)' : undefined}}>
                             <td style={{fontWeight:700}}>#{s.rank}</td>
                             <td style={{fontSize:11}}>{s.latitude.toFixed(5)}, {s.longitude.toFixed(5)}</td>
                             <td style={{fontWeight:700,color:'#10B981'}}>{s.score.toFixed(0)}/100</td>
-                            <td>{(s.probability*100).toFixed(0)}%</td>
+                            <td>{Math.round(s.probability*100)}/100</td>
                             <td>{s.expectedDepth_m === null || s.expectedDepth_m === undefined ? 'insufficient evidence' : `${s.expectedDepth_m}m`}</td>
                             <td>{s.expectedYield_m3h === null || s.expectedYield_m3h === undefined ? 'insufficient evidence' : `${s.expectedYield_m3h} m³/hr`}</td>
                             <td>{s.distanceFromTarget_m}m</td>
@@ -5435,7 +5435,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     {/* ═══ DRI + COST SUMMARY ═══ */}
                     <div style={{display:'flex',gap:16,marginBottom:20,flexWrap:'wrap'}}>
                       <div style={{flex:'0 0 200px',padding:18,borderRadius:16,background:`linear-gradient(135deg,${hg.driColor}15,${hg.driColor}08)`,border:`3px solid ${hg.driColor}50`,textAlign:'center'}}>
-                        <div style={{fontSize:42,fontWeight:900,color:hg.driColor,lineHeight:1}}>{hg.drillReadinessIndex}%</div>
+                        <div style={{fontSize:42,fontWeight:900,color:hg.driColor,lineHeight:1}}>{hg.drillReadinessIndex}/100</div><div style={{fontSize:10,color:'var(--text-secondary)'}}>Screening indicator, not verified; not an accuracy grade</div>
                         <div style={{fontSize:11,fontWeight:700,marginTop:4}}>Drill Readiness (Desktop Only)</div>
                         <div style={{display:'inline-block',marginTop:6,padding:'3px 12px',borderRadius:20,background:`${hg.driColor}20`,color:hg.driColor,fontWeight:800,fontSize:12}}>
                           {hg.drillReadinessLabel}
@@ -5783,13 +5783,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </label>
               </div>
               <details data-testid="quotation-entry" style={{margin:'0 0 12px',fontSize:13}}>
-                <summary style={{cursor:'pointer'}}>Enter a {PRICE_STATE.VERIFIED} for this project (EmersonEIMS)</summary>
+                <summary style={{cursor:'pointer'}}>Enter a {PRICE_STATE.VERIFIED} (EmersonEIMS) or your own indicative rate for this project</summary>
                 <div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'flex-end',marginTop:8}}>
                   <label>Item<br/><select value={quoteForm.item} onChange={(e)=>setQuoteForm((f)=>({...f,item:e.target.value}))}>{COST_ITEMS.map((k)=>(<option key={k} value={k}>{COST_ITEM_LABEL[k]}</option>))}</select></label>
                   <label>Amount (KSh)<br/><input inputMode="numeric" value={quoteForm.amountKES} onChange={(e)=>setQuoteForm((f)=>({...f,amountKES:e.target.value}))} style={{width:120}} /></label>
                   <label>Quotation reference<br/><input value={quoteForm.reference} onChange={(e)=>setQuoteForm((f)=>({...f,reference:e.target.value}))} style={{width:180}} /></label>
                   <label>Date<br/><input type="date" value={quoteForm.date} onChange={(e)=>setQuoteForm((f)=>({...f,date:e.target.value}))} /></label>
-                  <button type="button" className="btn btn-secondary" style={{fontSize:12}} onClick={()=>{ const v = validateQuotation(quoteForm); if (!v.ok) { setQuoteError(v.error); return; } setQuoteError(''); setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), quotations: [...projectPricingOf(r).quotations, v.value] } } as any) : r); setQuoteForm((f)=>({...f,amountKES:'',reference:''})); }}>Add {PRICE_STATE.VERIFIED}</button>
+                  <label>Kind<br/><select data-testid="quotation-kind" value={quoteForm.label} onChange={(e)=>setQuoteForm((f)=>({...f,label:e.target.value}))}><option value={ENTRY_LABEL.verified}>{ENTRY_LABEL.verified} (EmersonEIMS)</option><option value={ENTRY_LABEL.indicative}>{ENTRY_LABEL.indicative} ({PRICE_STATE.INDICATIVE})</option></select></label>
+                  <button type="button" className="btn btn-secondary" style={{fontSize:12}} onClick={()=>{ const v = validateQuotation(quoteForm); if (!v.ok) { setQuoteError(v.error); return; } setQuoteError(''); setResult((r)=> r ? ({ ...r, projectPricing: { ...projectPricingOf(r), quotations: [...projectPricingOf(r).quotations, v.value] } } as any) : r); setQuoteForm((f)=>({...f,amountKES:'',reference:''})); }}>Add to this project</button>
                 </div>
                 {quoteError && <div role="alert" style={{color:'#ef4444',fontSize:12,marginTop:4}}>{quoteError}</div>}
                 {projectPricingOf(result).quotations.length > 0 && (
@@ -5823,14 +5824,14 @@ const AIBoreholeAnalyzer: React.FC = () => {
               </div>
               {/* P50/P75/P90 Confidence Intervals */}
               <div style={{marginTop:20,background:'rgba(251,191,36,0.06)',border:'1px solid rgba(251,191,36,0.18)',borderRadius:12,padding:16}}>
-                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Planning range around the tender-priced estimate ({cost.confidence.p10Pct}% to +{cost.confidence.p90Pct}%; set allowances, not a statistical spread{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
+                <h4 style={{margin:'0 0 12px',color:'#fbbf24',fontSize:14}}>{'📊'} Planning range around the priced items ({cost.confidence.p10Pct}% to +{cost.confidence.p90Pct}%; set allowances, not a statistical spread{(result.soil as any)?.realSoilGrids ? ` for ${result.soil.type} soil (ISRIC SoilGrids)` : ' — soil type unknown until drilling'})</h4>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',gap:12}}>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(34,197,94,0.08)',border:'1px solid rgba(34,197,94,0.15)'}}>
                     <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Low (if conditions are easy)</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#22c55e'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p10 / cost.total))}</div>
                   </div>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(56,189,248,0.08)',border:'1px solid rgba(56,189,248,0.15)'}}>
-                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Estimate (tender rates)</div>
+                    <div style={{fontSize:11,color:'var(--text-tertiary)',marginBottom:4}}>Estimate (priced items)</div>
                     <div style={{fontSize:18,fontWeight:700,color:'#38bdf8'}}>{fmtUSD(Math.round(ecoTotal * cost.confidence.p50 / cost.total))}</div>
                   </div>
                   <div style={{padding:'12px 16px',borderRadius:8,background:'rgba(251,191,36,0.08)',border:'1px solid rgba(251,191,36,0.15)'}}>
@@ -5957,7 +5958,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <div>
               <h4 className="tab-title">{'\u{1F4CA}'} Probability Breakdown</h4>
               <div className="prob-cards">
-                <div className="prob-card"><div className="prob-value">{probabilityBand(prob.success / 100)}</div><div className="prob-label">Chance of a productive borehole (planning estimate)</div></div>
+                <div className="prob-card"><div className="prob-value">{probabilityBand(prob.success / 100)}</div><div className="prob-label">Modelled success score (uncalibrated)</div></div>
                 {result.uncertainty?.probabilityRange && <div className="prob-card"><div className="prob-value">{Math.round(result.uncertainty.probabilityRange[0] * 100)}–{Math.round(result.uncertainty.probabilityRange[1] * 100)}%</div><div className="prob-label">Range across the models</div></div>}
               </div>
               <div className="result-grid">
@@ -6078,9 +6079,9 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {result.riskDecision.dataQualityWarning && <div style={{padding:10,borderRadius:8,background:'rgba(239,68,68,0.06)',border:'1px solid rgba(239,68,68,0.2)',fontSize:12,marginTop:12}}>{result.riskDecision.dataQualityWarning}</div>}
                   {/* Scenarios */}
                   <h4 style={{marginTop:16,marginBottom:8}}>Scenario Analysis</h4>
-                  <div className="sci-table-wrap"><table className="sci-table"><thead><tr><th>Scenario</th><th>Probability</th><th>Depth</th><th>Yield</th><th>Cost</th><th>Outcome</th></tr></thead><tbody>
+                  <div className="sci-table-wrap"><table className="sci-table"><thead><tr><th>Scenario</th><th>Success score (uncalibrated)</th><th>Depth</th><th>Yield</th><th>Cost</th><th>Outcome</th></tr></thead><tbody>
                     {result.riskDecision.scenarios.map((s: any,i: number)=>(
-                      <tr key={i}><td>{s.name}</td><td>{(s.probability*100).toFixed(0)}%</td><td>{s.depth_m.toFixed(0)}m</td><td>{s.yield_m3hr.toFixed(1)} m³/hr</td><td>${s.cost_USD.toLocaleString()}</td><td>{s.outcome}</td></tr>
+                      <tr key={i}><td>{s.name}</td><td>{Math.round(s.probability*100)}/100</td><td>{s.depth_m.toFixed(0)}m</td><td>{s.yield_m3hr.toFixed(1)} m³/hr</td><td>${s.cost_USD.toLocaleString()}</td><td>{s.outcome}</td></tr>
                     ))}
                   </tbody></table></div>
                 </div>
@@ -6684,7 +6685,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{background:'rgba(255,255,255,0.03)',borderRadius:10,padding:14,marginBottom:16,border:'1px solid rgba(255,255,255,0.06)'}}>
                       <h4 style={{marginBottom:10,color:'#a855f7'}}>Hybrid desktop Interpretation ({ert.hybridInterpretation.featureWeights?.length || 0} features)</h4>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:10}}>
-                        <div className="result-item"><span className="rl">Modelled Success Score</span><span className="rv" style={{color:'#16a34a',fontWeight:800,fontSize:16}}>{(ert.hybridInterpretation.successProbability*100).toFixed(0)}%</span></div>
+                        <div className="result-item"><span className="rl">Modelled Success Score</span><span className="rv" style={{color:'#16a34a',fontWeight:800,fontSize:16}}>{Math.round(ert.hybridInterpretation.successProbability*100)}/100 (uncalibrated)</span></div>
                         <div className="result-item"><span className="rl">Aquifer Type</span><span className="rv" style={{textTransform:'capitalize'}}>{ert.hybridInterpretation.aquiferType}</span></div>
                         <div className="result-item"><span className="rl">Lithology</span><span className="rv">{ert.hybridInterpretation.lithology}</span></div>
                         <div className="result-item"><span className="rl">Water Quality</span><span className="rv" style={{color:ert.hybridInterpretation.waterQuality==='good'||ert.hybridInterpretation.waterQuality==='excellent'?'#16a34a':'#f59e0b'}}>{ert.hybridInterpretation.waterQuality}</span></div>
@@ -7207,7 +7208,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   {/* Main prediction */}
                   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:16}}>
                     <div style={{background:'rgba(34,197,94,0.1)',padding:14,borderRadius:12,textAlign:'center'}}>
-                      <div style={{fontSize:28,fontWeight:800,color:'#16a34a'}}>{dp.successProbability}%</div>
+                      <div style={{fontSize:28,fontWeight:800,color:'#16a34a'}}>{Math.round(Number(dp.successProbability) || 0)}/100<span style={{display:'block',fontSize:10,fontWeight:400}}>{SCORE_NOT_PROBABILITY}</span></div>
                       <div style={{fontSize:11,color:'var(--text-secondary)'}}>Modelled Success Score</div>
                     </div>
                     <div style={{background:'rgba(56,189,248,0.1)',padding:14,borderRadius:12,textAlign:'center'}}>
@@ -7338,11 +7339,11 @@ const AIBoreholeAnalyzer: React.FC = () => {
                       <tr><td><strong>Longitude</strong></td><td>{si.coordinates.lon.toFixed(si.coordinates.decimals)}</td><td>{si.coordinates.datum}</td></tr>
                       <tr><td><strong>Coordinate System</strong></td><td>{si.coordinateSystem}</td><td>Standard geodetic</td></tr>
                       <tr><td><strong>Elevation</strong></td><td>{si.elevation_masl} m a.s.l.</td><td>Copernicus DEM 90m / SRTM 30m</td></tr>
-                      <tr><td><strong>Location Confidence</strong></td><td style={{color: si.locationConfidenceGrade <= 'B' ? '#16a34a' : si.locationConfidenceGrade === 'C' ? '#d97706' : '#dc2626', fontWeight:'bold'}}>Grade {si.locationConfidenceGrade}</td><td>{si.verificationMethod}</td></tr>
+                      <tr><td><strong>Location precision (GPS; not a verification grade)</strong></td><td style={{color: si.locationConfidenceGrade <= 'B' ? '#16a34a' : si.locationConfidenceGrade === 'C' ? '#d97706' : '#dc2626', fontWeight:'bold'}}>Grade {si.locationConfidenceGrade}</td><td>{si.verificationMethod}</td></tr>
                     </tbody>
                   </table>
                   <div style={{marginTop:12,padding:10,borderRadius:8,background: si.locationConfidenceGrade <= 'B' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',border: `1px solid ${si.locationConfidenceGrade <= 'B' ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`}}>
-                    <strong>Gate Rule:</strong> GPS {si.locationConfidenceGrade <= 'B' ? 'VERIFIED -- Bankable grade' : si.locationConfidenceGrade === 'C' ? 'ACCEPTABLE (geocoded) -- Recommend field GPS for bankable' : 'REQUIRES FIELD VERIFICATION'}
+                    <strong>Gate Rule:</strong> GPS {si.locationConfidenceGrade <= 'B' ? 'PRECISE (GPS precision grade A/B; not a verification of the analysis)' : si.locationConfidenceGrade === 'C' ? 'ACCEPTABLE (geocoded) -- Recommend field GPS for bankable' : 'REQUIRES FIELD VERIFICATION'}
                   </div>
                 </div>
                 );
@@ -7362,7 +7363,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                   <div style={{background:'rgba(34,197,94,0.08)',border:'2px solid rgba(34,197,94,0.4)',borderRadius:12,padding:20,marginBottom:16}}>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                       <div><strong>Coordinates:</strong><br/><span style={{fontFamily:'monospace',fontSize:15}}>{dd.primaryPoint.lat.toFixed(6)}, {dd.primaryPoint.lon.toFixed(6)}</span></div>
-                      <div><strong>Modelled Success Score:</strong><br/><span style={{fontSize:24,fontWeight:'bold',color:'#16a34a'}}>{dd.successProbability}%</span></div>
+                      <div><strong>Modelled Success Score:</strong><br/><span style={{fontSize:24,fontWeight:'bold',color:'#16a34a'}}>{Math.round(Number(dd.successProbability) || 0)}/100</span><br/><span style={{fontSize:10}}>{SCORE_NOT_PROBABILITY}</span></div>
                       <div><strong>Target Depth:</strong><br/>{evidenceGate(result).depth ? <>{dd.targetDepth_m}m <span style={{color:'var(--text-muted)'}}>(range: {dd.depthRange_m[0]}-{dd.depthRange_m[1]}m)</span></> : DEPTH_NEEDS}</div>
                       <div><strong>Expected Yield:</strong><br/>{evidenceGate(result).yield ? <>{dd.expectedYield_m3hr} m3/hr <span style={{color:'var(--text-muted)'}}>(range: {dd.yieldRange_m3hr[0]}-{dd.yieldRange_m3hr[1]})</span></> : YIELD_NEEDS}</div>
                       <div><strong>Casing Depth:</strong> {gated(evidenceGate(result).depth, `${dd.casingDepth_m}m`, DEPTH_NEEDS)}</div>
@@ -8146,7 +8147,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                     <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:6}}>MODELLED SUCCESS SCORE</div>
                     <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:6}}>MODELLED, uncalibrated: a score, not a probability. No drilled outcomes have been used to check it yet.</div>
                     <div style={{fontSize:11}}>Desktop: <strong>{probabilityBand(result.probability)}</strong></div>
-                    {result.drillingPrediction && <div style={{fontSize:11}}>Desktop model: <strong>{result.drillingPrediction.successProbability}%</strong></div>}
+                    {result.drillingPrediction && <div style={{fontSize:11}}>Desktop model: <strong>{Math.round(Number(result.drillingPrediction.successProbability) || 0)}/100 (uncalibrated)</strong></div>}
                     {result.regionalModel?.correctedProbability && <div style={{fontSize:11}}>Regional: <strong>{result.regionalModel.correctedProbability}%</strong></div>}
                   </div>
                 </div>
@@ -8223,7 +8224,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                 </div>
                 <div style={{background:'rgba(168,85,247,0.08)',padding:14,borderRadius:12,border:'1px solid rgba(168,85,247,0.15)'}}>
                   <div style={{fontSize:11,color:'var(--text-secondary)',marginBottom:4}}>MODELLED SUCCESS SCORE</div>
-                  <div style={{fontSize:22,fontWeight:800,color:'#a855f7'}}>{(pinn.physicsModel.predictedProbability*100).toFixed(1)}%</div>
+                  <div style={{fontSize:22,fontWeight:800,color:'#a855f7'}}>{Math.round(pinn.physicsModel.predictedProbability*100)}/100</div>
                   <div style={{fontSize:10,color:'var(--text-muted)',marginTop:4}}>Darcy: {pinn.physicsModel.darcyYield_m3h} | Theis s: {pinn.physicsModel.theisDrawdown_m}m</div>
                 </div>
               </div>
@@ -8893,7 +8894,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
                                 <td style={{padding:'5px 8px',color:'#94a3b8'}}>{r.region || '—'}</td>
                                 <td style={{padding:'5px 8px',color:'#38bdf8'}}>{r.format}</td>
                                 <td style={{padding:'5px 8px',color:'#f59e0b',textTransform:'capitalize'}}>{r.tier}</td>
-                                <td style={{padding:'5px 8px',color: r.probability >= 0.65 ? '#22c55e' : '#eab308',fontWeight:600}}>{(r.probability*100).toFixed(0)}%</td>
+                                <td style={{padding:'5px 8px',color: r.probability >= 0.65 ? '#22c55e' : '#eab308',fontWeight:600}}>{Math.round(r.probability*100)}/100</td>
                                 <td style={{padding:'5px 8px',color:'#94a3b8'}}>{r.recommendedDepth.toFixed(0)}m</td>
                                 <td style={{padding:'5px 8px',color:'#94a3b8'}}>{r.estimatedYield.toFixed(1)}</td>
                                 <td style={{padding:'5px 8px',color: r.riskLevel === 'Low' ? '#22c55e' : r.riskLevel === 'Moderate' ? '#eab308' : '#ef4444'}}>{r.riskLevel}</td>
@@ -8935,7 +8936,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
 
     // Comparison metrics table rows
     const compMetrics = analyzed.length >= 2 ? [
-      { label: 'Chance of success (planning estimate)', unit: '', values: analyzed.map(s => probabilityBand(s.result!.probability)), best: 'none' as const },
+      { label: 'Modelled success score (uncalibrated)', unit: '', values: analyzed.map(s => probabilityBand(s.result!.probability)), best: 'none' as const },
       // Release 5: depth/yield rows only when every compared site has field evidence.
       ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', unit: 'm', values: analyzed.map(s => s.result!.recommendedDepth.toFixed(0)), best: 'min' as const }] : []),
       ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', unit: 'm³/h', values: analyzed.map(s => s.result!.estimatedYield.toFixed(1)), best: 'max' as const }] : []),
@@ -8978,7 +8979,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
           </div>
         </div>
         {exportMsg && <div role="status" aria-live="polite" className="geo-note" style={{marginBottom:12}}>{exportMsg}</div>}
-        <p className="tab-desc">Upload a photo for each of up to 3 candidate sites. Each is analysed on its own, then they are ranked with a weighted score from desktop data: chance of success, risk and data confidence (30 : 20 : 15). Yield (25) and depth (10) count only for a site with a field survey and a pumping test. A photo is used only for its camera GPS position; it is not analysed.</p>
+        <p className="tab-desc">Upload a photo for each of up to 3 candidate sites. Each is analysed on its own, then they are ranked with a weighted score from desktop data: modelled success score (uncalibrated), risk and data confidence (30 : 20 : 15). Yield (25) and depth (10) count only for a site with a field survey and a pumping test. A photo is used only for its camera GPS position; it is not analysed.</p>
 
         {/* ── Upload Cards ── */}
         <div className="compare-grid">
@@ -9005,7 +9006,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
               )}
               {site.result && !((site.result as any).waterBodyCheckUnavailable && !site.waterConfirmed) && (
                 <div className="compare-results">
-                  <div className="cr-row"><span>Chance of success</span><span style={{color:'#4CAF50'}}>{compareCardFigures(site.result).chance}</span></div>
+                  <div className="cr-row"><span>Modelled success score (uncalibrated)</span><span style={{color:'#4CAF50'}}>{compareCardFigures(site.result).chance}</span></div>
                   <div className="cr-row"><span>Depth</span><span>{compareCardFigures(site.result).depth}</span></div>
                   <div className="cr-row"><span>Yield</span><span>{compareCardFigures(site.result).yield}</span></div>
                   <div className="cr-row"><span>Risk</span><span style={{color:getRiskColor(site.result.risk.overallRisk)}}>{(site.result.risk.overallRisk*100).toFixed(0)}%</span></div>
@@ -9038,7 +9039,7 @@ const AIBoreholeAnalyzer: React.FC = () => {
             <h4 className="compare-section-title">{'\u{1F4CA}'} Parameter Comparison</h4>
             <div className="compare-bars">
               {[
-                { label: 'Modelled Success Score', key: 'prob', values: analyzed.map(s => s.result!.probability * 100), max: 100, unit: '%', higherBetter: true },
+                { label: 'Modelled Success Score', key: 'prob', values: analyzed.map(s => s.result!.probability * 100), max: 100, unit: '/100', higherBetter: true },
                 ...(analyzed.every(s => evidenceGate(s.result).yield) ? [{ label: 'Estimated Yield', key: 'yield', values: analyzed.map(s => s.result!.estimatedYield), max: Math.max(...analyzed.map(s => s.result!.estimatedYield)) * 1.2, unit: ' m³/h', higherBetter: true }] : []),
                 { label: 'Overall Risk', key: 'risk', values: analyzed.map(s => s.result!.risk.overallRisk * 100), max: 100, unit: '%', higherBetter: false },
                 ...(analyzed.every(s => evidenceGate(s.result).depth) ? [{ label: 'Recommended Depth', key: 'depth', values: analyzed.map(s => s.result!.recommendedDepth), max: Math.max(...analyzed.map(s => s.result!.recommendedDepth)) * 1.2, unit: 'm', higherBetter: false }] : []),

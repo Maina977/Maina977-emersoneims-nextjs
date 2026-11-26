@@ -1006,7 +1006,7 @@ function auditCrossEngineReconciliation(result: AnalysisResult): AuditCheck {
   const govProb = Number(r.probability ?? NaN);
   if (Number.isFinite(govProb) && (govProb < 0.05 || govProb > 1)) {
     violations.push(
-      `Governing success probability is ${(govProb * 100).toFixed(0)}% — outside the sane 5–100% band. A sub-model/display value has leaked into the governing result.`,
+      `Governing success score is ${Math.round(govProb * 100)}/100 (uncalibrated, not a probability) — outside the sane 5–100% band. A sub-model/display value has leaked into the governing result.`,
     );
   }
 
@@ -1026,7 +1026,7 @@ function auditCrossEngineReconciliation(result: AnalysisResult): AuditCheck {
       (Number.isFinite(govYield) && Number.isFinite(designYield)
         ? `yield ${govYield.toFixed(1)} vs design ${designYield.toFixed(2)} m³/hr within tolerance; `
         : 'yield comparison not applicable; ') +
-      `governing success probability ${Number.isFinite(govProb) ? (govProb * 100).toFixed(0) + '%' : 'n/a'}.`,
+      `governing success score ${Number.isFinite(govProb) ? Math.round(govProb * 100) + '/100 (uncalibrated)' : 'n/a'}.`,
   };
 }
 
@@ -1058,7 +1058,7 @@ function auditReconciliationMatrix(result: AnalysisResult): AuditCheck {
     if (Array.isArray(u.probabilityRange) && Number.isFinite(p)) {
       const [lo, hi] = u.probabilityRange.map(Number);
       // allow a 1-pt rounding slack
-      if (p < lo - 0.01 || p > hi + 0.01) violations.push(`Success probability ${(p * 100).toFixed(0)}% falls outside its stated range ${(lo * 100).toFixed(0)}-${(hi * 100).toFixed(0)}%`);
+      if (p < lo - 0.01 || p > hi + 0.01) violations.push(`Success score ${Math.round(p * 100)}/100 (uncalibrated, not a probability) falls outside its stated range ${(lo * 100).toFixed(0)}-${(hi * 100).toFixed(0)}%`);
       else passes.push('prob-in-range');
     }
     const d = Number(r.recommendedDepth);

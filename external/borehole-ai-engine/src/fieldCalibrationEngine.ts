@@ -165,7 +165,8 @@ export function calibrateWithFieldData(
     const T = pt.transmissivityM2Day;
     const S = pt.storativity;
 
-    notes.push(`Pump test yield: ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
+    // 34072f31 review (minor): the figure is the rate the test pumped at, not a yield.
+    notes.push(`Pump test: tested rate ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
     if (T != null || S != null) notes.push(`Transmissivity: ${T ?? 'not reported'} m²/day, Storativity: ${S ?? 'not reported'}`);
     notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
 
