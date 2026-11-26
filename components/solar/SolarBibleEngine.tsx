@@ -21,7 +21,7 @@ import { KENYA_CLIMATE,
   findOptimalSystem,
   type SolarPanel, type BatteryUnit, type Inverter
 } from './SolarEquipmentDatabase';
-import { pricesVerified, REQUEST_QUOTATION, REQUEST_QUOTATION_NOTE } from '@/lib/solar/sizing';
+import { pricesVerified, REQUEST_QUOTATION, REQUEST_QUOTATION_NOTE, BATTERY_DOD, DISCHARGE_PATH_EFFICIENCY } from '@/lib/solar/sizing';
 
 // Price policy (management decision 2026-11-13): the cost analysis is built on
 // typical rates with no identifiable source and on assumed tariffs and diesel
@@ -143,6 +143,8 @@ export default function SolarBibleEngine() {
   const [gridConnected, setGridConnected] = useState(true);
   const [backupHours, setBackupHours] = useState(8);
   const [budget, setBudget] = useState<'economy' | 'standard' | 'premium'>('standard');
+  /** Which sun-hours the last sizing used, shown with the result (audit 2026-11-26). */
+  const [sunBasis, setSunBasis] = useState<string>('');
 
   // APPLIANCES
   const [appliances, setAppliances] = useState<Appliance[]>([
@@ -308,7 +310,12 @@ export default function SolarBibleEngine() {
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
       .then((j) => {
-      const sun = j?.sunHours?.source === 'nasa-power' ? { annual: Number(j.sunHours.annual), worstMonth: Number(j.sunHours.worstMonth) } : undefined;
+      // NASA POWER, or the API's own stated Kenyan fallback when NASA is down
+      // (audit 2026-11-26: that labelled fallback was discarded for the table).
+      const sun = j?.sunHours && Number(j.sunHours.annual) > 0 ? { annual: Number(j.sunHours.annual), worstMonth: Number(j.sunHours.worstMonth) } : undefined;
+      setSunBasis(sun
+        ? (j.sunHours.source === 'nasa-power' ? `Sun: NASA POWER, ${sun.annual.toFixed(2)} kWh/m²/day` : `Sun: ${String(j.sunHours.note || 'typical Kenyan value')} (an assumption)`)
+        : `Sun: ${climateData.irradiance} kWh/m²/day from the table above (no cited source; an assumption: NASA data for ${location} was not available)`);
       // Use the advanced optimization algorithm from SolarEquipmentDatabase
       const optimizedSystems = findOptimalSystem(
         dailyConsumption,
@@ -373,7 +380,7 @@ export default function SolarBibleEngine() {
       setIsCalculating(false);
       setStep(5);
     });
-  }, [dailyConsumption, peakLoad, location, backupHours, budget, gridConnected]);
+  }, [dailyConsumption, peakLoad, location, backupHours, budget, gridConnected, climateData]);
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // PDF GENERATION
@@ -655,6 +662,7 @@ ${systemDesign.batteries[0] ? `            <tr>
               {/* Climate Info */}
               <div className="mt-4 p-4 bg-gray-800/50 rounded-xl">
                 <h4 className="text-sm font-medium text-white mb-2">Climate Data for {location}</h4>
+                <p className="text-xs text-gray-400 mb-2">Table values with no cited source (assumptions). Sizing uses NASA POWER sun-hours when available.</p>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <Sun className="w-5 h-5 text-amber-500 mx-auto mb-1" />
@@ -933,6 +941,7 @@ ${systemDesign.batteries[0] ? `            <tr>
                   <p className="text-xs text-gray-400">Days Autonomy</p>
                 </div>
               </div>
+              {sunBasis && <p className="text-xs text-gray-400 mb-6" data-testid="sun-basis">{sunBasis}. Autonomy: usable battery energy ({Math.round(BATTERY_DOD * 100)}% depth × {Math.round(DISCHARGE_PATH_EFFICIENCY * 100)}% battery-to-load efficiency, assumed) ÷ daily use.</p>}
 
               {PRICES_SHOWN ? (<>
               {/* Cost Analysis */}
