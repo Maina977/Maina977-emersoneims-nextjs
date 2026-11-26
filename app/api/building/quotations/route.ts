@@ -1,18 +1,20 @@
 /**
- * Building Quotations API: RETIRED (2026-11-26). See lib/security/retiredRoute.ts.
- * It had no authentication: anyone could list every quotation (with the
- * user's name and email once a database is connected), read any by id, create
- * one, or overwrite any field of one, totals included, without recomputing
- * them. Its POST also computed VAT wrongly (a VAT of 0 became 16 %; VAT was
- * added to a total with no subtotal; the discount came off after VAT). No page
- * used it. Same retirement as /api/building/projects (2026-11-24, 3f6669ea).
- * The previous handlers are in git history (bf2c7500).
+ * Building Quotations API: RETIRED (security hotfix 2026-11-26, CA-27). See lib/security/retiredRoute.ts.
+ *
+ * It had no authentication and no caller in the site: anyone could list every stored quotation (from the
+ * database whenever one is connected), read any quotation, create quotations, and overwrite a quotation's
+ * VAT and total without recalculation (the independent review set VAT to 999 and the total to 1). It is
+ * retired the same way as /api/building/projects (2026-11-24). Every method answers 410 Gone; nothing is
+ * read from or written to storage. The previous handler is preserved in git history
+ * (`git show bf2c7500:app/api/building/quotations/route.ts`).
  */
 import { retired } from '@/lib/security/retiredRoute';
 
 const gone = () => retired('This quotations API');
 export const GET = gone;
+export const HEAD = gone;
 export const POST = gone;
 export const PUT = gone;
 export const PATCH = gone;
 export const DELETE = gone;
+export const OPTIONS = gone;
