@@ -132,7 +132,7 @@ describe('completion and sign-off while a STOP is latched', () => {
   const base = (findings: string): JobCard => ({
     ...openJobCard({ id: 'JC-9', assetId: 'A-1', opened: '2026-11-26', reportedFault: 'TEST', technician: 'TECH-A' }),
     status: 'IN PROGRESS', findings, tasks: ['TEST inspect'], engineHoursAtJob: 10,
-    readings: [{ name: 'TEST voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
+    readings: [{ name: 'TEST voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }],
   });
   const complete = (c: JobCard) => transition(c, 'COMPLETED', 'TECH-A', '2026-11-26T12:00');
 

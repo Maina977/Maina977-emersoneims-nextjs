@@ -293,9 +293,15 @@ export const STOP_NOT_CARRIED_NOTICE = 'Generator Oracle cannot confirm a set is
  * Each needs a value and a unit of the right kind. No limit is invented: a reading without a limit is
  * printed "NOT VERIFIED, not a pass". The file-consistency check of saved cards is unchanged.
  */
-interface RequiredReading { family: string; id: string; text: string; units: string[]; match?: RegExp }
-/** The engine test-run readings, with the words a technician uses for them on a card. */
-const BASE_TEST_RUN: Array<[string, string, RegExp]> = [['low-oil-pressure', 'oilPressure', /oil\s*pressure/i], ['overheating', 'coolantTemp', /coolant/i], ['no-voltage', 'voltage', /volt/i], ['no-voltage', 'frequency', /freq|\bhz\b/i]];
+export interface RequiredReading { family: string; id: string; text: string; units: string[] }
+/**
+ * Review O-1 (2026-11-26): each required reading is entered against its OWN checklist item
+ * (Reading.checklistId = the item id) and completion checks those structured items only.
+ * A free-text reading (no checklistId) is kept as a note on the card but never satisfies a
+ * required item, so "Battery voltage 24 V" can no longer stand in for the output voltage.
+ */
+/** The engine test-run readings every generator test run takes (family, Guided Diagnosis question id). */
+const BASE_TEST_RUN: Array<[string, string]> = [['low-oil-pressure', 'oilPressure'], ['overheating', 'coolantTemp'], ['no-voltage', 'voltage'], ['no-voltage', 'frequency']];
 const unitsOf = (q: Question): string[] => {
   const kind = unitKindOf(q);
   return kind ? [...UNIT_OPTIONS[kind]] : q.kind === 'number' ? [q.unit] : [];
@@ -311,25 +317,26 @@ export function cardFamilies(card: Pick<JobCard, 'findings' | 'guidedSafety'>): 
   for (const st of card.guidedSafety?.stops ?? []) ids.add(st.key.split('|')[0]);
   return [...ids].filter((id) => FAMILIES.some((f) => f.id === id));
 }
+const familyItems = (fid: string): RequiredReading[] => {
+  const fam = FAMILIES.find((f) => f.id === fid);
+  return (fam?.limits ?? []).filter((x) => x.protective).map((l) => required(fid, l.reading)).filter((r): r is RequiredReading => !!r);
+};
 export function requiredTestRunReadings(card: Pick<JobCard, 'findings' | 'guidedSafety'>): RequiredReading[] {
   const out: RequiredReading[] = [];
   const add = (r: RequiredReading | null) => { if (r && !out.some((x) => x.id === r.id)) out.push(r); };
-  for (const [f, id, match] of BASE_TEST_RUN) { const r = required(f, id); add(r ? { ...r, match } : null); }
-  for (const fid of cardFamilies(card)) {
-    const fam = FAMILIES.find((f) => f.id === fid)!;
-    for (const l of (fam.limits ?? []).filter((x) => x.protective)) add(required(fid, l.reading));
-  }
+  for (const [f, id] of BASE_TEST_RUN) add(required(f, id));
+  for (const fid of cardFamilies(card)) familyItems(fid).forEach(add);
   return out;
 }
-const words = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean);
-/** A card reading matches a required one when its name holds the question text or its first two words. */
-const readingMatches = (r: Reading, q: RequiredReading) => {
-  const name = r.name.toLowerCase();
-  const w = words(q.text);
-  return (q.match ? q.match.test(r.name) : false) || name.includes(q.text.toLowerCase()) || (w.length >= 2 ? name.includes(`${w[0]} ${w[1]}`) : name.includes(w[0]));
-};
+/** Every checklist item any card can require (the base test run and every family's protective readings), by id. */
+export function checklistItem(id: string): RequiredReading | null {
+  for (const [f, q] of BASE_TEST_RUN) if (q === id) return required(f, q);
+  for (const fam of FAMILIES) { const r = familyItems(fam.id).find((x) => x.id === id); if (r) return r; }
+  return null;
+}
+/** A required item is satisfied only by a reading entered against it: same checklistId, a value and a unit of its kind. */
 export function missingTestRunReadings(card: Pick<JobCard, 'findings' | 'guidedSafety' | 'readings'>): string[] {
-  return requiredTestRunReadings(card).filter((q) => !card.readings.some((r) => readingMatches(r, q) && Number.isFinite(r.value) && q.units.some((u) => u.toLowerCase() === r.unit.trim().toLowerCase())))
+  return requiredTestRunReadings(card).filter((q) => !card.readings.some((r) => r.checklistId === q.id && Number.isFinite(r.value) && q.units.some((u) => u.toLowerCase() === r.unit.trim().toLowerCase())))
     .map((q) => `${q.text} (${q.units.join(' / ')})`);
 }
 
@@ -405,7 +412,8 @@ export function nextStatuses(s: JobStatus): JobStatus[] { return [...(FLOW[s] ??
 export const JOB_STATUSES: JobStatus[] = ['OPEN', 'IN PROGRESS', 'AWAITING PARTS', 'COMPLETED', SIGNOFF];
 
 export interface PartLine { partNo: string; description: string; qty: number; compatibility: ManualRef | null }
-export interface Reading { name: string; value: number; unit: string; min?: number; max?: number; limitSource?: string }
+/** checklistId: the test-run checklist item this reading was entered against (review O-1); absent = a free-text note. */
+export interface Reading { name: string; value: number; unit: string; min?: number; max?: number; limitSource?: string; checklistId?: string }
 export interface JobCard {
   id: string; assetId: string; opened: string; reportedFault: string; faultCodes: string[];
   technician: string; status: JobStatus; tasks: string[]; parts: PartLine[]; labourHours: number;
@@ -511,7 +519,7 @@ export function transition(card: JobCard, to: JobStatus, by: string, at: string,
     if (!recordsStopInForce(next)) {
       // Real-project test D6 (2026-11-26): not "any reading" — the test-run readings THIS job needs.
       const missing = missingTestRunReadings(next);
-      if (missing.length) e.push(`test-run readings for this job: ${missing.join('; ')} (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
+      if (missing.length) e.push(`test-run readings for this job: ${missing.join('; ')} — enter each against its own checklist item; a free-text reading is kept as a note and does not count (or, if a STOP is unresolved, ${NOT_TAKEN_PROMPT})`);
     } else if (next.readings.length) {
       // F10-R3 MINOR: the card cannot say both "no test-run readings were taken" and carry test-run readings.
       e.push(`one consistent record: "${NOT_TAKEN_ACTION}" is recorded but the card also carries ${next.readings.length} test-run reading(s); remove the readings, or use a new job card for the test run`);
@@ -736,7 +744,7 @@ export function jobCardReportParts(card: JobCard, asset: Asset): { title: string
       ] },
       { heading: 'PARTS', lines: list(card.parts.map((p) => `${p.qty} × ${p.partNo}${p.description ? ` ${p.description}` : ''} — ${p.compatibility ? `parts book: ${refText(p.compatibility)}` : 'compatibility unverified (no parts-book reference)'}`), 'none') },
       { heading: 'TEST READINGS', lines: [
-        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})`), !card.readings.length && recordsStopInForce(card) ? `none: ${NOT_TAKEN_ACTION} (recorded action, see SAFETY)` : '(none recorded)'),
+        ...list(card.readings.map((r) => `${r.name}: ${r.value} ${r.unit} (${fmtLimits(r)})${r.checklistId ? ` — checklist item: ${checklistItem(r.checklistId)?.text ?? r.checklistId}` : ''}`), !card.readings.length && recordsStopInForce(card) ? `none: ${NOT_TAKEN_ACTION} (recorded action, see SAFETY)` : '(none recorded)'),
         ...flags.map((f) => `  ! ${f}`),
       ] },
       // One report line per findings line (a guided-diagnosis record is several lines).

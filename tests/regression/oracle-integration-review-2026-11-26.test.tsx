@@ -78,7 +78,7 @@ const nextQ = (f: FaultFamily, findings: string) => {
   const next = findings.split('\n').find((l) => l.startsWith('Next check'))!;
   return f.questions.find((x) => next.includes(x.text)) as { needsRunning?: boolean } | undefined;
 };
-const readings = [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }];
+const readings = [{ name: 'Oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil temperature', value: 90, unit: '°C', checklistId: 'oilTemp' }];
 
 describe('R-INT-1: a record made under a latched STOP or the SAFETY HOLD carries no running step', () => {
   it('reviewer latched-body: charging record under a latched (answers-cleared) knock STOP has no running check and no running-only Next check', () => {
@@ -222,11 +222,11 @@ describe('R-INT-3: the SAFETY HOLD is recorded as a hold, and blocks completion'
     expect(card.findings).toMatch(/NOTE: The findings below were recorded before this SAFETY HOLD/);
     expect(card.findings).not.toMatch(/recorded before this STOP/);
     expect(card.findings).not.toContain(`STOP: ${SAFETY_HOLD_TEXT}`);
-    expect(() => complete(card, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
+    expect(() => complete(card, { readings: [{ name: 'Coolant', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil temperature', value: 90, unit: '°C', checklistId: 'oilTemp' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
     expect(complete({ ...card, guidedSafety: recordNotTaken(card.guidedSafety, { at: T, by: 'TECH', confirmed: true }) }).status).toBe('COMPLETED');
     // R-INT-7: a later record made with a readable safety record does NOT resolve the hold.
     const later = { ...card, guidedSafety: mergeGuidedSafety(card.guidedSafety, { stops: [], clearances: [], hold: null }, '2026-11-26T09:00:00.000Z') };
-    expect(() => complete(later, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
+    expect(() => complete(later, { readings: [{ name: 'Coolant', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil temperature', value: 90, unit: '°C', checklistId: 'oilTemp' }] })).toThrow(/SAFETY HOLD is recorded on this card/);
     // Only an in-person reassessment recorded on the card (name, reason >= 10 characters, confirmation) does.
     expect(() => recordHoldReassessment(card.guidedSafety, { at: T, by: 'JK', reason: 'short', confirmed: true })).toThrow(/at least 10 characters/);
     expect(() => recordHoldReassessment(card.guidedSafety, { at: T, by: '', reason: 'Inspected the set in person', confirmed: true })).toThrow(/name or initials/);
@@ -235,7 +235,7 @@ describe('R-INT-3: the SAFETY HOLD is recorded as a hold, and blocks completion'
     expect(reassessed.guidedSafety.holds[0].resolvedAt).toBe(T);
     expect(reassessed.guidedSafety.holds).toHaveLength(1);
     expect(jobCardReport(reassessed, asset)).toMatch(/Reassessment recorded .* by JK \(typed name, UNVERIFIED\): Inspected the set in person/);
-    expect(complete(reassessed, { readings: [{ name: 'Coolant', value: 80, unit: '°C' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil temperature', value: 90, unit: '°C' }] }).status).toBe('COMPLETED');
+    expect(complete(reassessed, { readings: [{ name: 'Coolant', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil temperature', value: 90, unit: '°C', checklistId: 'oilTemp' }] }).status).toBe('COMPLETED');
     expect(cardContentHash(reassessed, 'S', T)).not.toBe(cardContentHash(card, 'S', T));
     expect((await pdfText(card)).indexOf('SAFETY HOLD')).toBeLessThan((await pdfText(card)).indexOf('ASSET'));
   });

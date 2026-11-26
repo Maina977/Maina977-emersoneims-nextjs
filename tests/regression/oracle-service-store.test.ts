@@ -17,7 +17,7 @@ const signedCard = () => run(withPlan(),
   { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: {
     findings: 'TEST findings', tasks: ['TEST work', ''], engineHoursAtJob: 1500, labourHours: 2,
     parts: [{ partNo: 'TEST-123', description: 'TEST part', qty: 1, compatibility: { document: 'TEST parts book', edition: 'TEST ed.', page: '7' } }],
-    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
+    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }],
   } },
   { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR-B', at: '2026-11-20T13:00' },
 );
@@ -70,7 +70,7 @@ describe('service store: job cards', () => {
     expect(apply(s, { type: 'updateCard', cardId: 'JC-1', update: { parts: [{ partNo: 'TEST-1', description: '', qty: 1, compatibility: { document: 'TEST', edition: '', page: '' } }] } }).error).toMatch(/or leave all three empty/);
     const unverified = reduce(s, { type: 'updateCard', cardId: 'JC-1', update: { parts: [{ partNo: 'TEST-1', description: '', qty: 1, compatibility: { document: '', edition: '', page: '' } }] } });
     expect(unverified.jobCards[0].parts[0].compatibility).toBeNull();
-    const done = reduce(s, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: { findings: 'f', tasks: ['w'], engineHoursAtJob: 10, readings: [{ name: 'TEST r', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] } });
+    const done = reduce(s, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: { findings: 'f', tasks: ['w'], engineHoursAtJob: 10, readings: [{ name: 'TEST r', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }] } });
     expect(apply(done, { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'TECH-A', at: '2026-11-20T13:00' }).error).toBe('Sign-off must be by a supervisor other than the technician');
     expect(apply(done, { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: ' tech-a ', at: '2026-11-20T13:00' }).error).toBe('Sign-off must be by a supervisor other than the technician');
     expect(apply(done, { type: 'updateCard', cardId: 'JC-1', update: { findings: '' } }).error).toMatch(/move it back to IN PROGRESS/);

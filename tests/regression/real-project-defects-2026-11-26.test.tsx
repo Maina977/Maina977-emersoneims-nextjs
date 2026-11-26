@@ -15,10 +15,10 @@ afterEach(cleanup);
 const ASSET: Asset = { id: 'A-1', make: 'TEST', model: 'T', engine: 'E', controller: 'C', serial: 'S', ratedKva: 100 };
 const card = (findings = 'TEST service done'): JobCard => ({ ...openJobCard({ id: 'JC-1', assetId: 'A-1', opened: '2026-11-26', reportedFault: 'TEST', technician: 'TECH-A' }), status: 'IN PROGRESS', findings, tasks: ['TEST oil and filter'], engineHoursAtJob: 1200 });
 const BASE: Reading[] = [
-  { name: 'Oil pressure', value: 350, unit: 'kPa', min: 200, limitSource: 'TEST manual p. 1' },
-  { name: 'Coolant temperature', value: 82, unit: '°C' },
-  { name: 'Output voltage L1-L2', value: 401, unit: 'V' },
-  { name: 'Frequency', value: 50.1, unit: 'Hz' },
+  { name: 'Oil pressure', value: 350, unit: 'kPa', min: 200, limitSource: 'TEST manual p. 1', checklistId: 'oilPressure' },
+  { name: 'Coolant temperature', value: 82, unit: '°C', checklistId: 'coolantTemp' },
+  { name: 'Output voltage L1-L2', value: 401, unit: 'V', checklistId: 'voltage' },
+  { name: 'Frequency', value: 50.1, unit: 'Hz', checklistId: 'frequency' },
 ];
 const complete = (c: JobCard, readings: Reading[]) => transition(c, 'COMPLETED', 'TECH-A', '2026-11-26T12:00', { readings });
 
@@ -40,7 +40,7 @@ describe('D6: completion needs the test-run readings this job needs, not any rea
     const c = card('GUIDED DIAGNOSIS: Low oil pressure / oil starvation [low-oil-pressure] — oracle-diagnostics 1.3.0; content status: x.');
     expect(requiredTestRunReadings(c).map((r) => r.id)).toEqual(['oilPressure', 'coolantTemp', 'voltage', 'frequency', 'oilTemp']);
     expect(() => complete(c, BASE)).toThrow(/Oil temperature \(°C \/ °F\)/);
-    expect(complete(c, [...BASE, { name: 'Oil temperature', value: 95, unit: '°C' }]).status).toBe('COMPLETED');
+    expect(complete(c, [...BASE, { name: 'Oil temperature', value: 95, unit: '°C', checklistId: 'oilTemp' }]).status).toBe('COMPLETED');
   });
   it('a card with a charging STOP needs the battery voltage while running', () => {
     const c = { ...card(), guidedSafety: { stops: [{ key: 'charging|x', from: 'Charging', since: '2026-11-26T08:00:00.000Z', message: 'x' }], clearances: [], holds: [] } };

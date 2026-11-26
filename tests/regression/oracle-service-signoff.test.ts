@@ -20,7 +20,7 @@ const completed = () => run(emptyState(),
   { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: '2026-11-20T12:00', update: {
     findings: 'TEST sender faulty', tasks: ['TEST replace sender', 'TEST test run'], engineHoursAtJob: 1500, labourHours: 2,
     parts: [{ partNo: 'TEST-123', description: 'TEST sender', qty: 1, compatibility: book }],
-    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
+    readings: [{ name: 'TEST voltage', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'TEST rating plate', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }],
   } },
 );
 const signed = () => run(completed(), { type: 'transition', cardId: 'JC-1', to: SIGNOFF, by: 'SUPERVISOR-B', at: '2026-11-20T13:00' });
@@ -302,7 +302,7 @@ describe('version-1 upgrade: unhashed sign-offs are moved back, not the whole fi
       { type: 'addTask', assetId: 'A-2', task: { task: 'TEST air filter', intervalMonths: 6, source: ref } },
       { type: 'openCard', card: { assetId: 'A-2', opened: '2026-11-19', reportedFault: 'TEST no start', technician: 'TECH-C' } },
       { type: 'transition', cardId: 'JC-2', to: 'IN PROGRESS', by: 'TECH-C', at: '2026-11-19T08:00' },
-      { type: 'transition', cardId: 'JC-2', to: 'COMPLETED', by: 'TECH-C', at: '2026-11-19T10:00', update: { findings: 'TEST battery flat', tasks: ['TEST charge battery'], engineHoursAtJob: 300, readings: [{ name: 'TEST voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }] } },
+      { type: 'transition', cardId: 'JC-2', to: 'COMPLETED', by: 'TECH-C', at: '2026-11-19T10:00', update: { findings: 'TEST battery flat', tasks: ['TEST charge battery'], engineHoursAtJob: 300, readings: [{ name: 'TEST voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }] } },
       { type: 'transition', cardId: 'JC-2', to: SIGNOFF, by: 'SUPERVISOR-D', at: '2026-11-19T11:00' },
       { type: 'openCard', card: { assetId: 'A-2', opened: '2026-11-21', reportedFault: 'TEST oil leak', technician: 'TECH-C' } });
     return s;
@@ -405,7 +405,7 @@ describe('audit O1–O6: job-card sign-off cannot be forged or granted by a type
     expect(deserialise(fileWith([v1Signed()])).ok).toBe(false);
   });
   it('O2 import: card content changed after sign-off (findings rewritten, no new log entry)', () => {
-    const legit = v1Signed({ signedOffBy: 'Supervisor', parts: [], readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }], log: [{ at: '2026-11-02', from: 'COMPLETED', to: 'SIGNED OFF', by: 'Supervisor' }] });
+    const legit = v1Signed({ signedOffBy: 'Supervisor', parts: [], readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }], log: [{ at: '2026-11-02', from: 'COMPLETED', to: 'SIGNED OFF', by: 'Supervisor' }] });
     const tampered = { ...legit, findings: 'rewritten after sign-off', tasks: ['different work'] };
     expect(deserialise(fileWith([tampered])).ok).toBe(false);
     // and the same attack on a current (version 2) file with a real sign-off hash
@@ -425,7 +425,7 @@ describe('audit O1–O6: job-card sign-off cannot be forged or granted by a type
   it('O5 workflow: technician signs off his own card by changing the case of his name', () => {
     let c = openJobCard({ id: 'JC-2', assetId: 'A-1', opened: '2026-11-01', reportedFault: 'f', technician: 'Peter' });
     c = transition(c, 'IN PROGRESS', 'Peter', '2026-11-01');
-    c = transition(c, 'COMPLETED', 'Peter', '2026-11-01', { tasks: ['x'], findings: 'ok', engineHoursAtJob: 1, readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }] });
+    c = transition(c, 'COMPLETED', 'Peter', '2026-11-01', { tasks: ['x'], findings: 'ok', engineHoursAtJob: 1, readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }] });
     expect(() => transition(c, SIGNOFF, 'peter', '2026-11-02')).toThrow(/supervisor other than the technician/);
     expect(() => transition(c, SIGNOFF, ' PETER ', '2026-11-02')).toThrow(/supervisor other than the technician/);
   });
@@ -433,7 +433,7 @@ describe('audit O1–O6: job-card sign-off cannot be forged or granted by a type
     let s0 = apply({ ...emptyState(), assets: [auditAsset] }, { type: 'openCard', card: { assetId: 'A-1', opened: '2026-11-01', reportedFault: 'f', technician: 'Peter' } }).state;
     const id = s0.jobCards[0].id;
     s0 = apply(s0, { type: 'transition', cardId: id, to: 'IN PROGRESS', by: 'Peter', at: '2026-11-01' }).state;
-    s0 = apply(s0, { type: 'transition', cardId: id, to: 'COMPLETED', by: 'Peter', at: '2026-11-01', update: { tasks: ['x'], findings: 'ok', engineHoursAtJob: 1, readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }] } }).state;
+    s0 = apply(s0, { type: 'transition', cardId: id, to: 'COMPLETED', by: 'Peter', at: '2026-11-01', update: { tasks: ['x'], findings: 'ok', engineHoursAtJob: 1, readings: [{ name: 'V', value: 400, unit: 'V' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }] } }).state;
     // the old status name is not a step at all
     const old = apply(s0, { type: 'transition', cardId: id, to: 'SIGNED OFF' as never, by: 'Made Up Supervisor', at: '2026-11-02' });
     expect(old.error).toMatch(/cannot go from COMPLETED to SIGNED OFF/);

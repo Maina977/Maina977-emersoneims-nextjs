@@ -25,7 +25,7 @@ import { FAMILIES } from '@/lib/generator-oracle/diagnostics/families';
 import { SCREEN_BUCKET } from '@/lib/generator-oracle/diagnostics/safetyScreen';
 import { loadGuidedEquipment, loadGuidedSession, type RawAnswers } from '@/lib/generator-oracle/diagnostics/session';
 import { guardedCardUpdate, guardedSessionRecord, latchRecordLines, readStore, safetyStateOf, type SafetyState } from '@/lib/generator-oracle/diagnostics/stopLatch';
-import { DEVICE_ONLY_NOTICE, HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, IMPORTED_NOTICE, LATCHED_STOP_PREFIX, SIGNED_OFF_ELSEWHERE, unresolvedGuidedSafety, type GuidedSafetyAdd } from '@/lib/generator-oracle/service/maintenance';
+import { DEVICE_ONLY_NOTICE, HOLD_REASSESSMENT_LABEL, HOLD_REASSESSMENT_NOTICE, IMPORTED_NOTICE, LATCHED_STOP_PREFIX, SIGNED_OFF_ELSEWHERE, requiredTestRunReadings, unresolvedGuidedSafety, type GuidedSafetyAdd, type RequiredReading } from '@/lib/generator-oracle/service/maintenance';
 
 const inp = 'w-full min-w-0 rounded-md bg-slate-900 border border-slate-700 px-2 py-1.5 text-sm text-white focus:border-amber-500 outline-none';
 const lbl = 'block text-xs text-slate-300';
@@ -234,18 +234,20 @@ function OpenCardForm({ asset, dispatch }: { asset: Asset; dispatch: Dispatch })
 }
 
 type PartRow = { partNo: string; description: string; qty: string; document: string; edition: string; page: string };
-type ReadingRow = { name: string; value: string; unit: string; min: string; max: string; limitSource: string };
+/** checklistId: entered against that test-run checklist item (review O-1); absent = a free-text note. */
+type ReadingRow = { name: string; value: string; unit: string; min: string; max: string; limitSource: string; checklistId?: string };
 interface Draft { tasks: string; parts: PartRow[]; labourHours: string; engineHoursAtJob: string; readings: ReadingRow[]; findings: string }
 const toDraft = (c: JobCard): Draft => ({
   tasks: c.tasks.join('\n'), labourHours: String(c.labourHours), engineHoursAtJob: c.engineHoursAtJob === null ? '' : String(c.engineHoursAtJob), findings: c.findings,
   parts: c.parts.map((p) => ({ partNo: p.partNo, description: p.description, qty: String(p.qty), document: p.compatibility?.document ?? '', edition: p.compatibility?.edition ?? '', page: p.compatibility?.page ?? '' })),
-  readings: c.readings.map((r) => ({ name: r.name, value: String(r.value), unit: r.unit, min: r.min === undefined ? '' : String(r.min), max: r.max === undefined ? '' : String(r.max), limitSource: r.limitSource ?? '' })),
+  readings: c.readings.map((r) => ({ name: r.name, value: String(r.value), unit: r.unit, min: r.min === undefined ? '' : String(r.min), max: r.max === undefined ? '' : String(r.max), limitSource: r.limitSource ?? '', ...(r.checklistId ? { checklistId: r.checklistId } : {}) })),
 });
 const fromDraft = (d: Draft): CardUpdate => ({
   tasks: d.tasks.split('\n'), findings: d.findings, labourHours: num(d.labourHours),
   engineHoursAtJob: d.engineHoursAtJob.trim() === '' ? null : num(d.engineHoursAtJob),
   parts: d.parts.map((p) => ({ partNo: p.partNo, description: p.description, qty: num(p.qty), compatibility: { document: p.document, edition: p.edition, page: p.page } })),
-  readings: d.readings.map((r) => ({ name: r.name, value: num(r.value), unit: r.unit, min: optNum(r.min), max: optNum(r.max), limitSource: r.limitSource })),
+  // A checklist item left blank is not a reading: completion then lists it as missing.
+  readings: d.readings.filter((r) => !(r.checklistId && r.value.trim() === '')).map((r) => ({ name: r.name, value: num(r.value), unit: r.unit, min: optNum(r.min), max: optNum(r.max), limitSource: r.limitSource, ...(r.checklistId ? { checklistId: r.checklistId } : {}) })),
 });
 
 /**
@@ -383,6 +385,14 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
   const next = nextStatuses(card.status);
   const setPart = (i: number, k: keyof PartRow, v: string) => setD({ ...d, parts: d.parts.map((p, j) => (j === i ? { ...p, [k]: v } : p)) });
   const setReading = (i: number, k: keyof ReadingRow, v: string) => setD({ ...d, readings: d.readings.map((p, j) => (j === i ? { ...p, [k]: v } : p)) });
+  // Review O-1: the job-specific checklist; each required reading has its own structured entry.
+  const checklist = requiredTestRunReadings({ findings: d.findings, guidedSafety: card.guidedSafety });
+  const itemRow = (q: RequiredReading) => d.readings.find((r) => r.checklistId === q.id);
+  const setItem = (q: RequiredReading, k: 'value' | 'unit' | 'min' | 'max' | 'limitSource', v: string) => {
+    const i = d.readings.findIndex((r) => r.checklistId === q.id);
+    if (i >= 0) setReading(i, k, v);
+    else setD({ ...d, readings: [...d.readings, { name: q.text, value: '', unit: q.units[0] ?? '', min: '', max: '', limitSource: '', checklistId: q.id, [k]: v }] });
+  };
   const go = (to: JobStatus) => {
     if (dispatch({ type: 'transition', cardId: card.id, to, by: who, at: when, note, update: editable ? fromDraft(d) : undefined })) { setNote(''); }
   };
@@ -431,8 +441,22 @@ function CardDetail({ state, card, asset, dispatch }: { state: ServiceState; car
             <Field label="Engine hours at job"><input className={inp} inputMode="decimal" value={d.engineHoursAtJob} onChange={(e) => setD({ ...d, engineHoursAtJob: e.target.value })} /></Field>
           </div>
           <div className="space-y-2">
-            <div className="text-xs text-slate-300">Test-run readings — limits are optional; if you give one, say where it comes from (rating plate, manual page, settings sheet)</div>
-            {d.readings.map((r, i) => (
+            <div className="text-xs text-slate-300">Test-run checklist for this job — enter each reading against its own item (only these complete the card). Limits are optional; if you give one, say where it comes from (rating plate, manual page, settings sheet)</div>
+            {checklist.map((q) => {
+              const r = itemRow(q);
+              return (
+                <div key={q.id} role="group" aria-label={`Checklist: ${q.text}`} className="grid gap-2 sm:grid-cols-7 items-end rounded-lg border border-cyan-900 p-2">
+                  <div className="sm:col-span-2 min-w-0 text-xs text-slate-200 pb-1.5">{q.text}</div>
+                  <Field label="Value"><input className={inp} inputMode="decimal" value={r?.value ?? ''} onChange={(e) => setItem(q, 'value', e.target.value)} /></Field>
+                  <Field label="Unit"><select className={inp} value={r?.unit ?? q.units[0] ?? ''} onChange={(e) => setItem(q, 'unit', e.target.value)}>{q.units.map((u) => <option key={u} value={u}>{u}</option>)}</select></Field>
+                  <Field label="Min"><input className={inp} inputMode="decimal" value={r?.min ?? ''} onChange={(e) => setItem(q, 'min', e.target.value)} /></Field>
+                  <Field label="Max"><input className={inp} inputMode="decimal" value={r?.max ?? ''} onChange={(e) => setItem(q, 'max', e.target.value)} /></Field>
+                  <Field label="Limit source"><input className={inp} value={r?.limitSource ?? ''} onChange={(e) => setItem(q, 'limitSource', e.target.value)} /></Field>
+                </div>
+              );
+            })}
+            <div className="text-xs text-slate-400">Other readings (notes) — kept on the card; they do not complete a checklist item</div>
+            {d.readings.map((r, i) => r.checklistId ? null : (
               <div key={i} role="group" aria-label={`Reading ${i + 1}`} className="grid gap-2 sm:grid-cols-7 items-end rounded-lg border border-slate-800 p-2">
                 <div className="sm:col-span-2 min-w-0"><Field label="Reading"><input className={inp} value={r.name} onChange={(e) => setReading(i, 'name', e.target.value)} /></Field></div>
                 <Field label="Value"><input className={inp} inputMode="decimal" value={r.value} onChange={(e) => setReading(i, 'value', e.target.value)} /></Field>

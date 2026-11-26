@@ -9,8 +9,7 @@
 import {
   cardIntegrityProblems, dueList, markImported, mergeGuidedSafety, recordHoldReassessment, recordNotTaken, unresolvedGuidedSafety, openJobCard, reopenJobCard, transition, toServiceRecord, validatePlan, voidUncheckedSignOff,
   JOB_STATUSES, NOT_TAKEN_ACTION, recordsStopInForce, SIGNOFF, TYPED_SIGNOFF_NOTICE, V1_UNCHECKED_SIGNOFF_NOTE,
-  type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord,
-} from './maintenance';
+  type Asset, type DueItem, type GuidedSafetyAdd, type JobCard, type JobStatus, type ManualRef, type PartLine, type PlanTask, type Reading, type ServiceRecord, checklistItem } from './maintenance';
 
 /** Storage key is unchanged since version 1 so existing saved data is found and upgraded. */
 export const STORE_KEY = 'eims-oracle-service-v1';
@@ -109,8 +108,16 @@ function checkUpdate(u: CardUpdate): CardUpdate {
       if (r.min !== undefined) { if (!Number.isFinite(r.min)) throw new Error(`${name}: minimum is not a number`); x.min = r.min; }
       if (r.max !== undefined) { if (!Number.isFinite(r.max)) throw new Error(`${name}: maximum is not a number`); x.max = r.max; }
       if (r.limitSource?.trim()) x.limitSource = r.limitSource.trim();
+      if (r.checklistId !== undefined) {
+        const item = checklistItem(r.checklistId);
+        if (!item) throw new Error(`${name}: unknown test-run checklist item "${r.checklistId}"`);
+        x.checklistId = item.id;
+      }
       return x;
     });
+    const ids = out.readings.map((r) => r.checklistId).filter((id): id is string => !!id);
+    const dup = ids.find((id, i) => ids.indexOf(id) !== i);
+    if (dup) throw new Error(`${checklistItem(dup)!.text}: entered twice against the test-run checklist; keep one value per item`);
   }
   return out;
 }
@@ -330,7 +337,7 @@ function checkShape(d: Record<string, unknown>): string | null {
     if (!Array.isArray(c.faultCodes) || !c.faultCodes.every(isStr) || !Array.isArray(c.tasks) || !c.tasks.every(isStr)) return `job card ${id} is malformed`;
     if (!isNum(c.labourHours) || !(c.engineHoursAtJob === null || isNum(c.engineHoursAtJob))) return `job card ${id} hours are malformed`;
     if (!Array.isArray(c.parts) || !c.parts.every((p) => isObj(p) && isStr(p.partNo) && isStr(p.description) && isNum(p.qty) && (p.compatibility === null || isRef(p.compatibility)))) return `job card ${id} parts are malformed`;
-    if (!Array.isArray(c.readings) || !c.readings.every((r) => isObj(r) && isStr(r.name) && isNum(r.value) && isStr(r.unit) && optNum(r.min) && optNum(r.max) && (r.limitSource === undefined || isStr(r.limitSource)))) return `job card ${id} readings are malformed`;
+    if (!Array.isArray(c.readings) || !c.readings.every((r) => isObj(r) && isStr(r.name) && isNum(r.value) && isStr(r.unit) && optNum(r.min) && optNum(r.max) && (r.limitSource === undefined || isStr(r.limitSource)) && (r.checklistId === undefined || (isStr(r.checklistId) && !!checklistItem(r.checklistId))))) return `job card ${id} readings are malformed`;
     for (const k of ['completedOn', 'signOffTypedName', 'signOffRecordedOn']) if (!(c[k] === null || isStr(c[k]))) return `job card ${id} is malformed`;
     if (!isRev(c.revision)) return `job card ${id} revision is malformed`;
     if (!(c.signOffHash === null || isHash(c.signOffHash))) return `job card ${id} sign-off hash is malformed`;

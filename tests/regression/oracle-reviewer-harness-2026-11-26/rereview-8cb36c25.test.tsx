@@ -64,7 +64,7 @@ function uiCard(famId: string, findings = '', prevState?: ServiceState): { state
 function completeVia(s: ServiceState, extra: Record<string, unknown> = {}): { error: string | null } {
   const r1 = apply(s, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: T } as ServiceAction);
   if (r1.error) return { error: r1.error };
-  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: recordsStopInForce(r1.state.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }], ...extra } } as ServiceAction);
+  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: recordsStopInForce(r1.state.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }], ...extra } } as ServiceAction);
   return { error: r2.error };
 }
 const screenNo = () => Object.fromEntries(SCREEN_QUESTIONS.map((q) => [q.id, 'no']));

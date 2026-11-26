@@ -60,7 +60,7 @@ describe('job cards', () => {
     const done = transition(start(), 'COMPLETED', 'TECH-A', '2026-11-20T12:00:00Z', {
       findings: 'Oil pressure sender faulty; replaced', tasks: ['Replace oil pressure sender'], engineHoursAtJob: 1500,
       parts: [{ partNo: 'TEST-123', description: 'Oil pressure sender', qty: 1, compatibility: null }],
-      readings: [{ name: 'Output voltage L1-L2', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'rating plate (test)' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }],
+      readings: [{ name: 'Output voltage L1-L2', value: 405, unit: 'V', min: 380, max: 420, limitSource: 'rating plate (test)', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }],
     });
     expect(() => transition(done, SIGNOFF, 'TECH-A', '2026-11-20T13:00:00Z')).toThrow(/supervisor other than the technician/);
     expect(() => transition(done, SIGNOFF, 'SUPERVISOR-B', '2026-11-20T13:00:00Z')).toThrow(/Compatibility unverified for: TEST-123/);
@@ -71,8 +71,8 @@ describe('job cards', () => {
     expect(jobCardReport(signed, asset)).toContain(`${SIGNOFF}: typed name SUPERVISOR-B`);
   });
   it('readings: flagged only against limits given with a source', () => {
-    expect(readingFlags([{ name: 'Frequency', value: 52.1, unit: 'Hz', min: 49.5, max: 50.5, limitSource: 'controller settings sheet (test)' }])).toEqual(['Frequency 52.1 Hz is above 50.5 Hz (controller settings sheet (test))']);
-    expect(readingFlags([{ name: 'Frequency', value: 50, unit: 'Hz' }])).toEqual([]);
-    expect(readingFlags([{ name: 'Frequency', value: 50, unit: 'Hz', max: 51 }])).toEqual(['Frequency: limit given without its source']);
+    expect(readingFlags([{ name: 'Frequency', value: 52.1, unit: 'Hz', min: 49.5, max: 50.5, limitSource: 'controller settings sheet (test)', checklistId: 'frequency' }])).toEqual(['Frequency 52.1 Hz is above 50.5 Hz (controller settings sheet (test))']);
+    expect(readingFlags([{ name: 'Frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }])).toEqual([]);
+    expect(readingFlags([{ name: 'Frequency', value: 50, unit: 'Hz', max: 51, checklistId: 'frequency' }])).toEqual(['Frequency: limit given without its source']);
   });
 });

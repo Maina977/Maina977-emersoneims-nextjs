@@ -39,7 +39,7 @@ it('F10-R3 fixed (was REMAINING?): the refused-value HOLD line no longer contain
   console.log('PHRASE hold line:', holdLine);
   console.log('PHRASE recordsStopInForce(card) with no phrase written by anyone:', recordsStopInForce(card), '| findings include phrase:', card.findings.includes(READINGS_NOT_TAKEN_STOP));
   const r1 = apply(s, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: '2026-11-26T12:00:00.000Z' } as ServiceAction);
-  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] } } as ServiceAction);
+  const r2 = apply(r1.state, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: '2026-11-26T12:00:00.000Z', update: { tasks: ['x'], engineHoursAtJob: 1, readings: [{ name: 'Oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }] } } as ServiceAction);
   console.log('PHRASE completion with test-run readings →', r2.error);
   expect(holdLine).toBeDefined();
   expect(card.findings).not.toContain(READINGS_NOT_TAKEN_STOP);

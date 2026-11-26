@@ -45,7 +45,7 @@ const base = () => go(go(emptyState(), { type: 'saveAsset', asset: { make: 'TEST
 const completeErr = (s: ServiceState, findings: string, readings = true) => {
   const a = apply(s, { type: 'transition', cardId: 'JC-1', to: 'IN PROGRESS', by: 'TECH-A', at: T2 } as ServiceAction);
   if (a.error) return a.error;
-  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings && !recordsStopInForce(a.state.jobCards[0]) ? [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }] : [] } } as ServiceAction).error;
+  return apply(a.state, { type: 'transition', cardId: 'JC-1', to: 'COMPLETED', by: 'TECH-A', at: T2, update: { findings, tasks: ['TEST'], engineHoursAtJob: 1, readings: readings && !recordsStopInForce(a.state.jobCards[0]) ? [{ name: 'TEST', value: 1, unit: 'V' }, { name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }] : [] } } as ServiceAction).error;
 };
 const STOP = { key: 'knock-seizure|STOP THE SET: TEST', from: 'Knocking, bearing noise or seizure', since: T0, message: 'STOP THE SET: TEST' };
 const HOLDKEY = refusedHoldKey('low-oil-pressure', 'oilPressure');
@@ -144,7 +144,7 @@ describe('F10-R3: the phrase in the findings (typed or pasted) unblocks nothing;
 });
 
 describe('F10-R3 MINOR: the action and test-run readings cannot both be on one card', () => {
-  const READ = [{ name: 'TEST oil pressure', value: 300, unit: 'kPa' }];
+  const READ = [{ name: 'TEST oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }];
   it('recording the action on a card that has readings is refused, with what to do', () => {
     const withReadings = go(base(), { type: 'updateCard', cardId: 'JC-1', update: { readings: READ } } as ServiceAction);
     const r = apply(withReadings, { type: 'recordNotTaken', cardId: 'JC-1', at: T1, by: 'TECH-A', confirmed: true } as ServiceAction);

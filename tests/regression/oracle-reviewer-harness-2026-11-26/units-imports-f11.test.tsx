@@ -43,7 +43,7 @@ function record(s: ServiceState, famId: string, at: string): ServiceState {
 function complete(s: ServiceState, extra: Record<string, unknown> = {}) {
   let st = s;
   if (card(st).status === 'OPEN') { const r1 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'IN PROGRESS', by: 'Tech', at: T0 } as ServiceAction); if (r1.error) return { error: r1.error, state: st }; st = r1.state; }
-  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: recordsStopInForce(st.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa' }, { name: 'TEST coolant temperature', value: 80, unit: '°C' }, { name: 'TEST output voltage', value: 400, unit: 'V' }, { name: 'TEST frequency', value: 50, unit: 'Hz' }], ...extra } } as ServiceAction);
+  const r2 = tryGo(st, { type: 'transition', cardId: 'JC1', to: 'COMPLETED', by: 'Tech', at: T0, update: { tasks: ['inspected'], engineHoursAtJob: 10, readings: recordsStopInForce(st.jobCards[0]) ? [] : [{ name: 'Oil pressure', value: 300, unit: 'kPa', checklistId: 'oilPressure' }, { name: 'TEST coolant temperature', value: 80, unit: '°C', checklistId: 'coolantTemp' }, { name: 'TEST output voltage', value: 400, unit: 'V', checklistId: 'voltage' }, { name: 'TEST frequency', value: 50, unit: 'Hz', checklistId: 'frequency' }], ...extra } } as ServiceAction);
   return { error: r2.error, state: r2.state };
 }
 const reassess = (s: ServiceState, at: string) => go(s, { type: 'recordHoldReassessment', cardId: 'JC1', at, by: 'JK', reason: 'Checked in person on site', confirmed: true } as ServiceAction);
