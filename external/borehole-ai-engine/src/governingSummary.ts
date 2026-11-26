@@ -10,10 +10,11 @@ import type { AnalysisResult } from './types';
 import { finalVerdict, salinityFromWaterQuality, chemFromWaterQuality, labSourceLabel, nearbyProvenance } from './verdict';
 import { computeCanonicalEconomics } from './reportShared';
 import { evidenceGate, provenanceText } from './evidenceGate';
-import { costSourcing, QUOTATION_TEXT } from './costSources';
+import { costSourcing, costLineText } from './costSources';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 import { displayDepth, displayYield } from './displayFigures';
 import { waterQualityStatus } from './waterQualityStatus';
+import { fmtKES } from './projectPricing';
 import { verificationRows } from './preReportVerification';
 
 export type Row = [string, string, string]; // label, value, basis
@@ -135,19 +136,19 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   //    rate carry a price, with the source beside it; the rest are "by
   //    quotation", and the total is the total of the sourced lines.
   const cs = costSourcing(eco);
-  const costRows: Row[] = cs.lines.map((l): Row => l.source
-    ? [l.item, usd(l.usd), `${eco.kes(l.usd)}. ${l.source}`]
-    : [l.item, QUOTATION_TEXT, 'No sourced rate on file: the supplier\'s quotation prices this item']);
+  // 2026-11-26 (management decision C): each line with its price state.
+  const costRows: Row[] = cs.lines.map((l): Row => { const t = costLineText(l); return l.kes != null ? [l.item, t.usd, `${t.kes}. ${t.basis}`] : [l.item, t.usd, t.basis]; });
   if (eco.salinityUnpriced) costRows.push(['Desalination (reverse osmosis)', 'not priced', 'Salinity has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
   if (eco.fluorideUnpriced) costRows.push(['Defluoridation', 'not priced', 'Fluoride has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
-  costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}% of the sourced items)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency)]);
-  costRows.push([cs.quotationItems.length ? 'TOTAL of the sourced items' : 'TOTAL', usd(cs.sourcedTotal), `${eco.kes(cs.sourcedTotal)}${cs.quotationItems.length ? `. Not included, by quotation: ${cs.quotationItems.join(', ')}` : ''}`]);
+  costRows.push([cs.contingencyLabel, usd(cs.sourcedContingency), fmtKES(cs.sourcedContingencyKES)]);
+  costRows.push([cs.totalLabel, usd(cs.sourcedTotal), `${fmtKES(cs.sourcedTotalKES)}${cs.quotationItems.length ? `. Not included (${cs.lines.find((l) => l.kes == null)?.priceText ?? ''}): ${cs.quotationItems.join(', ')}` : ''}`]);
   if (r.pumpHeadAssumption) costRows.push(['Water level behind the pump cost', 'assumed, not measured', String(r.pumpHeadAssumption)]);
   const paybackYears = n(eco.paybackMonths) !== null && eco.paybackMonths > 0 ? eco.paybackMonths / 12 : null;
-  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : cs.quotationItems.length ? 'not given until the quotation prices every item' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
+  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : cs.quotationItems.length ? 'not given until a quotation prices every item' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
   const ge = evidenceGate(result);
   sections.push({ title: 'Costs (typical Kenyan prices, not a quotation)', rows: costRows, notes: [
     'Prices are estimates for planning; the drilling contractor and the hydrogeological survey fix the real cost.',
+    ...cs.notes,
     ...(ge.cost ? [`Priced on the drilling depth and yield from the field evidence entered: ${[ge.citations.depth, ge.citations.yield].filter(Boolean).join('; ')}.`] : []),
   ] });
 

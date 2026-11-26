@@ -33,7 +33,11 @@ vi.setConfig({ testTimeout: 600000, hookTimeout: 600000 });
 const ctl = vi.hoisted(() => ({ mode: null as null | Record<string, (...a: any[]) => any> }));
 vi.mock('@/external/borehole-ai-engine/src/remoteSensing', async (orig) => {
   const m: any = await orig();
-  return { ...m, fetchElevation: (...a: any[]) => (ctl.mode?.elev ? ctl.mode.elev(...a) : m.fetchElevation(...a)) };
+  return {
+    ...m,
+    fetchElevation: (...a: any[]) => (ctl.mode?.elev ? ctl.mode.elev(...a) : m.fetchElevation(...a)),
+    fetchSoilGrids: (...a: any[]) => (ctl.mode?.soil ? ctl.mode.soil(...a) : m.fetchSoilGrids(...a)),
+  };
 });
 vi.mock('@/external/borehole-ai-engine/src/advancedHydroEngine', async (orig) => {
   const m: any = await orig();
@@ -71,11 +75,13 @@ import { BoreholeAnalyzer } from '@/external/borehole-ai-engine/src/boreholeAnal
 import { validateSurvey, validatePumpingTest } from '@/external/borehole-ai-engine/src/fieldEvidence';
 import {
   runPreReportVerification, buildVerificationReport, verificationDisplay, verificationRows, verificationStatus,
-  normalizeVerificationReport, VERIFICATION_INCOMPLETE_HEADLINE, GRADE_NOT_ISSUED, type VerificationReport,
+  normalizeVerificationReport, VERIFICATION_INCOMPLETE_HEADLINE, GRADE_NOT_ISSUED, trustScoreDisplay, type VerificationReport,
 } from '@/external/borehole-ai-engine/src/preReportVerification';
 import { generatePDFReport, generateWordReport, generateExcelReport, csvReportRows, jsonReportData, pdfSafeText, sanitizePdfText } from '@/external/borehole-ai-engine/src/reportGenerator';
 import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx } from '@/external/borehole-ai-engine/src/screeningReport';
-import { VerificationBlockError } from '@/external/borehole-ai-engine/src/reportShared';
+import { VerificationBlockError, computeCanonicalEconomics, runPrePublishAudit } from '@/external/borehole-ai-engine/src/reportShared';
+import { costSourcing, costLineText } from '@/external/borehole-ai-engine/src/costSources';
+import { fmtKES } from '@/external/borehole-ai-engine/src/projectPricing';
 
 const NEUTRAL = { metadata: {}, terrainType: 'unknown', vegetationDensity: 0.3, soilColor: 'brown', rockExposure: false, waterBodies: false, classifications: [], pixelAnalysis: {}, vegetationScore: 0.3, waterProbability: 0.3, isReliableTerrainImage: false, locationMethod: 'none', locationContext: {}, gpsSource: 'none', predictions: [] };
 const NOW = new Date('2026-11-25T12:00:00Z');
@@ -138,23 +144,26 @@ beforeAll(async () => {
 const LIVE_ELEV = 'Open-Meteo elevation API (Copernicus DEM 90m)';
 const LIVE_WELLS = ['WPDx Water Point Data Exchange (12 points)', 'OpenStreetMap Overpass (water wells, boreholes, monitoring wells, springs)'];
 const LIVE_BUDGET = 'NASA POWER (GLDAS/MERRA-2), 36 months — ActualET Budyko-constrained';
+const LOCAL_SOIL = 'ISRIC SoilGrids 2.0, 1 km aggregate (kenya-soilgrids-2.0-1km-v1 v1); regional context, not a site measurement. CC BY 4.0';
+const LIVE_SOIL = 'ISRIC SoilGrids v2.0 (250m resolution) (TEST independent source)';
 const FALLBACK_BUDGET = '⚠️ Estimated (both APIs unavailable)';
 
 /** A result whose cached values are live answers, so every check can run. */
 function cachedLive(r: any, over: Record<string, any> = {}) {
   return {
     ...r,
-    remoteSensing: { ...(r.remoteSensing ?? {}), elevation: { elevation: 1650, source: LIVE_ELEV } },
+    remoteSensing: { ...(r.remoteSensing ?? {}), elevation: { elevation: 1650, source: LIVE_ELEV }, soilGrids: { clay: 30, sand: 40, source: LOCAL_SOIL } },
     nasaPowerMoisture: { gwetprofMean: 0.45, dataSource: 'NASA POWER GWETPROF (profile soil moisture, 3yr monthly)' },
     nearbyWells: { ...(r.nearbyWells ?? {}), sampleSize: 12, averageDepth: r.recommendedDepth ?? 100, averageYield: r.estimatedYield ?? 2, dataSources: LIVE_WELLS },
     gldasGroundwater: { ...(r.gldasGroundwater ?? {}), waterBudget: { ...(r.gldasGroundwater?.waterBudget ?? {}), estimatedRecharge: 54, dataSource: LIVE_BUDGET } },
     ...over,
   };
 }
-const liveFetchers = (o: Partial<Record<'elev' | 'moisture' | 'wells' | 'gldas', any>> = {}) => ({
+const liveFetchers = (o: Partial<Record<'elev' | 'soil' | 'moisture' | 'wells' | 'gldas', any>> = {}) => ({
   elev: async () => ({ elevation: 1655, source: LIVE_ELEV }),
   moisture: async () => ({ gwetprofMean: 0.46, gwetprofTrend: 0, gwetprofMonthly: [], dataSource: 'NASA POWER GWETPROF (profile soil moisture, 3yr monthly)' }),
-  wells: async () => ({ sampleSize: 12, averageDepth: 100, averageYield: 2, dataSources: LIVE_WELLS, nearbyWells: [] }),
+  soil: async () => ({ clay: 31, sand: 40, source: LIVE_SOIL }),
+  wells: async () => ({ sampleSize: 12, averageDepth: null, averageYield: 2, dataSources: LIVE_WELLS, nearbyWells: [] }),
   gldas: async () => ({ waterBudget: { estimatedRecharge: 55, dataSource: LIVE_BUDGET } }),
   ...o,
 });
@@ -208,7 +217,7 @@ describe('D1: a skipped or empty comparison is never a pass or a match', () => {
     });
     expect(vr.status).toBe('INCOMPLETE');
     expect(vr.apiRequeriesMatched).toBe(0);
-    expect(vr.apiRequeriesPerformed).toBe(0);
+    expect((vr as any).apiRequeriesRun).toBe(0);
     for (const id of ['API-ELEV', 'API-MOISTURE', 'API-WELLS', 'API-GLDAS']) expect(byId(vr, id)[0].severity, id).toBe('SKIP');
     expect(byId(vr, 'API-MOISTURE')[0].message).toMatch(/no independent value/);
     expect(byId(vr, 'API-WELLS')[0].message).toMatch(/no independent value/);
@@ -227,7 +236,15 @@ describe('D1: a skipped or empty comparison is never a pass or a match', () => {
     expect(byId(vr, 'API-WELLS')[0].severity).toBe('SKIP');
     expect(byId(vr, 'API-WELLS')[0].message).toMatch(/shipped with the site/);
     expect(vr.status).toBe('INCOMPLETE');
-    expect(vr.apiRequeriesMatched).toBe(2); // elevation + moisture only
+    expect(vr.apiRequeriesMatched).toBe(3); // elevation, soil and moisture only
+  });
+
+  it('soil re-read from the same self-hosted dataset (SoilGrids REST disabled) is the value compared with itself: not a match', async () => {
+    const vr = await verify(cachedLive(baseScreening), liveFetchers({ soil: async () => ({ clay: 30, sand: 40, source: LOCAL_SOIL }) }));
+    expect(byId(vr, 'API-SOIL')[0].severity).toBe('SKIP');
+    expect(byId(vr, 'API-SOIL')[0].message).toMatch(/^Not checked \(no independent value\): soil comes from one self-hosted dataset/);
+    expect(vr.status).toBe('INCOMPLETE');
+    expect(vr.verified).toBe(false);
   });
 
   it('(c) partially missing: one re-query unavailable -> INCOMPLETE, "1 of" listed, the others ran', async () => {
@@ -235,11 +252,37 @@ describe('D1: a skipped or empty comparison is never a pass or a match', () => {
     expect(vr.status).toBe('INCOMPLETE');
     expect(byId(vr, 'API-MOISTURE')[0].severity).toBe('SKIP');
     expect(byId(vr, 'API-MOISTURE')[0].message).toMatch(/unavailable/);
-    expect(vr.apiRequeriesPerformed).toBe(3);
-    expect(vr.apiRequeriesMatched).toBe(3);
+    expect(vr.apiRequeriesPerformed).toBe(5);
+    expect((vr as any).apiRequeriesRun).toBe(4);
+    expect(vr.apiRequeriesMatched).toBe(4);
     expect(vr.summary).toMatch(/\d+ of \d+ checks could not be run: .*NASA POWER Moisture Re-query/);
     expect(vr.grade).toBeNull();
     noClaims(vr.summary);
+  });
+
+  it('no coordinates at all: nothing was re-queried, so INCOMPLETE, no grade, no claim (reviewer finding 1)', async () => {
+    const r = { ...cachedLive(baseScreening) };
+    delete r.clientLocation; delete r.site; delete r.geoEstimate; delete r.siteIdentity;
+    const vr = await verify(r, liveFetchers());
+    expect(vr.status).toBe('INCOMPLETE');
+    expect(vr.verified).toBe(false);
+    expect(vr.grade).toBeNull();
+    expect(byId(vr, 'API-ALL')[0].message).toMatch(/^Not checked: no coordinates/);
+    noClaims(vr.summary);
+  });
+
+  it('every re-query ran and matched but a cross-check had no second source: PASSED, no grade, no "all figures cross-validated"', () => {
+    const checks = [
+      { id: 'API-ELEV', category: 'API_REQUERY', name: 'Elevation Re-query', severity: 'PASS', message: 'ok' },
+      { id: 'XV-YIELD', category: 'CROSS_VALIDATION', name: 'Yield Cross-Validation', severity: 'SKIP', message: 'Not checked: no nearby well yield data to compare' },
+    ] as any;
+    const vr = buildVerificationReport(checks, { attempted: 1, performed: 1, matched: 1 });
+    expect(vr.status).toBe('PASSED');
+    expect(vr.grade).toBeNull();
+    expect(vr.summary).toContain('every independent re-query ran and matched');
+    expect(vr.summary).toContain('Yield Cross-Validation');
+    expect(vr.summary).not.toMatch(/cleared for publication|cross-validated against source data/);
+    expect(verificationDisplay(vr).grade).toBe(GRADE_NOT_ISSUED);
   });
 
   it('a source that times out or throws is "Not checked", never a pass', async () => {
@@ -265,16 +308,18 @@ describe('D1: a skipped or empty comparison is never a pass or a match', () => {
     expect(verificationDisplay(vr).grade).toBe('Grade A (100%), over all 3 checks');
   });
 
-  it('(d) a real inconsistency -> FAILED (blocked) as before; an API drift is a warning, never a match', async () => {
+  it('(d) inconsistent values -> FAILED (blocked): a re-queried source that no longer agrees, and a physics contradiction', async () => {
     const r = cachedLive(baseScreening, { geophysicsFusion: { waterTableDepth_m: 80, bedrockDepth_m: 30 } });
     const vr = await verify(r, liveFetchers({ elev: async () => ({ elevation: 1900, source: LIVE_ELEV }) }));
     expect(vr.status).toBe('FAILED');
     expect(vr.blocked).toBe(true);
     expect(vr.verified).toBe(false);
-    expect(byId(vr, 'API-ELEV')[0].severity).toBe('WARN');
+    expect(vr.grade).toBeNull();
+    expect(byId(vr, 'API-ELEV')[0].severity).toBe('FAIL');
+    expect(vr.apiRequeriesMatched).toBeLessThan(vr.apiRequeriesPerformed);
     expect(byId(vr, 'PHY-WT-BEDROCK')[0].severity).toBe('FAIL');
-    // Water table 80 m below bedrock 30 m, and so also below the 40 m recommended depth: 2 failures.
-    expect(vr.summary).toMatch(/^❌ VERIFICATION FAILED — Report blocked\. 2 FAILURE\(s\) detected: \[Water Table vs Bedrock\]/);
+    // Elevation drift (1650 vs 1900 m), water table 80 m below bedrock 30 m and so below the 40 m depth: 3 failures.
+    expect(vr.summary).toMatch(/^❌ VERIFICATION FAILED — Report blocked\. 3 FAILURE\(s\) detected: \[Elevation Re-query\].*\[Water Table vs Bedrock\]/);
     expect(vr.summary).not.toMatch(/cleared for publication|cross-validated/);
   });
 
@@ -341,10 +386,11 @@ describe('D1: screen and every export carry the identical verification status, c
       expect(screen.status).toBe(expected);
       if (vr.skipped > 0) expect(screen.grade).toBe(GRADE_NOT_ISSUED);
       if (expected === 'PASSED') expect(screen.grade).toMatch(/^Grade [A-F] \(\d+%\), over all \d+ checks$/);
-      const lines = [screen.headline, screen.coverage, screen.grade];
+      // Every line of the status block: status, coverage, grade, and the verified / not checked / cannot-be-concluded lists.
+      const lines = [screen.headline, screen.coverage, screen.grade, ...screen.verified, ...screen.notChecked, ...screen.cannotConclude];
       for (const base of [baseScreening, baseFull]) {
         const r = { ...base, verificationReport: vr };
-        expect(verificationRows(r).slice(0, 3).map((x) => x[1])).toEqual(lines);
+        expect(verificationRows(r).map((x) => x[1])).toEqual(lines);
         const isFull = base === baseFull;
         if (isFull && expected === 'FAILED') {
           // A FAILED check blocks the full report, with the screen's own summary.
@@ -369,4 +415,109 @@ describe('D1: screen and every export carry the identical verification status, c
       }
     });
   }
+});
+
+// ═══ Trust score: same rule as the verification grade ═══
+describe('D1: the engineer trust score and grade follow the verification coverage', () => {
+  it('not issued unless every check ran (screen data, PDF, JSON); issued when PASSED', async () => {
+    for (const sc of SCENARIOS) {
+      const vr = await sc.make();
+      const r = { ...baseFull, verificationReport: vr };
+      const t = trustScoreDisplay(r);
+      expect(t.issued, sc.name).toBe(vr.status === 'PASSED' && !!baseFull.engineerConfidence);
+      if (!t.issued) {
+        const trustCheck = runPrePublishAudit(r).checks.find((c: any) => c.id === 16)!;
+        expect(trustCheck.severity, sc.name).toBe('WARN');
+        expect(trustCheck.details, sc.name).not.toMatch(/Grade [A-F]\b|\d+\/100/);
+        expect(t.text, sc.name).toMatch(/^Trust score and grade not issued \(verification (incomplete|failed); \d+ of \d+ checks run\)$/);
+        const j: any = jsonReportData(r);
+        if (j.engineerConfidence) { expect(j.engineerConfidence.trustGrade, sc.name).toBeNull(); expect(j.engineerConfidence.engineerTrustScore, sc.name).toBeNull(); }
+        if (vr.status !== 'FAILED') {
+          pdfText.length = 0;
+          await generatePDFReport(r, 'professional');
+          expect(pdfText.join('\n'), sc.name).not.toMatch(/TRUST SCORE: \d/);
+        }
+      }
+    }
+  });
+});
+
+// ═══ Pricing lines and contingency: screen = every export ═══
+describe('C: the price state of each line and the contingency are identical on screen and in every export', () => {
+  const variants: { name: string; pricing: any }[] = [
+    { name: 'private project (default)', pricing: undefined },
+    { name: 'private project with a verified survey quotation', pricing: { category: 'private', quotations: [{ item: 'survey', amountKES: 60000, reference: 'TEST-Q-17', date: '2026-11-20', label: 'verified project quotation' }] } },
+    { name: 'government tender', pricing: { category: 'government_tender', quotations: [] } },
+  ];
+  for (const v of variants) {
+    it(`${v.name}: full exports (survey + pumping test), all-sources-unavailable verification`, async () => {
+      const vr = await verify(baseScreening, null);
+      const r = { ...baseFull, verificationReport: vr, ...(v.pricing ? { projectPricing: v.pricing } : {}) };
+      const cs = costSourcing(computeCanonicalEconomics(r)); // what the cost tab renders
+      const survey = cs.lines.find((l) => l.key === 'survey')!;
+      const drilling = cs.lines.find((l) => l.key === 'drilling')!;
+      const expected: string[] = [
+        `${survey.item}`, costLineText(survey).usd, costLineText(drilling).basis,
+        cs.contingencyLabel, fmtKES(cs.sourcedContingencyKES), cs.totalLabel, fmtKES(cs.sourcedTotalKES),
+        cs.notes.find((n) => n.startsWith('Ground conditions'))!,
+      ];
+      // The economics carry the same contingency (rate, base, amount) as the screen and exports.
+      const e: any = computeCanonicalEconomics(r);
+      expect(e.contingency).toBe(cs.sourcedContingency);
+      expect(e.contingencyKES).toBe(cs.sourcedContingencyKES);
+      expect(e.totalKES).toBe(cs.sourcedTotalKES);
+      expect(e.subtotalCost).toBe(cs.sourcedSubtotal);
+      if (!v.pricing) { expect(costLineText(survey).usd).toBe('Request a quotation'); expect(costLineText(drilling).basis).toMatch(/^indicative — not a binding offer/); }
+      if (v.pricing?.quotations?.length) { expect(survey.state).toBe('verified'); expect(costLineText(survey).basis).toBe('verified project quotation: TEST-Q-17, dated 2026-11-20. Applies to this project only'); expected.push(fmtKES(60000), costLineText(survey).basis); }
+      if (v.pricing?.category === 'government_tender') { expect(survey.state).toBe('tender'); expect(costLineText(survey).basis).toMatch(/^government tender rate: /); }
+      const ex = await exportsText(r);
+      for (const [fmt, text] of Object.entries(ex)) {
+        const t = fmt === 'JSON' ? text : squash(text);
+        for (const l of expected) {
+          const want = fmt === 'JSON' ? JSON.stringify(l).slice(1, -1) : fmt === 'PDF' ? squash(pdfSafeText(sanitizePdfText(l))) : squash(l);
+          expect(t, `${v.name} ${fmt}: "${l}"`).toContain(want);
+        }
+        // Quotation #83 appears only as the dated historical reference, never as a price line.
+        const refHead = 'one verified 2026 private-project quotation (Project quotation #83 (private client), dated 2026-03-09)';
+        // The reference sentence names #83 twice (its heading and its permits bundle); no other "#83" anywhere.
+        expect(t.split('#83').length - 1, `${fmt}: every "#83" is in the dated reference sentence`).toBe(2 * (t.split(refHead).length - 1));
+        if (!v.pricing) expect(t, `${fmt}: the reference is shown for a private project`).toContain(refHead);
+        for (const l of cs.lines) { expect(l.kes, l.key).not.toBe(50000); expect(l.kes, l.key).not.toBe(80000); }
+      }
+    });
+  }
+});
+
+// ═══ Partial outage: a useful partial assessment, not a blank refusal ═══
+describe('D1: partial outage lists what was verified, what is unavailable, and what cannot be concluded', () => {
+  it('NASA POWER and the borehole registries down, the rest live: INCOMPLETE with all three lists, identical in every export', async () => {
+    const vr = await verify(cachedLive(baseScreening), liveFetchers({ moisture: async () => null, wells: async () => { throw new TypeError('network down'); } }));
+    const d = verificationDisplay(vr);
+    expect(d.status).toBe('INCOMPLETE');
+    expect(d.headline).toBe(VERIFICATION_INCOMPLETE_HEADLINE);
+    expect(d.grade).toBe(GRADE_NOT_ISSUED);
+    // (a) what WAS verified, with its source
+    expect(d.verified).toContain('Elevation Re-query: ran and matched (source: Open-Elevation API (SRTM 30m))');
+    expect(d.verified).toContain('SoilGrids Re-query: ran and matched (source: ISRIC SoilGrids v2.0)');
+    expect(d.verified).toContain('GLDAS Water Budget Re-query: ran and matched (source: NASA GLDAS / ERA5-Land)');
+    // (b) what remains unavailable, and why
+    expect(d.notChecked).toContain('NASA POWER Moisture Re-query: Not checked: NASA POWER data unavailable or timed out for comparison');
+    expect(d.notChecked).toContain('Nearby Wells Re-query: Not checked: Borehole database error during re-query');
+    // (c) the conclusions that cannot be drawn because of it
+    expect(d.cannotConclude).toContain('Soil-moisture context is unverified against NASA POWER');
+    expect(d.cannotConclude).toContain('Nearby-borehole evidence (counts and depths) is unverified against the live registries');
+    expect(d.cannotConclude.some((x) => /Elevation|Recharge/.test(x))).toBe(false); // those were verified
+    const lines = verificationRows({ verificationReport: vr });
+    for (const base of [baseScreening, baseFull]) {
+      const ex = await exportsText({ ...base, verificationReport: vr });
+      const isFull = base === baseFull;
+      for (const [fmt, text] of Object.entries(ex)) {
+        const t = fmt === 'JSON' ? text : squash(text);
+        for (const [, l] of lines) {
+          const want = fmt === 'JSON' ? JSON.stringify(l).slice(1, -1) : isFull && fmt === 'PDF' ? squash(pdfSafeText(sanitizePdfText(l))) : squash(l);
+          expect(t, `${isFull ? 'full' : 'screening'} ${fmt}: "${l}"`).toContain(want);
+        }
+      }
+    }
+  });
 });

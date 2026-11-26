@@ -24,6 +24,7 @@
  */
 
 import { AnalysisResult } from './types';
+import { trustScoreDisplay } from './preReportVerification';
 
 export type AuditSeverity = 'FAIL' | 'WARN' | 'PASS';
 
@@ -841,11 +842,17 @@ function auditEngineerTrust(result: AnalysisResult): AuditCheck {
     return { ...base, severity: 'WARN', details: 'Engineer confidence engine did not produce results.' };
   }
 
-  if (ec.engineerTrustScore < 35) {
-    return { ...base, severity: 'WARN', details: `Trust score ${ec.engineerTrustScore}/100 (Grade ${ec.trustGrade}). Score is below minimum threshold. Data quality: ${ec.trustBreakdown.dataQuality}/25, Validation: ${ec.trustBreakdown.validation}/25.` };
+  // 2026-11-26 (D1): without full independent verification coverage the trust
+  // score and grade are not issued, so this check cannot pass.
+  if (!trustScoreDisplay(result).issued) {
+    return { ...base, severity: 'WARN', details: `${trustScoreDisplay(result).text}.` };
   }
 
-  return { ...base, severity: 'PASS', details: `Trust score ${ec.engineerTrustScore}/100 (Grade ${ec.trustGrade}). Data: ${ec.trustBreakdown.dataQuality}/25, Physics: ${ec.trustBreakdown.physicsRigor}/25, Validation: ${ec.trustBreakdown.validation}/25, Transparency: ${ec.trustBreakdown.transparency}/25. Verdict: ${ec.crossValidation.engineerVerdict}.` };
+  if (ec.engineerTrustScore < 35) {
+    return { ...base, severity: 'WARN', details: `${trustScoreDisplay(result).text}. Score is below minimum threshold. Data quality: ${ec.trustBreakdown.dataQuality}/25, Validation: ${ec.trustBreakdown.validation}/25.` };
+  }
+
+  return { ...base, severity: 'PASS', details: `${trustScoreDisplay(result).text}. Data: ${ec.trustBreakdown.dataQuality}/25, Physics: ${ec.trustBreakdown.physicsRigor}/25, Validation: ${ec.trustBreakdown.validation}/25, Transparency: ${ec.trustBreakdown.transparency}/25. Verdict: ${ec.crossValidation.engineerVerdict}.` };
 }
 
 // ═══════════════════════════════════════════════════════════════

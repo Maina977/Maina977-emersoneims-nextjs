@@ -20,7 +20,7 @@
 import { fetchElevation, fetchSoilGrids } from './remoteSensing';
 import { fetchNASAPowerMoisture, fetchNearbyBoreholeData } from './advancedHydroEngine';
 import { fetchGLDASGroundwaterData } from './gldasGroundwater';
-import { SOILGRIDS_REST_ENABLED } from './soilSource';
+import { SOILGRIDS_REST_ENABLED, LOCAL_SOIL_DATASET } from './soilSource';
 
 // ─── TYPES ───
 
@@ -67,8 +67,10 @@ export interface VerificationReport {
   /** Checks that ran / all checks, and the ones that could not be run. */
   coverage?: { run: number; total: number; notChecked: { id: string; name: string; reason: string }[] };
   checks: VerificationCheck[];
-  /** API re-queries that ran with an independent (live) value. */
+  /** API re-queries performed (attempted, as before 2026-11-26). */
   apiRequeriesPerformed: number;
+  /** API re-queries that ran with an independent (live) value on both sides. */
+  apiRequeriesRun?: number;
   apiRequeriesMatched: number;
   /** API re-queries attempted (including those that could not run). */
   apiRequeriesAttempted?: number;
@@ -135,12 +137,15 @@ function fail(id: string, cat: VerificationCheck['category'], name: string, msg:
   return { id, category: cat, name, severity: 'FAIL', message: msg, expected: exp, actual: act, source: src };
 }
 /** Not checked: the source did not answer, timed out, or the check could not run. */
+// The not-checked reason is printed in every export: no emoji (a PDF font
+// cannot print it, and the export would then differ from the screen).
+const plainText = (s: string) => s.replace(/[\p{Extended_Pictographic}️]/gu, '').replace(/\(\s+/g, '(').replace(/\s{2,}/g, ' ').trim();
 function skip(id: string, cat: VerificationCheck['category'], name: string, msg: string): VerificationCheck {
-  return { id, category: cat, name, severity: 'SKIP', message: `Not checked: ${msg}` };
+  return { id, category: cat, name, severity: 'SKIP', message: `Not checked: ${plainText(msg)}` };
 }
 /** Not checked: one side is missing, or the "independent" value is the same fallback/source as the value checked. */
 function noIndependent(id: string, cat: VerificationCheck['category'], name: string, msg: string): VerificationCheck {
-  return { id, category: cat, name, severity: 'SKIP', message: `Not checked (no independent value): ${msg}` };
+  return { id, category: cat, name, severity: 'SKIP', message: `Not checked (no independent value): ${plainText(msg)}` };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -196,7 +201,7 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
               `SRTM elevation verified: cached ${cachedElev}m, fresh query ${freshVal}m (±${TOL.elevation_m}m tolerance)`,
               'Open-Elevation API (SRTM 30m)'));
           } else {
-            checks.push(warn('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
+            checks.push(fail('API-ELEV', 'API_REQUERY', 'Elevation Re-query',
               `Elevation drift: cached ${cachedElev}m vs fresh query ${freshVal}m — exceeds ±${TOL.elevation_m}m tolerance`,
               `${cachedElev}m`, `${freshVal}m`, 'Open-Elevation API'));
           }
@@ -210,16 +215,17 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
 
       // 1B. RE-QUERY SOILGRIDS
       (async () => {
-        // SoilGrids REST is disabled (soilSource.ts): a "re-query" would read
-        // the same self-hosted dataset the cached value came from — the value
-        // compared with itself. There is no independent source to re-query,
-        // so this re-query is not run and is not claimed (neither pass nor
-        // part of the coverage). It returns when the REST source is enabled.
-        if (!SOILGRIDS_REST_ENABLED) return;
         apiRequeriesAttempted++;
         const freshSoil = await raceTimeout(fetchSoilGrids(lat, lon), 20000);
         const cachedSoil = result.remoteSensing?.soilGrids ?? result.globalSoilAnalysis;
-        if (freshSoil && cachedSoil && isFallbackSource(freshSoil.source)) {
+        // SoilGrids REST is disabled (soilSource.ts): the re-query reads the same
+        // self-hosted dataset the cached value came from, i.e. the value compared
+        // with itself. That is not an independent check (2026-11-26, D1).
+        const sameDataset = !!freshSoil?.source && (freshSoil.source === cachedSoil?.source
+          || (!SOILGRIDS_REST_ENABLED && (String(freshSoil.source).includes(LOCAL_SOIL_DATASET) || /1 km aggregate/i.test(String(freshSoil.source)))));
+        if (freshSoil && cachedSoil && sameDataset) {
+          checks.push(noIndependent('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', `soil comes from one self-hosted dataset (${LOCAL_SOIL_DATASET}); re-reading it would compare the value with itself`));
+        } else if (freshSoil && cachedSoil && isFallbackSource(freshSoil.source)) {
           checks.push(noIndependent('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query', `the re-query returned a fallback value (${freshSoil.source})`));
         } else if (freshSoil && cachedSoil) {
           const freshClay = num(freshSoil.clay);
@@ -249,7 +255,7 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
               `SoilGrids texture verified: clay ${cachedClay ?? '?'}%, sand ${cachedSand ?? '?'}%`,
               'ISRIC SoilGrids v2.0'));
           } else {
-            checks.push(warn('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query',
+            checks.push(fail('API-SOIL', 'API_REQUERY', 'SoilGrids Re-query',
               `SoilGrids drift detected: ${issues.join('; ')}. May indicate API update.`,
               issues.map(i => i.split(' vs ')[0]).join(', '),
               issues.map(i => i.split('vs ')[1]).join(', '),
@@ -278,7 +284,7 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
                 `NASA POWER deep moisture verified: cached ${(cachedVal * 100).toFixed(1)}%, fresh ${(freshVal * 100).toFixed(1)}%`,
                 'NASA POWER (GWETPROF)'));
             } else {
-              checks.push(warn('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query',
+              checks.push(fail('API-MOISTURE', 'API_REQUERY', 'NASA POWER Moisture Re-query',
                 `NASA POWER moisture drift: cached ${(cachedVal * 100).toFixed(1)}% vs fresh ${(freshVal * 100).toFixed(1)}%`,
                 `${(cachedVal * 100).toFixed(1)}%`, `${(freshVal * 100).toFixed(1)}%`, 'NASA POWER'));
             }
@@ -296,13 +302,14 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
         apiRequeriesAttempted++;
         const freshWells = await raceTimeout(fetchNearbyBoreholeData(lat, lon), 30000);
         const cachedWells = result.nearbyWells;
-        const freshLive = (freshWells?.dataSources ?? []).filter((s: string) => !LOCAL_WELL_SOURCES.test(String(s)));
+        const freshSources: unknown = freshWells?.dataSources;
+        const onlyLocal = Array.isArray(freshSources) && freshSources.length > 0 && freshSources.every((s) => LOCAL_WELL_SOURCES.test(String(s)));
         const freshCount = num(freshWells?.sampleSize ?? (freshWells as any)?.totalFound);
         const cachedCount = num(cachedWells?.sampleSize);
         if (freshWells && cachedWells && (!freshCount || !cachedCount)) {
           // 2026-11-26 (D1): 0 vs 0 records used to "match".
           checks.push(noIndependent('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query', 'no well records on one or both sides to compare'));
-        } else if (freshWells && cachedWells && freshLive.length === 0) {
+        } else if (freshWells && cachedWells && onlyLocal) {
           checks.push(noIndependent('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query',
             'the re-query answered only from the records shipped with the site (the same records as the value checked); no live database answered'));
         } else if (freshWells && cachedWells && freshCount != null && cachedCount != null) {
@@ -313,13 +320,13 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
               `Nearby wells verified: cached ${cachedCount}, fresh query ${freshCount} records`,
               'USGS/WPDx/BGS/OSM borehole databases'));
           } else {
-            checks.push(warn('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query',
+            checks.push(fail('API-WELLS', 'API_REQUERY', 'Nearby Wells Re-query',
               `Nearby wells count changed: cached ${cachedCount} vs fresh ${freshCount}. Database may have been updated.`,
               `${cachedCount}`, `${freshCount}`, 'Multi-source borehole databases'));
           }
           if (freshWells.averageDepth != null && cachedWells.averageDepth != null) {
             if (!within(freshWells.averageDepth, cachedWells.averageDepth, TOL.depth_m)) {
-              checks.push(warn('API-WELLS-DEPTH', 'API_REQUERY', 'Nearby Wells Avg Depth',
+              checks.push(fail('API-WELLS-DEPTH', 'API_REQUERY', 'Nearby Wells Avg Depth',
                 `Average nearby well depth drift: cached ${cachedWells.averageDepth}m vs fresh ${freshWells.averageDepth}m`,
                 `${cachedWells.averageDepth}m`, `${freshWells.averageDepth}m`));
             }
@@ -354,7 +361,7 @@ export async function runPreReportVerification(result: any): Promise<Verificatio
                 `GLDAS recharge verified: cached ${cachedRecharge?.toFixed?.(0) ?? cachedRecharge}mm/yr, fresh ${freshRecharge?.toFixed?.(0) ?? freshRecharge}mm/yr`,
                 'NASA GLDAS / ERA5-Land'));
             } else {
-              checks.push(warn('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query',
+              checks.push(fail('API-GLDAS', 'API_REQUERY', 'GLDAS Water Budget Re-query',
                 `Recharge estimate drift: cached ${cachedRecharge}mm/yr vs fresh ${freshRecharge}mm/yr`,
                 `${cachedRecharge}mm/yr`, `${freshRecharge}mm/yr`, 'GLDAS / ERA5-Land'));
             }
@@ -973,14 +980,20 @@ export function buildVerificationReport(
   const total = checks.length;
   const run = total - skipped;
 
+  // Required for any PASSED: every independent re-query (and the engine itself)
+  // ran and matched. Cross-checks that could not run (no second source) are
+  // listed as not checked: they withhold the grade and the "all figures
+  // cross-validated / cleared for publication" sentence, but are not required.
+  const isRequired = (c: VerificationCheck) => c.category === 'API_REQUERY' || c.id === 'VERIFY-ENGINE';
+  const requiredMissing = notChecked.filter(isRequired).length;
   const status: VerificationStatus =
-    failures > 0 ? 'FAILED' : (skipped > 0 || total === 0) ? 'INCOMPLETE' : 'PASSED';
-  const complete = skipped === 0 && total > 0;
+    failures > 0 ? 'FAILED' : (requiredMissing > 0 || api.attempted === 0 || total === 0) ? 'INCOMPLETE' : 'PASSED';
+  const complete = status === 'PASSED' && skipped === 0;
 
   const rawScore = run > 0 ? Math.round((passes * 100 + warnings * 50) / run) : 0;
   const rawGrade: 'A' | 'B' | 'C' | 'D' | 'F' =
     rawScore >= 90 ? 'A' : rawScore >= 75 ? 'B' : rawScore >= 60 ? 'C' : rawScore >= 40 ? 'D' : 'F';
-  // No grade or percentage that implies cross-validation unless coverage is complete.
+  // No grade or percentage unless every check ran and the verdict is PASSED.
   const score = complete ? rawScore : null;
   const grade = complete ? rawGrade : null;
 
@@ -994,7 +1007,7 @@ export function buildVerificationReport(
     summary = `❌ ${VERIFICATION_FAILED_HEADLINE}. ${failures} FAILURE(s) detected: ` +
       checks.filter(c => c.severity === 'FAIL').map(c => `[${c.name}] ${c.message}`).join(' | ') +
       `. Report BLOCKED until issues are resolved. ${coverageText}` +
-      (complete ? ` (Grade ${rawGrade}, ${rawScore}%).` : `; ${skipped} could not be checked: ${notCheckedList.join('; ')}.`) +
+      (skipped ? `; ${skipped} could not be checked: ${notCheckedList.join('; ')}.` : '.') +
       ` ${apiText}.`;
   } else if (status === 'INCOMPLETE') {
     summary = `${VERIFICATION_INCOMPLETE_HEADLINE} ` +
@@ -1003,6 +1016,9 @@ export function buildVerificationReport(
         : `${skipped} of ${total} checks could not be run: ${notCheckedList.join('; ')}. ` +
           `${coverageText}: ${passes} passed, ${warnings} warnings, 0 failures.`) +
       ` ${apiText}.`;
+  } else if (!complete) {
+    summary = `✅ ${VERIFICATION_PASSED_HEADLINE} — every independent re-query ran and matched. ${coverageText}: ` +
+      `${skipped} cross-check(s) could not be run (${notCheckedList.join('; ')}), so no accuracy grade is issued. ${apiText}.`;
   } else if (comparisonWarnings > 0) {
     summary = `✅ ${VERIFICATION_PASSED_WARN_HEADLINE} (Grade ${rawGrade}, ${rawScore}%). All ${total} checks ran with independent values: ` +
       `${passes} passed, ${warnings} warnings. ${apiText}. ${comparisonWarnings} comparison(s) did not agree within tolerance — review the warnings before publication.`;
@@ -1028,7 +1044,8 @@ export function buildVerificationReport(
       notChecked: notChecked.map(c => ({ id: c.id, name: c.name, reason: c.message })),
     },
     checks,
-    apiRequeriesPerformed: api.performed,
+    apiRequeriesPerformed: api.attempted,
+    apiRequeriesRun: api.performed,
     apiRequeriesMatched: api.matched,
     apiRequeriesAttempted: api.attempted,
     timestamp: new Date().toISOString(),
@@ -1087,9 +1104,29 @@ export interface VerificationDisplay {
   headline: string;
   coverage: string;
   grade: string;
+  /** (a) What WAS verified: the re-queries and cross-checks that ran and matched, with their source. */
+  verified: string[];
+  /** (b) What remains unavailable: each check that could not run, and why. */
   notChecked: string[];
+  /** (c) The conclusions that cannot be drawn because of (b): the related figures are unverified. */
+  cannotConclude: string[];
   summary: string;
 }
+
+/** The conclusion each check stands behind; when it could not run, the figures are unverified. */
+const CONCLUSION_BY_CHECK: [RegExp, string][] = [
+  [/^API-ALL$/, 'No figure is re-checked against a live source (no site coordinates)'],
+  [/^VERIFY-ENGINE$/, 'No figure is verified (the verification engine did not complete)'],
+  [/^API-ELEV/, 'Site elevation and the terrain figures that use it are unverified'],
+  [/^API-SOIL/, 'Soil texture is unverified against an independent soil source'],
+  [/^API-MOISTURE/, 'Soil-moisture context is unverified against NASA POWER'],
+  [/^API-WELLS/, 'Nearby-borehole evidence (counts and depths) is unverified against the live registries'],
+  [/^API-GLDAS/, 'Recharge and the water budget are unverified (they may be estimates)'],
+  [/^XV-DEPTH/, 'The drilling depth is not cross-checked against nearby drilled boreholes'],
+  [/^XV-YIELD/, 'The yield is not cross-checked against nearby boreholes'],
+  [/^XV-PROB/, 'The success probability is not cross-checked across models'],
+];
+const conclusionFor = (id: string, name: string) => (CONCLUSION_BY_CHECK.find(([re]) => re.test(id))?.[1]) ?? `${name}: the related figures are unverified`;
 
 export const GRADE_NOT_ISSUED = 'not issued (coverage incomplete)';
 
@@ -1099,20 +1136,32 @@ export function verificationDisplay(vrIn: Partial<VerificationReport> | null | u
     return {
       status: 'INCOMPLETE', headline: VERIFICATION_INCOMPLETE_HEADLINE,
       coverage: 'Coverage: 0 of 0 checks run', grade: GRADE_NOT_ISSUED,
-      notChecked: ['Pre-report verification did not run'], summary: `${VERIFICATION_INCOMPLETE_HEADLINE} Pre-report verification did not run.`,
+      verified: [], notChecked: ['Pre-report verification did not run'], cannotConclude: ['No figure is verified (the verification engine did not run)'], summary: `${VERIFICATION_INCOMPLETE_HEADLINE} Pre-report verification did not run.`,
     };
   }
   const status = verificationStatus(vr);
   const total = vr.coverage?.total ?? vr.totalChecks ?? 0;
   const run = vr.coverage?.run ?? (total - (vr.skipped ?? 0));
-  const notChecked = (vr.coverage?.notChecked ?? (vr.checks ?? []).filter(c => c.severity === 'SKIP').map(c => ({ id: c.id, name: c.name, reason: c.message })))
-    .map(n => `${n.name}: ${n.reason}`);
+  const skippedChecks = vr.coverage?.notChecked ?? (vr.checks ?? []).filter(c => c.severity === 'SKIP').map(c => ({ id: c.id, name: c.name, reason: c.message }));
+  const notChecked = skippedChecks.map(n => `${n.name}: ${n.reason}`);
+  const cannotConclude = Array.from(new Set(skippedChecks.map(n => conclusionFor(n.id, n.name))));
+  const ran = (vr.checks ?? []).filter(c => c.severity === 'PASS');
+  const comparisons = ran.filter(c => c.category === 'API_REQUERY' || c.category === 'CROSS_VALIDATION');
+  const others = ran.length - comparisons.length;
+  const verified = [
+    // Name and source only: the check's own message can carry modelled figures
+    // (depth, probability) that a desktop screening report must not print.
+    ...comparisons.map(c => `${c.name}: ran and matched${c.source ? ` (source: ${c.source})` : ''}`),
+    ...(others > 0 ? [`${others} internal consistency, physics, range and provenance check(s) passed`] : []),
+  ];
   return {
     status,
     headline: verificationHeadline(vr),
     coverage: `Coverage: ${run} of ${total} checks run`,
     grade: vr.grade != null && vr.score != null ? `Grade ${vr.grade} (${vr.score}%), over all ${total} checks` : GRADE_NOT_ISSUED,
+    verified,
     notChecked,
+    cannotConclude,
     summary: vr.summary ?? '',
   };
 }
@@ -1124,6 +1173,25 @@ export function verificationRows(result: unknown): [string, string][] {
     ['Verification status', d.headline],
     ['Verification coverage', d.coverage],
     ['Accuracy grade', d.grade],
+    ...d.verified.map((x): [string, string] => ['Verified', x]),
     ...d.notChecked.map((x): [string, string] => ['Not checked', x]),
+    ...d.cannotConclude.map((x): [string, string] => ['Cannot be concluded', x]),
   ];
+}
+
+/**
+ * The engineer trust score follows the same rule as the verification grade
+ * (2026-11-26, coordinator): no score or letter grade unless every check ran
+ * with independent values and none failed.
+ */
+export interface TrustScoreDisplay { issued: boolean; score: string; grade: string; text: string }
+
+export function trustScoreDisplay(result: unknown): TrustScoreDisplay {
+  const ec = (result as any)?.engineerConfidence;
+  const d = verificationDisplay((result as any)?.verificationReport);
+  if (d.status === 'PASSED' && ec && Number.isFinite(ec.engineerTrustScore) && ec.trustGrade) {
+    return { issued: true, score: `${ec.engineerTrustScore}/100`, grade: `Grade ${ec.trustGrade}`, text: `Trust score ${ec.engineerTrustScore}/100 (Grade ${ec.trustGrade})` };
+  }
+  const why = d.status === 'FAILED' ? 'verification failed' : 'verification incomplete';
+  return { issued: false, score: 'not issued', grade: 'not issued', text: `Trust score and grade not issued (${why}; ${d.coverage.replace(/^Coverage: /, '')})` };
 }

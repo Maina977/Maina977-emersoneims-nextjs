@@ -23,7 +23,8 @@ import { evidenceGate, provenanceText } from './evidenceGate';
 import { generateScreeningPdf, generateScreeningDocx, generateScreeningXlsx, screeningRows, screeningContent } from './screeningReport';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 import { waterQualityStatus } from './waterQualityStatus';
-import { costSourcing, QUOTATION_TEXT } from './costSources';
+import { costSourcing, costLineText } from './costSources';
+import { PRICE_STATE, TENDER_RATE_SOURCE, REFERENCE_QUOTATION_TEXT, fmtKES, PRICING_CATEGORY_LABEL } from './projectPricing';
 import { governingSummary, last12Months } from './governingSummary';
 import { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, getCustomerDetails, computeCanonicalEconomics } from './reportShared';
 export { AuditBlockError, VerificationBlockError, runPrePublishAudit, setCustomerDetails, computeCanonicalEconomics };
@@ -86,7 +87,7 @@ function makePdfSafe(doc: jsPDF): jsPDF {
 import { auditReport, type AuditReport } from './reportAuditor';
 import { recordReport, type ReportFormat } from './reportTracker';
 import { generateReportMaps, renderDrillHereMap, renderWaterTableDepthMap, type ReportMapImages } from './reportMapGenerator';
-import { type VerificationReport, normalizeVerificationReport, verificationBlocks, verificationRows, verificationDisplay } from './preReportVerification';
+import { type VerificationReport, normalizeVerificationReport, verificationBlocks, verificationRows, verificationDisplay, trustScoreDisplay } from './preReportVerification';
 import { computeDrillReadiness } from './drillReadiness';
 import { computeDesktopDrillTargetReadiness } from './desktopDrillTargetReadiness';
 import { wellKind, displayOutcome, cleanWellsForDisplay } from './wellDisplay';
@@ -966,16 +967,15 @@ export function sourcedCostRows(result: AnalysisResult): string[][] {
   const cs = costSourcing(eco);
   const g = evidenceGate(result);
   const usd = (v: number) => `$${Math.round(v).toLocaleString()}`;
-  const rows: string[][] = cs.lines.map((l) => l.source
-    ? [l.item, usd(l.usd), eco.kes(l.usd), l.source]
-    : [l.item, QUOTATION_TEXT, '', 'No sourced rate on file: the supplier\'s quotation prices this item']);
+  // 2026-11-26 (management decision C): each line with its price state.
+  const rows: string[][] = cs.lines.map((l) => { const t = costLineText(l); return l.kes != null ? [l.item, t.usd, t.kes, t.basis] : [l.item, t.usd, '', t.basis]; });
   if (eco.salinityUnpriced) rows.push(['Desalination (RO)', 'not priced', '', 'Salinity has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
   if (eco.fluorideUnpriced) rows.push(['Defluoridation', 'not priced', '', 'Fluoride has not been measured at this site (regional screening class only); a laboratory test of the first water decides']);
-  rows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}%)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency), `${Math.round(eco.contingencyRate * 100)}% of the sourced items${eco.isHardRock ? ' (hard rock)' : eco.rockTypeUnknown ? ' (rock type unknown: conservative rate)' : ''}`]);
-  rows.push([cs.quotationItems.length ? 'TOTAL OF SOURCED ITEMS' : 'TOTAL CAPITAL', usd(cs.sourcedTotal), eco.kes(cs.sourcedTotal),
-    `${cs.quotationItems.length ? `Not included, by quotation: ${cs.quotationItems.join(', ')}. ` : ''}Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ') || 'field evidence not cited'}`]);
+  rows.push([cs.contingencyLabel, usd(cs.sourcedContingency), fmtKES(cs.sourcedContingencyKES), 'The same rock classification as the drilling rate']);
+  rows.push([cs.totalLabel, usd(cs.sourcedTotal), fmtKES(cs.sourcedTotalKES),
+    `${cs.quotationItems.length ? `Not included (${cs.lines.find((l) => l.kes == null)?.priceText ?? ''}): ${cs.quotationItems.join(', ')}. ` : ''}${cs.notes.join(' ')} Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ') || 'field evidence not cited'}`]);
   const priced = cs.quotationItems.length === 0;
-  rows.push(['Payback', eco.paybackWithheld ? 'Not given: site unfavourable' : !priced ? 'Not given until the quotation prices every item' : eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`]);
+  rows.push(['Payback', eco.paybackWithheld ? 'Not given: site unfavourable' : !priced ? 'Not given until a quotation prices every item' : eco.paybackMonths > 0 ? `${(eco.paybackMonths / 12).toFixed(1)} years` : 'Not within 20 yrs', '', `water sales at $${eco.waterTariffPerM3.toFixed(2)}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} d/yr`]);
   if (priced) rows.push(['NPV @ 10% / 20 yrs', usd(eco.npv10Rounded), '', eco.irr === 999 ? 'IRR >100%' : eco.irr === -999 ? 'IRR negative' : `IRR ~${eco.irr}%`]);
   return rows;
 }
@@ -1308,7 +1308,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       // One water table, with what it rests on (2026-10-25 audit).
       { lbl: 'WATER TABLE', val: wtDepth != null ? `${fmt(wtDepth, 0)} m` : 'Not measured', sub: briefR.waterTableKind === 'field' ? 'measured on site' : briefR.waterTableKind === 'nearby' ? 'median of nearby boreholes' : 'confirm with ERT or drilling', c: [129, 140, 248] as [number, number, number] },
       // 2026-11-22: sourced items only; the rest are by quotation.
-      { lbl: _briefCs.quotationItems.length ? 'SOURCED ITEMS (REST BY QUOTE)' : 'TOTAL INVESTMENT', val: `${eco.kes(_briefCs.sourcedTotal)}`, sub: `$${_briefCs.sourcedTotal.toLocaleString()} · ${_briefCs.quotationItems.length ? `by quotation: ${_briefCs.quotationItems.join(', ')}` : `incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`}`, c: [251, 191, 36] as [number, number, number] },
+      { lbl: _briefCs.quotationItems.length ? 'PRICED ITEMS (REST: REQUEST A QUOTATION)' : 'TOTAL INVESTMENT', val: fmtKES(_briefCs.sourcedTotalKES), sub: `$${_briefCs.sourcedTotal.toLocaleString()} · ${_briefCs.quotationItems.length ? `${_briefCs.lines.find((l) => l.kes == null)?.priceText ?? ''}: ${_briefCs.quotationItems.join(', ')}` : `incl. survey, permits, ${(eco.contingencyRate * 100).toFixed(0)}% contingency`}${_briefCs.indicative ? ` · ${PRICE_STATE.INDICATIVE}` : ''}`, c: [251, 191, 36] as [number, number, number] },
       // "Not viable (sales)" and ">20 yrs" must never disagree across pages —
       // one label, everywhere (external audit item 13).
       { lbl: 'PAYBACK (WATER SALES)', val: _briefCs.quotationItems.length && !eco.paybackWithheld ? 'After quotation' : eco.paybackMonths > 0 && eco.paybackMonths <= 240 ?`${(eco.paybackMonths / 12).toFixed(1)} yrs` : eco.paybackWithheld ? 'Not given (unfavourable site)' : 'Not viable as sales', sub: eco.paybackMonths > 0 && eco.paybackMonths <= 240 ? `${eco.isHandPump ? 'hand pump' : 'solar'} ${eco.pumpHoursPerDay}h/day • $${eco.waterTariffPerM3.toFixed(2)}/m³` : `value = avoided vendor-water cost${eco.isHandPump ? ' (household hand-pump scheme)' : ''}`, c: [56, 189, 248] as [number, number, number] },
@@ -8283,7 +8283,7 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     // ONE canonical cost (Section 5.1); do not print a second total here.
     const _ddEco = computeCanonicalEconomics(result);
     doc.text(costSourcing(_ddEco).quotationItems.length
-      ? `Sourced items: $${costSourcing(_ddEco).sourcedTotal.toLocaleString()}; the rest by quotation (same model as Section 5.1 — see Detailed Cost Breakdown)`
+      ? `Priced items: $${costSourcing(_ddEco).sourcedTotal.toLocaleString()}; the rest: Request a quotation (same model as Section 5.1 — see Detailed Cost Breakdown)`
       : `Preliminary Cost Estimate: $${costSourcing(_ddEco).sourcedTotal.toLocaleString()} (same model as Section 5.1 — see Detailed Cost Breakdown)`, margin + 6, y + 46);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(100, 100, 100);
     doc.text('PROVISIONAL TENDER ALLOWANCE ONLY — casing depth, screen interval and screen length are provisional and MUST be finalised from the drill-cutting log, sieve analysis and geophysical logs during drilling. Do not procure casing/screen from this figure. Depth range: +/-15% model uncertainty.', margin + 6, y + 53, { maxWidth: pageW - margin * 2 - 12 });
@@ -9909,7 +9909,9 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
     doc.setFillColor(tsColor[0], tsColor[1], tsColor[2]);
     doc.roundedRect(margin, y, pw, 22, 3, 3, 'F');
     doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
-    doc.text(`TRUST SCORE: ${ec.engineerTrustScore}/100  |  GRADE: ${ec.trustGrade}  |  ${ec.provenance.reportGrade.replace(/_/g, ' ')}`, margin + 6, y + 14);
+    // 2026-11-26: no trust score or grade without full independent verification coverage.
+    const _tsd = trustScoreDisplay(result);
+    doc.text(_tsd.issued ? `TRUST SCORE: ${_tsd.score}  |  GRADE: ${ec.trustGrade}  |  ${ec.provenance.reportGrade.replace(/_/g, ' ')}` : `TRUST SCORE: NOT ISSUED (VERIFICATION ${verificationDisplay((result as any).verificationReport).status})  |  ${ec.provenance.reportGrade.replace(/_/g, ' ')}`, margin + 6, y + 14);
     y += 28;
 
     // Trust breakdown table
@@ -10322,12 +10324,15 @@ export async function generatePDFReport(result: AnalysisResult, requestedTier: '
       ['Drilling, hard rock', 'KSh 10,500/m', 'EmersonEIMS pricing schedule, 16 Oct 2026', 'Company rate'],
       ['Steel casing 152 mm (6 in)', 'KSh 4,200/m', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
       ['Gravel pack, development, test pumping', 'KSh 6,500/t; KSh 12,500/h x 12 h; KSh 9,500/h x 24 h', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
-      ['Survey, approvals, lab test', 'Survey KSh 85,000; WRA 80,000 + abstraction 30,000 + county 25,000 (+ NEMA 105,000 at 5 m3/h or more); lab KSh 28,000', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
+      // 2026-11-26 (management decision C): the tender's survey and permit figures apply to government tender work only.
+      computeCanonicalEconomics(result).pricing.category === 'government_tender'
+        ? ['Survey, approvals, lab test', 'Survey KSh 85,000; WRA 80,000 + abstraction 30,000 + county 25,000 (+ NEMA 105,000 at 5 m3/h or more); lab KSh 28,000', TENDER_RATE_SOURCE, PRICE_STATE.TENDER]
+        : ['Survey and approvals', `${PRICE_STATE.REQUEST} (private project), unless a ${PRICE_STATE.VERIFIED} is entered. ${REFERENCE_QUOTATION_TEXT}`, 'Pricing policy 2026-11-26', PRICING_CATEGORY_LABEL.private],
       ['Mobilisation', 'About $3/km beyond 50 km of Nairobi; at least KSh 240,000 beyond 100 km', 'EmersonEIMS signed tender, Baringo, 16 Oct 2026', 'Company rate'],
       ['Solar pump system', '$1,500/kW', 'IRENA Renewable Power Generation Costs (2023)', 'Peer-reviewed'],
       ['Water tariff', '$0.80/m\u00B3 (base case)', 'WHO/UNICEF JMP rural Africa range; see 3-scenario comparison', 'Regional est.'],
       ['Maintenance rate', '4.5% of CAPEX/yr', 'World Bank WASH O&M Benchmark (2019)', 'Peer-reviewed'],
-      ['Contingency', '15-25% of subtotal', 'FIDIC standard; 25% for hard rock (gneiss/granite/basalt)', 'Standard'],
+      ['Contingency', '15-25% of subtotal', 'FIDIC standard; 25% for hard rock or an unclassified rock type, 15% soft ground: the same rock classification as the drilling rate', 'Standard'],
       ['Pump operating hours', '6 hr/day', 'Solar irradiance constraint', 'Regional est.'],
       ['Operating days', '300/year', 'Allowance for maintenance downtime', 'Conservative est.'],
       ['Utilization ramp', '60%/75%/85% (yr 1/2/3+)', 'Rural community adoption curve', 'Heuristic'],
@@ -11004,7 +11009,7 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
     waterCheck: waterCheckStatusText(result),
     photoGpsNote: photoGpsConflictText(result),
     // 2026-11-26 (D1): the verification status, coverage and grade, as on the screen.
-    verification: (({ status, headline, coverage, grade, notChecked }) => ({ status, headline, coverage, grade, notChecked }))(verificationDisplay((result as any).verificationReport)),
+    verification: (({ status, headline, coverage, grade, verified, notChecked, cannotConclude }) => ({ status, headline, coverage, grade, verified, notChecked, cannotConclude }))(verificationDisplay((result as any).verificationReport)),
   };
   const g = evidenceGate(result);
   if (screeningOnly(result)) {
@@ -11024,7 +11029,11 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
       yield: { value_m3h: result.estimatedYield, source: g.citations.yield ?? null },
       cost: {
         sourcedTotal_usd: cs.sourcedTotal,
-        lines: cs.lines.map((l) => ({ item: l.item, usd: l.source ? l.usd : null, source: l.source ?? 'by quotation' })),
+        pricingCategory: PRICING_CATEGORY_LABEL[cs.category],
+        lines: cs.lines.map((l) => { const t = costLineText(l); return { item: l.item, state: l.state, price: l.kes != null ? t.kes : l.priceText, usdText: t.usd, kes: l.kes, usd: l.kes != null ? l.usd : null, source: t.basis }; }),
+        contingency: { label: cs.contingencyLabel, price: fmtKES(cs.sourcedContingencyKES), kes: cs.sourcedContingencyKES, usd: cs.sourcedContingency },
+        total: { label: cs.totalLabel, price: fmtKES(cs.sourcedTotalKES), kes: cs.sourcedTotalKES, usd: cs.sourcedTotal },
+        notes: cs.notes,
         byQuotation: cs.quotationItems,
         basis: `Depth and yield from: ${[g.citations.depth, g.citations.yield].filter(Boolean).join('; ')}`,
       },
@@ -11032,6 +11041,8 @@ export function jsonReportData(result: AnalysisResult): Record<string, unknown> 
     ...result,
     // A stored report from before 2026-11-26 is restated in the current wording.
     ...((result as any).verificationReport ? { verificationReport: normalizeVerificationReport((result as any).verificationReport) } : {}),
+    // 2026-11-26: the trust score and grade only with full independent verification coverage.
+    ...((result as any).engineerConfidence && !trustScoreDisplay(result).issued ? { engineerConfidence: { ...(result as any).engineerConfidence, engineerTrustScore: null, trustGrade: null, trustScoreStatus: trustScoreDisplay(result).text } } : {}),
   });
 }
 

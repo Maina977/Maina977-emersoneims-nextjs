@@ -3941,7 +3941,7 @@ export class BoreholeAnalyzer {
         verificationTimeout,
       ]);
       const vr = (result as any).verificationReport;
-      console.log(`[Pipeline] Verification: ${vr?.status ?? (vr?.verified ? 'PASSED' : 'FAILED')} — ${vr?.coverage ? `${vr.coverage.run} of ${vr.coverage.total} checks run` : ''}, grade ${vr?.grade ?? 'not issued'}, ${vr?.apiRequeriesPerformed} of ${vr?.apiRequeriesAttempted ?? '?'} API re-queries ran`);
+      console.log(`[Pipeline] Verification: ${vr?.status ?? (vr?.verified ? 'PASSED' : 'FAILED')} — ${vr?.coverage ? `${vr.coverage.run} of ${vr.coverage.total} checks run` : ''}, grade ${vr?.grade ?? 'not issued'}, ${vr?.apiRequeriesRun ?? 0} of ${vr?.apiRequeriesPerformed} API re-queries ran`);
     } catch (e) {
       console.warn('[Pipeline] Pre-report verification engine failed:', e);
       // 2026-11-26 (D1): the engine did not complete, so nothing was checked:
