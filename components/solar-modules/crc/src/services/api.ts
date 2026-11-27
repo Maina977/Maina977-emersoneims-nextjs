@@ -180,7 +180,10 @@ export const site = {
   geocode: (q: string) => get(`/geocode?q=${encodeURIComponent(q)}`),
   /** OSM-based roof footprint autofill at a coordinate. */
   roofAutofill: (p: { lat: number; lon: number; searchRadiusM?: number; assumedPitchDegrees?: number }) =>
-    post('/solar/roof-autofill', p)
+    post('/solar/roof-autofill', p),
+  /** REQ-27: terrain elevation at the coordinate (no slope survey); the answer names the service that gave it. */
+  elevation: (p: { lat: number; lon: number }) =>
+    post('/solar/elevation', { latitude: p.lat, longitude: p.lon, includeSlope: false })
 };
 
 // ---------------- Equipment library ----------------

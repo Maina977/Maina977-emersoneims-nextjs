@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useSolarStore } from '../services/store';
 import { core, site as siteApi } from '../services/api';
-import { mapSiteAssessment, parseGeocodeHits } from '../services/siteAssessment';
+import { mapSiteAssessment, parseElevationAnswer, parseGeocodeHits } from '../services/siteAssessment';
+import { browserStore, buildSiteHandoff, storeSiteHandoff } from '@/lib/solar/design/siteHandoff';
 
 // True app dashboard.
 // 1. Loads any saved Project from localStorage on mount.
@@ -184,6 +185,18 @@ export default function DashboardPage() {
   const [loadingSite, setLoadingSite] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // REQ-27: the elevation is carried to the Proposal only when the user ticks it.
+  const [includeElevation, setIncludeElevation] = useState(false);
+  const [handoffErr, setHandoffErr] = useState<string | null>(null);
+
+  function sendToProposal() {
+    setHandoffErr(null);
+    const b = buildSiteHandoff(site, includeElevation);
+    if (!b.handoff) { setHandoffErr(b.error); return; }
+    const r = storeSiteHandoff(browserStore(), b.handoff);
+    if (!r.ok) { setHandoffErr(r.message); return; }
+    window.location.hash = '#/proposal';
+  }
 
   // Restore the last project on first mount.
   useEffect(() => { loadProject(); }, [loadProject]);
@@ -217,15 +230,18 @@ export default function DashboardPage() {
     setErr(null);
     setInfo(null);
     setLoadingSite(true);
-    updateSite({ lat: h.lat, lon: h.lon, displayName: h.displayName });
+    updateSite({ lat: h.lat, lon: h.lon, displayName: h.displayName, elevationM: null, elevationSource: undefined });
+    setIncludeElevation(false);
 
     try {
       // Run NASA POWER, weather and roof autofill in parallel.
-      const [nasaR, weatherR, roofR] = await Promise.all([
+      const [nasaR, weatherR, roofR, elevR] = await Promise.all([
         core.nasa(h.lat, h.lon).catch((e) => ({ error: e?.message })),
         core.weather(h.lat, h.lon).catch((e) => ({ error: e?.message })),
-        siteApi.roofAutofill({ lat: h.lat, lon: h.lon, searchRadiusM: 60 }).catch((e) => ({ error: e?.message }))
+        siteApi.roofAutofill({ lat: h.lat, lon: h.lon, searchRadiusM: 60 }).catch((e) => ({ error: e?.message })),
+        siteApi.elevation({ lat: h.lat, lon: h.lon }).catch((e) => ({ error: e?.message }))
       ]);
+      const elev = parseElevationAnswer(elevR);
 
       // Mapping is tested in tests/regression/solar-dashboard-site-assessment.test.ts.
       const a = mapSiteAssessment(nasaR, weatherR, roofR);
@@ -239,7 +255,9 @@ export default function DashboardPage() {
         roofPerimeterM: roofPerim,
         roofAzimuthDeg: roofAz,
         roofPitchDeg: null,
-        roofProvenance
+        roofProvenance,
+        elevationM: elev ? elev.elevationM : null,
+        elevationSource: elev ? elev.source : undefined
       });
       saveProject();
       setInfo(
@@ -301,6 +319,30 @@ export default function DashboardPage() {
             Selected: {site.displayName} · {site.lat?.toFixed(4)}, {site.lon?.toFixed(4)}
             {site.roofProvenance && ` · roof: ${site.roofProvenance}`}
           </SmallProvenance>
+        )}
+
+        {hasSite && !loadingSite && (
+          <section aria-label="Use this site in the Proposal" style={{ marginTop: '0.9rem', paddingTop: '0.8rem', borderTop: '1px solid rgba(0, 217, 255, 0.2)', fontSize: '0.82rem', color: 'rgba(230, 241, 255, 0.85)' }}>
+            <div style={{ fontWeight: 700, color: '#00D9FF', marginBottom: 4 }}>Use this site in the Proposal</div>
+            <div>Carried, as you confirm it here:</div>
+            <ul style={{ margin: '4px 0 6px', paddingLeft: 18 }}>
+              <li>Address: {site.displayName} (place search result you chose)</li>
+              <li>Coordinates: {site.lat}, {site.lon} (same result)</li>
+              <li>
+                {site.elevationM != null && site.elevationSource ? (
+                  <label style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                    <input type="checkbox" checked={includeElevation} onChange={(e) => setIncludeElevation(e.target.checked)} />
+                    Include the elevation: {site.elevationM} m ({site.elevationSource}); tick only if it matches the site
+                  </label>
+                ) : 'Elevation: not available (the lookup gave no value), so none is carried'}
+              </li>
+            </ul>
+            <div style={{ color: 'rgba(230, 241, 255, 0.55)' }}>
+              Not carried: irradiance (the Proposal fetches its own hourly weather), the current air temperature (not a design temperature) and the roof footprint (not the usable area). Fields you already typed in the Proposal are never overwritten.
+            </div>
+            <Button style={{ marginTop: 8 }} onClick={sendToProposal}>Use this site in the Proposal →</Button>
+            {handoffErr && <Banner $kind="error">⚠ {handoffErr}</Banner>}
+          </section>
         )}
       </AddressCard>
 

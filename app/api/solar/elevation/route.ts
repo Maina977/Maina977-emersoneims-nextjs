@@ -18,6 +18,8 @@ interface ElevationPoint {
   latitude: number;
   longitude: number;
   elevation: number;  // meters
+  /** Which service answered (centre point only). */
+  source?: string;
 }
 
 interface ElevationResponse {
@@ -74,7 +76,14 @@ function getSolarSuitability(slope: number, aspect: number, latitude: number): '
   return 'challenging';
 }
 
-async function fetchElevation(lat: number, lon: number): Promise<number | null> {
+/** REQ-27: the answering service is reported with the value, so a pre-filled elevation can name its source. */
+const ELEVATION_SOURCES = {
+  openElevation: 'Open-Elevation (SRTM) lookup at the coordinates',
+  openTopo: 'OpenTopoData SRTM 30 m lookup at the coordinates',
+  google: 'Google Elevation API lookup at the coordinates',
+} as const;
+
+async function fetchElevationWithSource(lat: number, lon: number): Promise<{ elevation: number; source: string } | null> {
   // Try Open-Elevation first
   try {
     const response = await fetch(OPEN_ELEVATION_API, {
@@ -88,8 +97,8 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
 
     if (response.ok) {
       const data = await response.json();
-      if (data.results?.[0]?.elevation !== undefined) {
-        return data.results[0].elevation;
+      if (typeof data.results?.[0]?.elevation === 'number') {
+        return { elevation: data.results[0].elevation, source: ELEVATION_SOURCES.openElevation };
       }
     }
   } catch {
@@ -105,8 +114,8 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
 
     if (response.ok) {
       const data = await response.json();
-      if (data.results?.[0]?.elevation !== undefined) {
-        return data.results[0].elevation;
+      if (typeof data.results?.[0]?.elevation === 'number') {
+        return { elevation: data.results[0].elevation, source: ELEVATION_SOURCES.openTopo };
       }
     }
   } catch {
@@ -124,8 +133,8 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
 
       if (response.ok) {
         const data = await response.json();
-        if (data.results?.[0]?.elevation !== undefined) {
-          return data.results[0].elevation;
+        if (typeof data.results?.[0]?.elevation === 'number') {
+          return { elevation: data.results[0].elevation, source: ELEVATION_SOURCES.google };
         }
       }
     } catch {
@@ -134,6 +143,11 @@ async function fetchElevation(lat: number, lon: number): Promise<number | null> 
   }
 
   return null;
+}
+
+async function fetchElevation(lat: number, lon: number): Promise<number | null> {
+  const r = await fetchElevationWithSource(lat, lon);
+  return r ? r.elevation : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -151,7 +165,8 @@ export async function POST(request: NextRequest) {
     console.log(`[Elevation] Fetching data for ${latitude}, ${longitude}`);
 
     // Fetch center point elevation
-    const centerElevation = await fetchElevation(latitude, longitude);
+    const center = await fetchElevationWithSource(latitude, longitude);
+    const centerElevation = center ? center.elevation : null;
 
     if (centerElevation === null) {
       return NextResponse.json(
@@ -170,6 +185,7 @@ export async function POST(request: NextRequest) {
           latitude,
           longitude,
           elevation: Math.round(centerElevation * 10) / 10,
+          source: center!.source,
         },
         terrain: {
           slope: 0,

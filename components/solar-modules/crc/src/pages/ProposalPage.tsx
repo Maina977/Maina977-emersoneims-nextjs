@@ -7,6 +7,7 @@ import type { Check } from '@/lib/solar/design/validate';
 import { sldToSvg, type SldModel } from '@/lib/solar/design/sld';
 import { horizonElevationDeg, shadingRows, SHADING_HEAD, type HorizonProfile, type ShadingSummary } from '@/lib/solar/design/shading';
 import { onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
+import { applySiteHandoff, browserStore, prefillSource, replaceWithHandoff, takeSiteHandoff, type Prefill } from '@/lib/solar/design/siteHandoff';
 import { proposalRevisionHash, APPROVAL_LOCKED_NOTICE } from '@/lib/solar/design/proposalApproval';
 import {
   buildHourlyInput, buildHybridInput, formToProposalInput, horizonFromForm, hybridRequested, lastFullYear, parseLoadCsv, sldPreviewFromForm,
@@ -122,6 +123,7 @@ function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v
             ) : (
               <input type={kind === 'date' ? 'date' : 'text'} value={f[k] ?? ''} onChange={(e) => set(k, e.target.value)} inputMode={u ? 'decimal' : undefined} style={inputStyle} />
             )}
+            {prefillSource(f, k) ? <span data-prefill-source={k} style={{ display: 'block', fontSize: 11, color: '#7dd3fc', marginTop: 2 }}>Pre-filled from the Dashboard: {prefillSource(f, k)}</span> : null}
           </label>
         ))}
       </div>
@@ -161,6 +163,8 @@ export default function ProposalPage() {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [builtFor, setBuiltFor] = useState('');
   const [serverError, setServerError] = useState('');
+  // REQ-27: the site confirmed on the Dashboard (address, coordinates, elevation if ticked).
+  const [handoff, setHandoff] = useState<{ confirmedAt: string; applied: Prefill[]; differences: Array<Prefill & { current: string }> } | null>(null);
   const set = (k: string, v: string) => setF((x) => ({ ...x, [k]: v }));
   // Runs shown: at least up to the last filled run, or more if "Add cable run" was pressed.
   const [runsRequested, setRunsRequested] = useState(1);
@@ -208,9 +212,13 @@ export default function ProposalPage() {
 
   useEffect(() => {
     const r = loadDraft();
-    if (r.status === 'restored') { applyProject(r.project); setRestored({ savedAt: r.savedAt, production: r.project.production, stripped: r.stripped }); }
+    let base: ProposalForm = {};
+    if (r.status === 'restored') { applyProject(r.project); base = r.project.form; setRestored({ savedAt: r.savedAt, production: r.project.production, stripped: r.stripped }); }
     else if (r.status === 'blocked') setStorageMsg(r.message);
     else if (r.status === 'rejected') { setDraftError(r.message); if (r.reason === 'newer') setAutosavePaused(true); }
+    // REQ-27: a site the user confirmed on the Dashboard fills the blank fields only, labelled with its source.
+    const h = takeSiteHandoff(browserStore());
+    if (h) { const a = applySiteHandoff(base, h); setF(a.form); setHandoff({ confirmedAt: h.confirmedAt, applied: a.applied, differences: a.differences }); }
     setHydrated(true);
     // Runs once, on mount.
   }, []);
@@ -331,6 +339,20 @@ export default function ProposalPage() {
         <div role="note" style={{ ...box, borderColor: '#f59e0b', color: '#fde68a', fontSize: 13, marginBottom: 12 }}>
           TEST VALUES: the worked example uses the module, inverter, prices, tariff and production figures from the regression test. They are not a product recommendation, a real price or a real tariff. The production figures are test values, not a simulation, until you fetch the hourly weather.
         </div>
+      ) : null}
+
+      {handoff ? (
+        <section role="status" aria-label="Site from the Dashboard" style={{ ...box, borderColor: '#38bdf8', marginBottom: 12, fontSize: 13 }}>
+          <div style={{ fontWeight: 600, color: '#7dd3fc' }}>Site from the Dashboard (confirmed {when(handoff.confirmedAt)})</div>
+          {handoff.applied.length ? <div>Pre-filled: {handoff.applied.map((x) => `${x.label} ${x.value}`).join(' · ')}. Each is labelled with its source; edit any of them freely.</div> : <div>Nothing was pre-filled: every field it carries was already filled.</div>}
+          {handoff.differences.length ? (
+            <div style={{ marginTop: 6 }}>
+              Already filled here, so not changed: {handoff.differences.map((x) => `${x.label}: "${x.current}" here, "${x.value}" on the Dashboard`).join(' · ')}
+              <div style={{ marginTop: 6 }}><button type="button" style={btn} onClick={() => { setF((x) => replaceWithHandoff(x, handoff.differences)); setHandoff({ ...handoff, applied: [...handoff.applied, ...handoff.differences], differences: [] }); }}>Use the Dashboard values instead</button></div>
+            </div>
+          ) : null}
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Not carried: irradiance, the current air temperature and the roof footprint (not design values). Fetch the hourly weather below for this site.</div>
+        </section>
       ) : null}
 
       <section style={{ ...box, marginBottom: 12 }} aria-label="Saved project">

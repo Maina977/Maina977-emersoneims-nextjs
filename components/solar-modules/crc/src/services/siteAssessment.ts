@@ -66,3 +66,17 @@ export function mapSiteAssessment(nasaR: unknown, weatherR: unknown, roofR: unkn
     roofNote: rd && rd.found === false && typeof rd.note === 'string' ? rd.note : '',
   };
 }
+
+/**
+ * REQ-27: /api/solar/elevation → { success, data: { location: { elevation, source } } }.
+ * Used only with the service that answered; an answer without its source,
+ * or outside −500 to 6,000 m, is not used (null).
+ */
+export function parseElevationAnswer(r: unknown): { elevationM: number; source: string } | null {
+  const x: any = r;
+  const loc = x && x.success === true ? x.data?.location : null;
+  const el = num(loc?.elevation);
+  const src = typeof loc?.source === 'string' ? loc.source.trim() : '';
+  if (el === null || !(el >= -500 && el <= 6000) || !src) return null;
+  return { elevationM: el, source: src };
+}
