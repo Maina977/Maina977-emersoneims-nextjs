@@ -79,7 +79,21 @@ export const DRAINAGE_WORKS: Record<string, CatalogueItem> = {
   tank: { takes: 'count', unit: 'No', label: 'Septic tank / soakaway (as designed)', dims: [], specHint: 'capacity and dimensions from the approved design' },
 };
 
-export type WorksTrade = 'external' | 'hvac' | 'drainage';
+/**
+ * R-15 painting and decoration (P1-D §4): measured as the area painted (m²),
+ * the number of coats stated in the description, not multiplied (SMM7 /
+ * NRM2 general approach); trims in m; doors per leaf (No).
+ */
+export const PAINTING_WORKS: Record<string, CatalogueItem> = {
+  wallArea: { takes: 'area', unit: 'm²', label: 'Walls (area measured net of openings)', dims: [], specHint: 'e.g. 1 mist + 2 full coats vinyl silk emulsion on plaster' },
+  wallLength: { takes: 'linear', unit: 'm²', label: 'Walls (length × painted height; openings not deducted)', dims: [D('height', 'painted height', 0.1, 12)], specHint: 'e.g. 2 coats masonry paint on render; for net areas measure the wall as an area with its openings' },
+  ceiling: { takes: 'area', unit: 'm²', label: 'Ceilings / soffits', dims: [], specHint: 'e.g. 2 coats matt emulsion on skim' },
+  trim: { takes: 'linear', unit: 'm', label: 'Skirtings, trims, rails (girth ≤ 300 mm)', dims: [], specHint: 'e.g. 1 primer + 2 gloss on timber skirting' },
+  door: { takes: 'count', unit: 'No', label: 'Doors (per leaf, both sides incl. frame)', dims: [], specHint: 'e.g. 1 primer + 2 gloss, 900 × 2100 mm flush door' },
+  metal: { takes: 'area', unit: 'm²', label: 'Metalwork (area)', dims: [], specHint: 'e.g. 1 zinc phosphate primer + 2 enamel on steel grilles' },
+};
+
+export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
@@ -94,6 +108,11 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
     trade: 'Below-ground drainage', items: DRAINAGE_WORKS,
     note: 'Pipe diameters, gradients, invert levels and septic tank / soakaway sizes come from the drainage design approved by the county (and a percolation test on site): enter them from that design. Trench depth is the average of the measured run.',
     notMeasured: ['Backfilling and disposal of surplus (use Earthworks)', 'Connections to the public sewer (utility works)', 'Testing (air / water test) and CCTV survey', 'Pumping stations'],
+  },
+  painting: {
+    trade: 'Painting & decoration', items: PAINTING_WORKS,
+    note: 'Measured as the area painted; the number of coats is stated in the description, not multiplied into the quantity. Measure walls as areas with their openings (the take-off deducts them) for net quantities.',
+    notMeasured: ['Surface preparation beyond normal (stripping, filling cracks)', 'Signwriting and special finishes', 'Plaster itself (Plaster / render trade)'],
   },
 };
 
