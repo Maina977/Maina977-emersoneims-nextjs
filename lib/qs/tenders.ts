@@ -39,6 +39,12 @@ function csvRecords(name: string, text: string): Array<{ line: number; fields: s
   const endRecord = () => { endField(); out.push({ line: start, fields }); fields = []; };
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
+    // A comment: '#' as the first character of a physical line, outside any open quoted field (AD-1:
+    // a quote inside a comment, e.g. # rates "excl VAT", was parsed and refused). Skipped up to the line end.
+    if (!inQuotes && ch === '#' && cur === '' && !fields.length && !quoted && (i === 0 || text[i - 1] === '\n' || text[i - 1] === '\r')) {
+      while (i + 1 < text.length && text[i + 1] !== '\n' && text[i + 1] !== '\r') i++;
+      continue;
+    }
     if (inQuotes) {
       if (ch === '"') {
         if (text[i + 1] === '"') { cur += '"'; i++; } else { inQuotes = false; afterQuote = true; }
@@ -57,8 +63,8 @@ function csvRecords(name: string, text: string): Array<{ line: number; fields: s
   }
   if (inQuotes) throw new TenderError(`${name}, row ${start}: a quoted field is not closed`);
   if (cur !== '' || fields.length || quoted) endRecord();
-  // Blank lines and # comment lines are not records.
-  return out.filter((r) => !(r.fields.length === 1 && r.fields[0] === '') && !(r.fields[0] ?? '').startsWith('#'));
+  // Blank lines (and the comment lines skipped above, which leave a blank) are not records.
+  return out.filter((r) => !(r.fields.length === 1 && r.fields[0] === ''));
 }
 
 /** A plain decimal number ≥ 0: digits with an optional decimal point. Thousands separators are refused, never guessed. */
@@ -75,6 +81,9 @@ export function parseTenderCsv(name: string, text: string): Tender {
   const recs = csvRecords(n, text);
   if (recs.length < 2) throw new TenderError(`${n}: the CSV needs a header (code,rate[,amount]) and at least one priced item`);
   const head = recs[0].fields.map((h) => h.trim().toLowerCase());
+  // AD-2: a repeated column name (code,rate,rate) is refused: the second column was silently ignored.
+  const dup = head.find((h, k) => h !== '' && head.indexOf(h) !== k);
+  if (dup !== undefined) throw new TenderError(`${n}, row ${recs[0].line}: the header names the column "${dup}" more than once`);
   const ci = head.indexOf('code'), ri = head.indexOf('rate'), ai = head.indexOf('amount');
   if (ci < 0 || ri < 0) throw new TenderError(`${n}: the header must name "code" and "rate" columns`);
   const rates = new Map<string, TenderRate>();
