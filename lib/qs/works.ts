@@ -64,16 +64,36 @@ export const HVAC_WORKS: Record<string, CatalogueItem> = {
   fan: { takes: 'count', unit: 'No', label: 'Extract / supply fans', dims: [], specHint: 'duty from the design, e.g. in-line extract fan (duty per schedule M-02)' },
 };
 
-export type WorksTrade = 'external' | 'hvac';
+/**
+ * R-18 below-ground drainage (P1-D §4): pipe runs, trench excavation and
+ * bedding from the measured run, chambers and gullies counted. Diameters,
+ * gradients, invert levels and tank/soakaway sizes come from the drainage
+ * design (and a percolation test); they are entered, never computed.
+ */
+export const DRAINAGE_WORKS: Record<string, CatalogueItem> = {
+  pipe: { takes: 'linear', unit: 'm', label: 'Drain pipe (by diameter and depth band)', dims: [], specHint: 'from the drainage design, e.g. 110 mm uPVC, invert 0.75–1.5 m deep' },
+  trench: { takes: 'linear', unit: 'm³', label: 'Trench excavation for drains (length × width × average depth)', dims: [D('width', 'trench width', 0.3, 3), D('depth', 'average trench depth', 0.3, 6)], specHint: 'e.g. in soft material, depth band 0.75–1.5 m' },
+  bedding: { takes: 'linear', unit: 'm³', label: 'Pipe bed / surround (length × width × thickness)', dims: [D('width', 'bed width', 0.2, 3), D('thickness', 'bed thickness', 0.05, 1)], specHint: 'e.g. 150 mm granular bed and surround' },
+  manhole: { takes: 'count', unit: 'No', label: 'Manholes / inspection chambers', dims: [], specHint: 'size and depth from the design, e.g. 600 × 450 mm chamber, 0.9 m deep' },
+  gully: { takes: 'count', unit: 'No', label: 'Gullies', dims: [], specHint: 'e.g. 100 mm trapped gully with grating' },
+  tank: { takes: 'count', unit: 'No', label: 'Septic tank / soakaway (as designed)', dims: [], specHint: 'capacity and dimensions from the approved design' },
+};
+
+export type WorksTrade = 'external' | 'hvac' | 'drainage';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
-    notMeasured: ['Site clearance and demolition', 'Below-ground drainage (manholes, pipes, soakaways)', 'Utility connections (water, power, sewer) by the utility', 'Retaining walls and structures (need a structural design)'],
+    notMeasured: ['Site clearance and demolition', 'Below-ground drainage (its own trade)', 'Utility connections (water, power, sewer) by the utility', 'Retaining walls and structures (need a structural design)'],
   },
   hvac: {
     trade: 'HVAC', items: HVAC_WORKS,
     note: 'Quantities only. Cooling and heating loads, airflows, duct and pipe sizes and equipment selection require a design by a qualified mechanical engineer: enter the sizes from that design. This tool does not size HVAC.',
     notMeasured: ['Testing, balancing and commissioning', 'Controls and their wiring', 'Power supply to the units (electrical trade)', 'Builder’s work (holes, sleeves, supports, plinths)', 'Fittings (bends, tees, dampers) counted from the design'],
+  },
+  drainage: {
+    trade: 'Below-ground drainage', items: DRAINAGE_WORKS,
+    note: 'Pipe diameters, gradients, invert levels and septic tank / soakaway sizes come from the drainage design approved by the county (and a percolation test on site): enter them from that design. Trench depth is the average of the measured run.',
+    notMeasured: ['Backfilling and disposal of surplus (use Earthworks)', 'Connections to the public sewer (utility works)', 'Testing (air / water test) and CCTV survey', 'Pumping stations'],
   },
 };
 
