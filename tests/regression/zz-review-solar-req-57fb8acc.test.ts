@@ -150,7 +150,8 @@ describe('REQ-04: datasheet fields, missing / negative / unit mix-up', () => {
   });
   it('FINDING: negative module dimensions (JSON request path) must not PASS the area check', () => {
     const r = checkProposalRequest({ format: 'json', input: input({ module: entry({ ...MOD, lengthMm: -2278 }, 'module'), site: { usableAreaM2: 10, source: 'R' } }) });
-    expect('error' in r).toBe(false); // the request validator lets it through
+    // Updated after re-review Q6: the request validator now applies the import's dimension rule (300–3,500 mm).
+    expect('error' in r ? r.error : '').toMatch(/module.lengthMm must be 300–3500 mm when given/);
     const a = chk(buildProposal(input({ module: entry({ ...MOD, lengthMm: -2278 }, 'module'), site: { usableAreaM2: 10, source: 'R' } })), 'array-area');
     expect(a?.verdict).not.toBe('PASS');
   });

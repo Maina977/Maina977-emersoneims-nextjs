@@ -353,7 +353,12 @@ export function componentChecks(o: {
       } else out.push(notChecked('battery-voltage', 'Nominal bank voltage inside the inverter battery window', 'Battery nominal voltage or the inverter battery voltage window not entered: not checked'));
       // Review advisory A2: the nominal voltage can sit inside the window while
       // the full-charge or cut-off voltage does not (16S LFP charges at ~57.6 V).
-      if (pos(b.data.chargeV) && pos(b.data.cutoffV) && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
+      // Re-review Q6: swapped values sent as JSON (charge 44.8 V, cut-off 57.6 V)
+      // passed a 40–56 V window; the import refuses them but the API path does not run it.
+      if (pos(b.data.chargeV) && pos(b.data.cutoffV) && !(b.data.cutoffV < b.data.chargeV)) {
+        out.push({ id: 'battery-voltage-range', title: 'Charge and cut-off bank voltages inside the inverter battery window', verdict: 'REFUSE', value: b.data.cutoffV, limit: b.data.chargeV, unit: 'V', marginPct: -100,
+          formula: `cut-off ${b.data.cutoffV} V must be below full charge ${b.data.chargeV} V`, reference: 'Battery datasheet', note: 'battery cut-off voltage must be below its full-charge voltage' });
+      } else if (pos(b.data.chargeV) && pos(b.data.cutoffV) && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
         const hi = b.data.chargeV * series, lo = b.data.cutoffV * series;
         const ok = hi <= inv.batteryMaxV && lo >= inv.batteryMinV;
         out.push({ id: 'battery-voltage-range', title: 'Charge and cut-off bank voltages inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(hi > inv.batteryMaxV ? hi : lo), limit: hi > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: hi > inv.batteryMaxV ? margin(hi, inv.batteryMaxV, true) : margin(lo, inv.batteryMinV, false),

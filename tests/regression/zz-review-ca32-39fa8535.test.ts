@@ -71,7 +71,12 @@ describe('G1: inverter battery power not > 0 is never a pass (API request path)'
   it('one direction bad only: discharge 8 kW (0.40 C PASS), charge 0 kW → charge refused', () => {
     const r = viaApi(design({ inv: { batteryMaxDischargeKw: 8, batteryMaxChargeKw: 0 }, battery: battery(4, 10) }));
     log('G1 mixed', r);
-    expect(r.refused).toEqual(['battery-charge-c']);
+    // Updated after re-review Q6 (REQ review of f735c88f): the API now applies the datasheet
+    // import rules, so a 0 kW charge power is a 400 before the engine; the engine path still refuses it.
+    expect(r).toMatchObject({ http: 400 });
+    expect(r.error).toMatch(/inverter.batteryMaxChargeKw must be a positive number when given/);
+    const p = buildProposal(design({ inv: { batteryMaxDischargeKw: 8, batteryMaxChargeKw: 0 }, battery: battery(4, 10) }), null);
+    expect(p.checks.filter((k) => k.verdict === 'REFUSE').map((k) => k.id)).toEqual(['battery-charge-c']);
   });
   it('control: 8 kW / 20 kWh = 0.40 C both ways is not refused via the API', () => {
     const r = viaApi(design({ inv: { batteryMaxDischargeKw: 8, batteryMaxChargeKw: 8 }, battery: battery(4, 10) }));

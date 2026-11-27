@@ -5,6 +5,7 @@
  */
 import type { ProposalInput } from './proposal';
 import { CLIENT_APPROVAL_REJECTED } from './proposalApproval';
+import { moduleDataErrors, inverterDataErrors, batteryDataErrors } from './datasheet';
 
 export type ProposalFormat = 'json' | 'xlsx' | 'pdf';
 
@@ -33,6 +34,11 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     const b = i.battery;
     if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh) || (b.seriesPerString !== undefined && !isNum(b.seriesPerString))) e.push('battery must be { entry, units, requiredUsableAcKwh, seriesPerString? }');
   }
+  // Re-review Q6: the datasheet rules the import applies are applied to the
+  // entries an API request sends directly (it never runs the import).
+  if (isObj(i.module) && isObj(i.module.data)) e.push(...moduleDataErrors(i.module.data));
+  if (isObj(i.inverter) && isObj(i.inverter.data)) e.push(...inverterDataErrors(i.inverter.data));
+  if (isObj(i.battery) && isObj(i.battery.entry) && isObj((i.battery.entry as Record<string, unknown>).data)) e.push(...batteryDataErrors((i.battery.entry as Record<string, unknown>).data as Record<string, unknown>));
   if (i.site !== undefined) {
     const st = i.site;
     if (!isObj(st) || !isStr(st.source) || (st.elevationM !== undefined && !isNum(st.elevationM)) || (st.usableAreaM2 !== undefined && !isNum(st.usableAreaM2)) || (st.mounting !== undefined && st.mounting !== 'roof' && st.mounting !== 'ground')) e.push('site must be { elevationM?, mounting?: roof | ground, usableAreaM2?, source }');

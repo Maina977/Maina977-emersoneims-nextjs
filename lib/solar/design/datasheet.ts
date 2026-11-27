@@ -149,6 +149,66 @@ export function importBattery(r: Record<string, string>): ImportResult<Battery> 
   return { entry: { kind: 'battery', id: id(p, n.model), data: { ...n, datasheet: `${p.manufacturer} ${n.model} datasheet rev ${p.datasheetRevision} (${p.datasheetDate}) ${p.datasheetUrl}` }, provenance: p, status: 'unverified', warnings }, errors };
 }
 
+/**
+ * The import's datasheet rules applied to an already-parsed data object, for
+ * the POST /api/solar/proposal path, which never runs the CSV/form import
+ * (re-review Q6). Same rules, same limits; messages name the field.
+ */
+const fin = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+function optPositive(d: Record<string, unknown>, keys: string[], e: string[], prefix: string, signed = false): void {
+  for (const k of keys) if (d[k] !== undefined && !(fin(d[k]) && (signed || (d[k] as number) > 0))) e.push(`${prefix}.${k} must be a ${signed ? '' : 'positive '}number when given`);
+}
+export function moduleDataErrors(m: Record<string, unknown>): string[] {
+  const e: string[] = [];
+  if (typeof m.model !== 'string' || !m.model.trim()) e.push('module.model is required');
+  for (const k of MODULE_FIELDS) if (k !== 'model' && !fin(m[k])) e.push(`module.${k} must be a number`);
+  if (e.length) return e;
+  const n = m as unknown as Module;
+  if (!(n.vmpV < n.vocV)) e.push('module: Vmp must be below Voc');
+  if (!(n.impA < n.iscA)) e.push('module: Imp must be below Isc');
+  if (n.betaVocPct >= 0 || n.betaVmpPct >= 0 || n.gammaPmaxPct >= 0) e.push('module: voltage and power temperature coefficients must be negative (%/°C)');
+  if (Math.abs(n.betaVocPct) > 1 || Math.abs(n.betaVmpPct) > 1 || Math.abs(n.gammaPmaxPct) > 1) e.push('module: a temperature coefficient above 1 %/°C (probably mV/°C or mA/°C)');
+  if (n.alphaIscPct <= 0 || n.alphaIscPct > 0.2) e.push('module: α_Isc must be a small positive %/°C');
+  if (!(n.pmaxW > 0) || Math.abs(n.vmpV * n.impA - n.pmaxW) / n.pmaxW > 0.03) e.push('module: Vmp × Imp does not match Pmax within 3 %');
+  for (const k of ['lengthMm', 'widthMm'] as const) {
+    const v = m[k];
+    if (v !== undefined && !(fin(v) && v >= MODULE_DIM_MM.min && v <= MODULE_DIM_MM.max)) e.push(`module.${k} must be ${MODULE_DIM_MM.min}–${MODULE_DIM_MM.max} mm when given`);
+  }
+  return e;
+}
+export function inverterDataErrors(v: Record<string, unknown>): string[] {
+  const e: string[] = [];
+  if (typeof v.model !== 'string' || !v.model.trim()) e.push('inverter.model is required');
+  for (const k of INVERTER_FIELDS) if (k !== 'model' && !fin(v[k])) e.push(`inverter.${k} must be a number`);
+  if (e.length) return e;
+  const n = v as unknown as Inverter;
+  if (!(n.mpptMinV < n.mpptMaxV && n.mpptMaxV <= n.maxDcV)) e.push('inverter: expected MPPT min < MPPT max ≤ max DC voltage');
+  if (!Number.isInteger(n.mpptCount) || n.mpptCount < 1) e.push('inverter: MPPT count must be a whole number ≥ 1');
+  if (!(n.maxIscA >= n.maxInputA)) e.push('inverter: max short-circuit current per MPPT must be ≥ max input current');
+  optPositive(v, ['batteryMaxDischargeKw', 'batteryMaxChargeKw', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA'], e, 'inverter');
+  if (fin(v.batteryMinV) && fin(v.batteryMaxV) && !(v.batteryMinV < v.batteryMaxV)) e.push('inverter: batteryMinV must be below batteryMaxV');
+  if (v.antiIslanding !== undefined && v.antiIslanding !== null && typeof v.antiIslanding !== 'string') e.push('inverter.antiIslanding must be text when given');
+  return e;
+}
+export function batteryDataErrors(b: Record<string, unknown>): string[] {
+  const e: string[] = [];
+  if (typeof b.model !== 'string' || !b.model.trim()) e.push('battery.model is required');
+  for (const k of BATTERY_FIELDS) if (k !== 'model' && !fin(b[k])) e.push(`battery.${k} must be a number`);
+  if (e.length) return e;
+  const n = b as unknown as Battery;
+  if (!(n.usableDoD > 0 && n.usableDoD <= 1)) e.push('battery: usableDoD is a fraction 0–1');
+  if (!(n.dischargeEfficiency > 0 && n.dischargeEfficiency <= 1)) e.push('battery: dischargeEfficiency is a fraction 0–1');
+  if (!(n.maxDischargeC > 0 && n.maxChargeC > 0)) e.push('battery: C-rates must be positive');
+  optPositive(b, ['nominalKwh'], e, 'battery');
+  optPositive(b, ['nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'warrantyYears'], e, 'battery');
+  optPositive(b, ['minTempC', 'maxTempC'], e, 'battery', true);
+  if (fin(b.cycleLifeDoD) && !(b.cycleLifeDoD > 0 && b.cycleLifeDoD <= 1)) e.push('battery: cycleLifeDoD is a fraction 0–1');
+  if (fin(b.minTempC) && fin(b.maxTempC) && !(b.minTempC < b.maxTempC)) e.push('battery: minTempC must be below maxTempC');
+  if (fin(b.chargeV) && fin(b.cutoffV) && !(b.cutoffV < b.chargeV)) e.push('battery cut-off voltage must be below its full-charge voltage');
+  if (b.chemistry !== undefined && typeof b.chemistry !== 'string') e.push('battery.chemistry must be text when given');
+  return e;
+}
+
 /** Second-person sign-off: the verifier must differ from the person who entered it. */
 export function verify<T>(e: LibraryEntry<T>, verifiedBy: string, verifiedOn: string): LibraryEntry<T> {
   if (!verifiedBy.trim()) throw new Error('Verifier name required');
