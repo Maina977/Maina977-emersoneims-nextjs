@@ -237,7 +237,8 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
       <div className="text-sm font-semibold">Trades: quantities from the take-off</div>
       <p className="text-xs text-slate-400">Pick a trade, the measurement(s) it uses, and enter each parameter with its source (drawing, section, schedule or specification). Nothing is assumed.</p>
       <div className="flex flex-wrap items-center gap-3 text-xs">
-        <label>Trade <select aria-label="Trade" value={trade} onChange={(e) => choose(e.target.value as TradeKind)} className={input}>
+        {/* max-w-full: the longer trade names (R-09…R-21) made the select 2 px wider than a 390 px phone (final gate b4dbc823). */}
+        <label className="max-w-full">Trade <select aria-label="Trade" value={trade} onChange={(e) => choose(e.target.value as TradeKind)} className={`${input} max-w-full`}>
           {(Object.keys(TRADE_LABELS) as TradeKind[]).map((k) => <option key={k} value={k}>{TRADE_LABELS[k]}</option>)}
         </select></label>
         <label>{f.trade === 'openings' ? 'Code prefix' : 'Item code'} <input aria-label="Trade item code" value={f.code} onChange={(e) => edit({ ...f, code: e.target.value })} placeholder={f.trade === 'openings' ? 'e.g. DW' : 'e.g. M1'} className={`${input} w-20`} /></label>
