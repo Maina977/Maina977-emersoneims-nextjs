@@ -44,7 +44,7 @@ describe('R-24: transport line in the rate build-up', () => {
     const boq = buildBoq([{ code: '1', section: 'TEST', trade: '', description: 'TEST blockwork', unit: 'm²', links: [], scheduledQuantity: { value: 10, source: 'TEST' }, rate: null, buildUp }], new Map(), adj, 'A');
     expect(boq.lines[0].amount).toBe(13612.5); // 10 m² × 1,361.25
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(await boqToXlsx(boq, adj, 'TEST'));
+    await wb.xlsx.load((await boqToXlsx(boq, adj, 'TEST')) as unknown as ArrayBuffer);
     const ws = wb.getWorksheet('Rate build-ups')!;
     let found: unknown = null;
     ws.eachRow((row) => { if (row.getCell(3).value === 'Transport') found = (row.getCell(8).value as { result: number }).result; });
