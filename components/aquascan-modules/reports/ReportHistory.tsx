@@ -26,9 +26,11 @@ export const LOCAL_REPORTS_NOTE =
 export const HISTORY_DISPLAY_LIMIT = 1000;
 const FORMATS = new Set(['PDF', 'Word', 'Excel', 'CSV', 'JSON']);
 const PLACE_FIELDS = ['city', 'region', 'country', 'coordinates'] as const;
-// A recorded place is a geocoded name or "lat, lon". A percentage or analysis wording in it
-// (e.g. "Nairobi Site Analysis 78%") is not something recordReport ever writes.
-const NOT_A_PLACE = /%|analysis|probability|success/i;
+// A recorded place is a geocoded name or "lat, lon". A percentage in it (e.g. "Nairobi Site
+// Analysis 78%") is not something recordReport ever writes. Words alone are not refused: real
+// places are called "Success" or "Analysis Point", and a genuine report must never be hidden.
+const NOT_A_PLACE = /%/;
+const MAX_PLACE_LENGTH = 200;
 
 /**
  * CA-52 review: the browser's stored list is untrusted (edited storage, other scripts, old
@@ -48,7 +50,7 @@ export function validSavedReports(list: unknown): ReportRecord[] {
     for (const f of PLACE_FIELDS) {
       const v = r[f];
       if (v === undefined || v === null) continue;
-      if (typeof v !== 'string' || v.length > 120 || NOT_A_PLACE.test(v)) { placesOk = false; break; }
+      if (typeof v !== 'string' || v.length > MAX_PLACE_LENGTH || NOT_A_PLACE.test(v)) { placesOk = false; break; }
     }
     if (!placesOk) continue;
     out.push(r as unknown as ReportRecord);

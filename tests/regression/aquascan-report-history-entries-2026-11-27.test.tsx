@@ -40,7 +40,7 @@ describe('CA-52 review: stored entries are validated before display', () => {
     ['timestamp is a number', [record({ timestamp: 1 })]],
     ['city is an object', [record({ city: { a: 1 } })]],
     ['forged analysis as city', [record({ city: 'Nairobi Site Analysis 78%' })]],
-    ['probability wording in region', [record({ region: 'success probability high' })]],
+    ['percentage in region', [record({ region: 'success 65%' })]],
     ['oversized place', [record({ city: 'A'.repeat(500) })]],
   ];
   for (const [label, value] of junk) {
@@ -58,6 +58,17 @@ describe('CA-52 review: stored entries are validated before display', () => {
     await mount();
     expect(rows()).toBe(1);
     expect(document.body.textContent).toContain('TEST Town, TEST County, Kenya');
+  });
+
+  it('genuine place names are never hidden (re-review advisory: "Success", "Analysis Point", long regions)', () => {
+    const real = [
+      record({ id: 1, city: 'Success', region: 'Arkansas', country: 'United States' }),
+      record({ id: 2, city: 'Analysis Point', region: 'Probability Ridge' }),
+      record({ id: 3, city: "Murang'a", region: "Murang'a County" }),
+      record({ id: 4, city: 'Saint-Étienne', region: 'Auvergne-Rhône-Alpes', country: 'France' }),
+      record({ id: 5, region: 'R'.repeat(150), coordinates: 'N/A', city: 'Unknown', country: 'Unknown' }),
+    ];
+    expect(validSavedReports(real)).toHaveLength(real.length);
   });
 
   it('HTML in a place name is shown as text, never run', async () => {
