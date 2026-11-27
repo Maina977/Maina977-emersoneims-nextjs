@@ -242,8 +242,8 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
  * cable is REFUSED: the ampacity check would otherwise use a figure the
  * array can exceed. AC and battery cables are not tied to the strings.
  */
-/** The stated basis for string cable current (re-review S1): no clause number is cited until the standard is read. */
-export const STRING_CABLE_BASIS = 'IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.';
+/** The stated basis for string cable current (re-review S1; 2026-11-27): the clause number is from the official contents list; the rule itself has not been read. */
+export const STRING_CABLE_BASIS = 'IEC 62548-1:2023+AMD1:2025, clause 7.2.2 Current rating of PV circuits (clause number from the official contents list; clause text not reviewed). The rule (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc) is to be confirmed against the purchased standard.';
 
 export function cableStringCurrentCheck(c: CableRun, module: Module, design: ArrayDesign): Check | null {
   if (c.kind === 'ac' || c.kind === 'dc-battery') return null;
@@ -255,8 +255,8 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
     return { id: `cable-current-${c.name}`, title: `${c.name}: MPPT served`, verdict: 'REFUSE', value: NaN, limit: per.length, unit: '', marginPct: -100, formula: 'mppt must name an MPPT of the design', reference: 'Design input', note: `MPPT ${c.mppt} is not in the design (1–${per.length})` };
   }
   // Review of 39fa8535, R1: a cable serving ONE string was sized as if it
-  // carried every string on the MPPT. Basis (re-review S1: the clause number
-  // was never read, so none is cited): IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.
+  // carried every string on the MPPT. Basis (re-review S1; 2026-11-27: clause number from the
+  // official contents list, rule text unread): IEC 62548-1:2023+AMD1:2025, clause 7.2.2 Current rating of PV circuits (clause number from the official contents list; clause text not reviewed). The rule (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc) is to be confirmed against the purchased standard.
   // Unfused, a string cable can carry the reverse current of the other
   // strings, so the larger of the two applies.
   if (c.kind === 'dc-string') {

@@ -373,7 +373,7 @@ function globalGridCodePack({
       voltageRideThrough: 'EPRA 2024 §6.3 — 0.85–1.10 pu, 200 ms ride-through',
       freqRideThrough: '49.0–50.5 Hz continuous; 47.5–51.5 Hz transient',
       thdLimitPct: 5,
-      requiredDocuments: ['EPRA Form ECP-1 application', 'Single-line diagram stamped by EPRA Class A1 engineer', 'KPLC interconnection agreement', 'KS 1515 earthing certificate', 'IEC 62446 commissioning report'],
+      requiredDocuments: ['EPRA Form ECP-1 application', 'Single-line diagram stamped by EPRA Class A1 engineer', 'KPLC interconnection agreement', 'Earthing test certificate (Kenyan earthing code KS 503-2:1990; clause to be confirmed against the purchased standard)', 'IEC 62446 commissioning report'],
       currency: 'KES',
     },
     US: {

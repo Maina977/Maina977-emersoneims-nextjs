@@ -206,17 +206,17 @@ export function egress(b: Body) {
 /**
  * Outdoor air for one zone, ASHRAE 62.1 Ventilation Rate Procedure
  * (2026-11-05: ventilation was not available). Breathing-zone outdoor air
- * Vbz = Rp·Pz + Ra·Az (Eq. 6.2.2.1), zone outdoor air Voz = Vbz / Ez
- * (Eq. 6.2.2.2). Rp, Ra and default occupant densities from the SI version
- * of Table 6.2.2.1; Ez from Table 6.2.2.2. Single zone only: a multi-zone
- * system also needs the system ventilation efficiency (§6.2.4).
+ * Vbz = Rp·Pz + Ra·Az, zone outdoor air Voz = Vbz / Ez. Rp, Ra and
+ * default occupant densities from ASHRAE 62.1-2022 Table 6-1 (SI); Ez from the
+ * zone air distribution effectiveness table. Single zone only: a multi-zone
+ * system also needs the system ventilation efficiency.
  *
- * Edition (review W2, 2026-11-27): kept as "edition not stated". The equation
- * and table numbers (6.2.2.1 / 6.2.2.2) are those of the 2016 and earlier
- * editions, but the Rp / Ra values used here (office 2.5 L/s·person +
- * 0.3 L/s·m², classroom 5 + 0.6, retail 3.8 + 0.6 …) are the same in several
- * editions, so the values alone cannot identify one, and no copy of the
- * standard is in this repository to confirm it. Naming a year would be a guess.
+ * Edition (standards-access report, 2026-11-27): ASHRAE 62.1-2022, Table 6-1.
+ * All nine Rp / Ra pairs and default densities below equal the 2022 Table 6-1
+ * rows as reprinted in the free official Addendum w to 62.1-2022 (2025-09-30).
+ * "Table 6.2.2.1" (used here before) is the 2016-and-earlier numbering. The 2022
+ * equation numbers and the Ez table number were not seen, so none is cited.
+ * Addendum w lowers the restaurant and health-club densities; not applied here.
  */
 const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; density: number }> = {
   office: { label: 'Office space', Rp: 2.5, Ra: 0.3, density: 5 },
@@ -268,13 +268,13 @@ export function ventilation(b: Body) {
     checks,
     ...(notChecked.length ? { not_checked: notChecked } : {}),
     assumptions: [
-      `${t.label}: Rp ${t.Rp} L/s per person, Ra ${t.Ra} L/s per m² (ASHRAE 62.1 Table 6.2.2.1, SI)`,
+      `${t.label}: Rp ${t.Rp} L/s per person, Ra ${t.Ra} L/s per m² (ASHRAE 62.1-2022, Table 6-1 (values checked against the free Addendum w reprint), SI)`,
       pGiven === undefined ? `Occupants from the table's default density, ${t.density} per 100 m²: enter the design occupancy if known` : 'Occupants as entered',
-      `${e.label}: Ez = ${e.Ez} (Table 6.2.2.2)`,
-      'One zone only. A system serving several zones also needs the system ventilation efficiency (§6.2.4). Exhaust (toilets, kitchens) is separate (Table 6.5).',
+      `${e.label}: Ez = ${e.Ez} (ASHRAE 62.1-2022 zone air distribution effectiveness; table number to be confirmed against the purchased standard)`,
+      'One zone only. A system serving several zones also needs the system ventilation efficiency (ASHRAE 62.1 multiple-zone procedure; section number to be confirmed). Exhaust (toilets, kitchens) is separate (ASHRAE 62.1 minimum exhaust rates; table number to be confirmed).',
       'Kenya: confirm against the Building Code 2024 and the project mechanical engineer before submission',
     ],
-    method: 'ASHRAE 62.1 (edition not stated) Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
+    method: 'ASHRAE 62.1-2022 Ventilation Rate Procedure: Vbz = Rp·Pz + Ra·Az, Voz = Vbz / Ez; Rp, Ra and default densities from Table 6-1 (values checked against the free Addendum w reprint); equation numbers to be confirmed against the purchased standard',
   };
 }
 
@@ -408,7 +408,7 @@ export function daylightAdf(b: Body) {
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
     assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
-    method: 'Average daylight factor, BRE Digest 309 (1986) / BS 8206-2:2008 (superseded 2022-01-31) formula',
+    method: 'Average daylight factor, BRE Digest 310 (1986) / BS 8206-2:2008 (superseded 2022-01-31) formula',
   };
 }
 
@@ -444,7 +444,7 @@ export function soundInsulation(b: Body) {
     ...(target !== undefined ? { checks: [{ check: 'Rw ≥ target Rw (laboratory-type estimate)', value: `${r(Rw, 1)} ≥ ${target} dB`, pass: Rw >= target }] } : {}),
     not_checked: ['flanking transmission: the in-situ R′w (and DnT,w) is lower and needs EN 12354-1 with the junctions, or a site test', 'impact sound of floors'],
     assumptions: ['Single homogeneous leaf (layers bonded, no cavity)', 'Mass law of EN 12354-1:2000 Annex B, valid for m′ ≥ 150 kg/m²'],
-    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB (EN 12354-1:2000 is superseded by EN ISO 12354-1:2017; the single-leaf mass-law estimate used here is kept as stated)',
+    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB (EN 12354-1:2000 is superseded by EN ISO 12354-1:2017, whose Annex B (informative) is "Sound reduction index" (annex title from the official contents list; annex text not reviewed); the single-leaf mass-law estimate used here is kept as stated, its constants and the 150 kg/m² limit to be confirmed against the purchased standard)',
   };
 }
 

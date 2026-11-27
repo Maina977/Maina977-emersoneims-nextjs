@@ -314,9 +314,9 @@ describe('CA-32 R2/R3 (review of 39fa8535)', () => {
 });
 
 describe('CA-32 re-review of 221d977a: S1, S3, S4, fraction guard, bifacial note', () => {
-  it('S1: the string-cable basis cites no unread clause and says it is to be confirmed', async () => {
+  it('S1: the string-cable basis cites only the contents-list clause number and says the rule is to be confirmed', async () => {
     const { STRING_CABLE_BASIS } = await import('@/lib/solar/design/validate');
-    expect(STRING_CABLE_BASIS).toBe('IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.');
+    expect(STRING_CABLE_BASIS).toBe('IEC 62548-1:2023+AMD1:2025, clause 7.2.2 Current rating of PV circuits (clause number from the official contents list; clause text not reviewed). The rule (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc) is to be confirmed against the purchased standard.');
     const p = buildProposal(design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'S1', lengthM: 10, csaMm2: 4, designCurrentA: 25, systemV: 600, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'dc-string', mppt: 1, stringFuseA: 25 }] }));
     expect(p.checks.find((c) => c.id === 'cable-current-S1')?.reference).toBe(STRING_CABLE_BASIS);
   });

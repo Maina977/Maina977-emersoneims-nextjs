@@ -492,7 +492,7 @@ function epraGridCodePack({
     'Site layout & roof plan with array footprint',
     'Inverter datasheet showing IEC 62109 + IEC 62116 anti-islanding',
     'Battery datasheet (if hybrid) with UN 38.3 + IEC 62619',
-    'Earthing and lightning protection design (IEC 62305 / KS 1515)',
+    'Earthing and lightning protection design (IEC 62305 / KS 503-2:1990; clause to be confirmed against the purchased standard)',
     'Test certificate from EPRA-accredited solar PV technician (T1/T2/T3)',
     `KPLC Wayleave / interconnection consent (${voltage > 240 ? 'three-phase MV/LV' : 'single-phase LV'})`,
     'Building owner consent letter',

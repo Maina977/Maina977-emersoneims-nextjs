@@ -45,11 +45,11 @@ describe('W1, W2', () => {
     expect(html).not.toContain('Kenya sets no statutory wall U-value');
     expect(html).toContain('Check the Kenyan code in force (National Building Code 2024) and the project specification for the wall U-value requirement.');
   });
-  it('W2: BRE Digest 309 (1986); ASHRAE 62.1 stays "edition not stated" with the reason recorded', () => {
+  it('W2 (updated 2026-11-27, standards-access report): BRE Digest 310 (1986); ASHRAE 62.1-2022 Table 6-1 with the reason recorded', () => {
     const src = readFileSync(join(root, 'lib', 'wizard-api', 'buildingCalcs.ts'), 'utf8');
-    expect(src).toContain("BRE Digest 309 (1986) / BS 8206-2:2008 (superseded 2022-01-31)");
-    expect(src).toContain('ASHRAE 62.1 (edition not stated)');
-    expect(src).toMatch(/Edition \(review W2, 2026-11-27\): kept as "edition not stated"[\s\S]*Naming a year would be a guess/);
+    expect(src).toContain("BRE Digest 310 (1986) / BS 8206-2:2008 (superseded 2022-01-31)");
+    expect(src).toContain('ASHRAE 62.1-2022 Ventilation Rate Procedure');
+    expect(src).toMatch(/Edition \(standards-access report, 2026-11-27\): ASHRAE 62\.1-2022, Table 6-1[\s\S]*Addendum w/);
   });
 });
 
