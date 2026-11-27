@@ -163,33 +163,36 @@ export default function CookieConsent() {
             than the Hub's own caption (26,604 px² on /hub, 10,982 on
             /hub/solar-ups), so a first visit reported the consent notice as the
             page's main content, painted last. Chosen fix: CONSTRAIN THE TEXT
-            BLOCK SIZE. At xl the same words are set in short inline-block
-            phrases ([data-notice-phrase]); they flow and wrap like ordinary
-            text in the same two lines (bar height unchanged, 61 px), but each
-            is its own small block (5,100 px² or less, measured at 1280-1920
-            px on a local build). Below xl nothing changes: the phrases stay inline and
-            phones keep the short wording they already had (10,081 px², below
-            the Hub captions).
+            BLOCK SIZE. At xl the paragraph is a wrapping flex row and the same
+            words are set as short phrases ([data-notice-phrase]), each a flex
+            item, i.e. its own small block (5,100 px² or less, measured at
+            1280-1920 px on a local build). They wrap like ordinary text, in the
+            same two lines (bar height unchanged, 61 px). Inline-block phrases
+            were tried first and measured: Chrome still added them up into the
+            paragraph (20,202 px², still the LCP on /hub/solar-ups), so flex
+            items are used. Below xl nothing changes: the paragraph is a normal
+            block and phones keep the short wording they already had (10,081
+            px², below the Hub captions).
             Rejected: a long timer (that games LCP), fading in from opacity 0,
             content-visibility:hidden or shortening the copy. Nothing is hidden,
             delayed or removed: the notice is fully visible from its first frame,
             all of it is the dialog's description (aria-describedby), and the
             three choices below are unchanged.
           */}
-          <p id="cookie-notice-text" className="flex-1 min-w-0 text-gray-300 text-xs md:text-sm leading-snug">
-            <strong id="cookie-notice-title" data-notice-phrase="" className="xl:inline-block text-white font-semibold">
+          <p id="cookie-notice-text" className="flex-1 min-w-0 text-gray-300 text-xs md:text-sm leading-snug xl:flex xl:flex-wrap xl:gap-x-[0.25em]">
+            <strong id="cookie-notice-title" data-notice-phrase="" className="text-white font-semibold">
               Cookie &amp; Privacy Notice:
             </strong>{' '}
             <span className="xl:hidden">We use essential and analytics cookies; data stays private. </span>
-            <span className="hidden xl:inline">
-              <span data-notice-phrase="" className="xl:inline-block">We use essential cookies</span>{' '}
-              <span data-notice-phrase="" className="xl:inline-block">to ensure our website works properly</span>{' '}
-              <span data-notice-phrase="" className="xl:inline-block">and analytics cookies</span>{' '}
-              <span data-notice-phrase="" className="xl:inline-block">to understand how you interact with it.</span>{' '}
-              <span data-notice-phrase="" className="xl:inline-block">Your data is processed securely</span>{' '}
-              <span data-notice-phrase="" className="xl:inline-block">and never shared with third parties.</span>{' '}
+            <span className="hidden xl:contents">
+              <span data-notice-phrase="">We use essential cookies</span>{' '}
+              <span data-notice-phrase="">to ensure our website works properly</span>{' '}
+              <span data-notice-phrase="">and analytics cookies</span>{' '}
+              <span data-notice-phrase="">to understand how you interact with it.</span>{' '}
+              <span data-notice-phrase="">Your data is processed securely</span>{' '}
+              <span data-notice-phrase="">and never shared with third parties.</span>{' '}
             </span>
-            <a href="/privacy" data-notice-phrase="" className="xl:inline-block text-cyan-400 hover:text-cyan-300 underline">
+            <a href="/privacy" data-notice-phrase="" className="text-cyan-400 hover:text-cyan-300 underline">
               Privacy Policy
             </a>
           </p>

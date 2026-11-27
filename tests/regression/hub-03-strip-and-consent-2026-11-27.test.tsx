@@ -79,12 +79,19 @@ describe('cookie notice: consent behaviour after the LCP change', () => {
     expect(desc!.textContent).toContain('never shared with third parties');
   });
 
-  it('sets the desktop text as short inline-block phrases so no block outweighs the page (LCP)', () => {
+  it('sets the desktop text as short flex-item phrases so no block outweighs the page (LCP)', () => {
     render(<CookieConsent />);
-    const phrases = Array.from(document.querySelectorAll('#cookie-notice-text [data-notice-phrase]'));
+    const p = document.getElementById('cookie-notice-text')!;
+    // At xl: a wrapping flex row, so every phrase is its own block box.
+    // (Inline-block phrases were measured and still summed into the <p>.)
+    expect(p.className).toMatch(/\bxl:flex\b/);
+    expect(p.className).toMatch(/\bxl:flex-wrap\b/);
+    const phrases = Array.from(p.querySelectorAll('[data-notice-phrase]'));
     expect(phrases.length).toBeGreaterThanOrEqual(6);
     for (const ph of phrases) {
-      expect(ph.className).toContain('xl:inline-block');
+      // A flex item: a direct child of the <p>, or of a display:contents wrapper.
+      const parent = ph.parentElement!;
+      expect(parent === p || /\bxl:contents\b/.test(parent.className)).toBe(true);
       // About 40 characters at most: measured 5,100 px² or less at 1280-1920 px.
       expect((ph.textContent || '').trim().length).toBeLessThanOrEqual(42);
     }
