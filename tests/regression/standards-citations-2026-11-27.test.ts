@@ -15,9 +15,13 @@
  *  - IEC 60364-5-52: B.52.2 = PVC two loaded conductors, B.52.4 = PVC three, B.52.5 = XLPE/EPR
  *    three, B.52.14 = air temperature, B.52.15 = ground temperature.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+
+// Final gate 4dc9eed3 (2026-11-27): these tests walk the source tree and exceeded the 5 s default
+// under full-suite load (they pass alone). Explicit timeout, as the other tree-scanning tests (CA-41).
+vi.setConfig({ testTimeout: 120_000 });
 
 const ROOT = process.cwd();
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), 'utf8');

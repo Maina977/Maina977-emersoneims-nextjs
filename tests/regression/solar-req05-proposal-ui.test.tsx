@@ -8,6 +8,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup, act, within } from '@testing-library/react';
 import ProposalPage from '@/components/solar-modules/crc/src/pages/ProposalPage';
 
+// Full-page jsdom render: exceeded the 5 s default under full-gate load (passes alone). Explicit timeout.
+vi.setConfig({ testTimeout: 60_000 });
 beforeEach(() => { localStorage.clear(); vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {}))); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 

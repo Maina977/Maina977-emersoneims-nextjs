@@ -204,5 +204,6 @@ describe('Guided Diagnosis: no checks suggested while a STOP applies', () => {
     }
   // Engine 1.3.0 adds the shared safety screen (10 questions) to every family and more families,
   // so this exhaustive loop renders many more combinations than the 5 s default allows.
-  }, 180_000);
+  // Final gate 4dc9eed3: 180 s was exceeded under full-gate load (11/11 alone). 600 s ceiling.
+  }, 600_000);
 });

@@ -157,8 +157,12 @@ describe('H4: several cable runs, each checked on its own (hand-worked)', () => 
     }
     expect(p.status).toBe('REFUSED');
   });
-  it('the string-cable basis is still cited without a clause number', () => {
-    expect(STRING_CABLE_BASIS).toContain('Clause and edition to be confirmed against the purchased standard');
+  // Integration of the standards-citation fix (ed7040e0, independently CLEARED): STRING_CABLE_BASIS now
+  // names clause 7.2.2 as seen in the official contents list, with the clause text marked not reviewed and
+  // the rule still to be confirmed. This assertion is updated to that reviewed wording.
+  it('the string-cable basis cites only the contents-list clause and keeps the rule to be confirmed', () => {
+    expect(STRING_CABLE_BASIS).toContain('(clause number from the official contents list; clause text not reviewed)');
+    expect(STRING_CABLE_BASIS).toContain('is to be confirmed against the purchased standard');
     expect(AC_PROTECTION_BASIS).toContain('Clause to be confirmed against the purchased standard');
     expect(RCD_BASIS).toContain('Clauses to be confirmed against the purchased standards');
     for (const t of [AC_PROTECTION_BASIS, RCD_BASIS]) expect(t).not.toMatch(/§|\bcl\.\s?\d|[Cc]lause\s\d/);

@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
+
+// Full-page jsdom render: exceeded the 5 s default under full-gate load (passes alone). Explicit timeout.
+vi.setConfig({ testTimeout: 60_000 });
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ProposalPage from '@/components/solar-modules/crc/src/pages/ProposalPage';
 import { buildProposal, type ProposalInput } from '@/lib/solar/design/proposal';
