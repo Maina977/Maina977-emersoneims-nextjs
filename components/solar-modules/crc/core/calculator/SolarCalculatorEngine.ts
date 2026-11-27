@@ -147,7 +147,7 @@ const AMPACITY_A: [number, number][] = [
   [50, 168], [70, 213], [95, 258], [120, 299], [150, 344], [185, 392], [240, 461],
 ];
 const RHO_70C = 0.0225; // Ω·mm²/m, copper at 70 °C operating temperature
-const BREAKERS_A = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
+export const BREAKERS_A = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
 export interface ConductorChoice { mm2: number; dropPct: number; izTabA: number; ca: number; cg: number; izA: number }
 

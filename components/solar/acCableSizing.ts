@@ -11,6 +11,31 @@
  * via lib/solar/cableCorrections. Ambient not entered: assumed 40 °C; grouping: one circuit.
  */
 import { resolveConditions, cableBasisText, type CableConditions } from '@/lib/solar/cableCorrections';
+import { sizeConductor, conductorBasis, BREAKERS_A } from '@/components/solar-modules/crc/core/calculator/SolarCalculatorEngine';
+
+export interface BatteryCableChoice {
+  /** Design current I_B: inverter kW at 48 V and 90 % efficiency. */
+  designA: number;
+  breakerA?: number;
+  csaMm2?: number;
+  izTabA?: number;
+  izA?: number;
+  basis: string;
+}
+
+/**
+ * 48 V battery cable for /solar-design-studio (review of 1bf9dad6, M4): sized exactly as the
+ * engine's battery cable on /solar-genius-pro. Breaker In = the next standard rating at or above
+ * 1.25 × I_B; then the smallest copper PVC cable (method C table) with Iz,tab × Ca × Cg ≥ In
+ * within a 1 % drop over 3 m, at the studio's ambient (assumed 40 °C when not entered) and
+ * grouping (one circuit when not given). It used a fixed 30 °C table with no breaker.
+ */
+export function sizeBatteryCable(inverterKw: number, conditions: CableConditions = {}): BatteryCableChoice {
+  const designA = (inverterKw * 1000) / (48 * 0.9);
+  const breakerA = BREAKERS_A.find((b) => b >= designA * 1.25);
+  const c = breakerA !== undefined ? sizeConductor(breakerA, 3, 48, 1, conditions) : null;
+  return { designA, breakerA, csaMm2: c?.mm2, izTabA: c?.izTabA, izA: c?.izA, basis: conductorBasis(c, breakerA ?? designA * 1.25, conditions) };
+}
 
 export const STD_MCB = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160];
 export const CABLE_B1_TWO_LOADED: [number, number][] = [[4, 32], [6, 41], [10, 57], [16, 76], [25, 101], [35, 125], [50, 151], [70, 192], [95, 232]];

@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
 import SolarCalculatorEngine, { sizeConductor, conductorBasis } from '@/components/solar-modules/crc/core/calculator/SolarCalculatorEngine';
-import { sizeAcCable, CABLE_B1_TWO_LOADED } from '@/components/solar/acCableSizing';
+import { sizeAcCable, sizeBatteryCable, CABLE_B1_TWO_LOADED } from '@/components/solar/acCableSizing';
 import { ambientFactorPvcAir, groupingFactorAir, AMBIENT_AIR_PVC, GROUPING_AIR } from '@/lib/solar/cableCorrections';
 
 const req = createRequire(import.meta.url);
@@ -104,10 +104,59 @@ describe('/solar-design-studio AC cable', () => {
   });
   it('the page has the ambient input and shows the basis next to the size, on screen and in the text specification', () => {
     const s = read('components/solar/SolarDesignStudioPro.tsx');
-    expect(s).toContain('Site design ambient for the AC cable (°C, blank = assumed 40)');
+    expect(s).toContain('Site design ambient for the AC and battery cables (°C, blank = assumed 40)');
     expect(s).toMatch(/<td>\{acWire\}<div className="[^"]*">\{AC_CABLE_BASIS\}<\/div><\/td>/);
     expect(s).toMatch(/AC Cable Size +: \$\{acWire\} \(to DB; rated at least the breaker\)\r?\n +\$\{AC_CABLE_BASIS\}/);
     expect(s).toContain('const AC_CABLE_BASIS = ac.basis;');
+  });
+});
+
+describe('/solar-design-studio battery cable (review of 1bf9dad6, M4): sized as the engine battery cable', () => {
+  // I_B = kW × 1000 / (48 × 0.9); In = next of BREAKERS_A ≥ 1.25 × I_B; method C table × Ca(40 °C) 0.87 × Cg 1.00.
+  const cases: [number, number, number, number, number, number][] = [
+    // kW, I_B, In, rejected mm² (its Iz at 40 °C), chosen mm², chosen Iz at 40 °C
+    [10, 231.48, 315, 150, 185, 341.04], // was 95 mm² (224.5 A at 40 °C) for 231.5 A; 150 mm² 344 × 0.87 = 299.28 < 315
+    [3, 69.44, 100, 25, 35, 120.06],     // was 16 mm² (74 A) under 80 A; 25 mm² 112 × 0.87 = 97.44 < 100
+    [5, 115.74, 160, 50, 70, 185.31],    // was 35 mm² (120.1 A) under 125 A; 50 mm² 168 × 0.87 = 146.16 < 160
+    [8, 185.19, 250, 95, 120, 260.13],   // was 70 mm² (185.3 A) under 200 A; 95 mm² 258 × 0.87 = 224.46 < 250
+  ];
+  const TAB: Record<number, number> = { 25: 112, 35: 138, 50: 168, 70: 213, 95: 258, 120: 299, 150: 344, 185: 392 };
+  for (const [kw, ib, inA, rejected, chosen, iz] of cases) {
+    it(`${kw} kW at the assumed 40 °C: I_B ${ib} A, In ${inA} A, ${rejected} mm² (${(TAB[rejected] * 0.87).toFixed(2)} A) refused, ${chosen} mm² (${iz} A) chosen`, () => {
+      const b = sizeBatteryCable(kw);
+      expect(b.designA).toBeCloseTo(ib, 2);
+      expect(b.breakerA).toBe(inA);
+      expect(TAB[rejected] * 0.87).toBeLessThan(inA);
+      expect(b.csaMm2).toBe(chosen);
+      expect(b.izA).toBeCloseTo(iz, 2);
+      expect(b.izA!).toBeGreaterThanOrEqual(b.breakerA!);
+      expect(b.breakerA!).toBeGreaterThanOrEqual(b.designA);
+      expect(b.basis).toContain(`assumed design ambient 40 °C — enter the site value; one circuit assumed; Ca 0.87 (Table B.52.14), Cg 1.00 (Table B.52.17); Iz = ${TAB[chosen]} × 0.87 × 1.00 = ${iz} A ≥ In ${inA} A`);
+      expect(b.basis).toContain('installation method C');
+    });
+  }
+  it('5 kW at a site ambient of 30 °C: In 160 A on 50 mm² (168 A), Ca 1.00', () => {
+    const b = sizeBatteryCable(5, { ambientC: 30 });
+    expect(b.breakerA).toBe(160);
+    expect(b.csaMm2).toBe(50);
+    expect(b.basis).toContain('site ambient 30 °C; one circuit assumed; Ca 1.00 (Table B.52.14), Cg 1.00 (Table B.52.17); Iz = 168 × 1.00 × 1.00 = 168 A ≥ In 160 A');
+  });
+  it('matches the engine battery cable on /solar-genius-pro for the same inverter and ambient', () => {
+    const e = new SolarCalculatorEngine();
+    for (const kw of [3, 5, 8, 10]) for (const amb of [undefined, 30, 40, 45]) {
+      const spec = e.generateWiringSpecs({ panels: 20, panelWatt: 550, inverterKw: kw, batteryKwh: 10, systemType: 'hybrid' } as never, { ambientC: amb }).find((s) => /Battery/.test(s.segment))!;
+      const b = sizeBatteryCable(kw, { ambientC: amb });
+      expect(String(b.csaMm2 ?? '—'), `${kw} kW ${amb}`).toBe(spec.cableSize);
+      expect(spec.breaker).toBe(`${b.breakerA} A DC breaker or fuse`);
+      expect(b.basis).toBe(spec.sizingBasis);
+    }
+  });
+  it('the studio shows the breaker and the basis next to the battery cable, and uses no fixed table', () => {
+    const s = read('components/solar/SolarDesignStudioPro.tsx');
+    expect(s).toContain('const batt = sizeBatteryCable(inverterSize, cableConditions);');
+    expect(s).toMatch(/<td>Battery Cable \(\{Math\.round\(batteryAmps\)\} A at 48 V; \{batt\.breakerA \? `breaker \$\{batt\.breakerA\} A`/);
+    expect(s).toMatch(/<td>\{batteryWire\}<div className="[^"]*">\{BATTERY_CABLE_BASIS\}<\/div><\/td>/);
+    expect(s).not.toContain("[160, '50mm²'], [200, '70mm²']");
   });
 });
 

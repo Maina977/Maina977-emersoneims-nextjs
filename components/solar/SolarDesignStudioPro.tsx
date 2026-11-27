@@ -16,7 +16,7 @@ import {
   AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
 import { estimateInstalledCost, gridSaving, pricesVerified, customerRate, REQUEST_QUOTATION } from '@/lib/solar/sizing';
-import { sizeAcCable } from './acCableSizing';
+import { sizeAcCable, sizeBatteryCable } from './acCableSizing';
 
 // Roof drawing scale and module size (metres). See the panel size state below.
 const PX_PER_M = 20;
@@ -204,9 +204,17 @@ export default function SolarDesignStudioPro() {
   // PV1-F on a hot roof (derated): 4 mm² to ~22 A, 6 mm² to ~28 A, 10 mm² to ~39 A.
   const wireSize = pickCsa(stringDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²']]);
   const combinerWire = pickCsa(arrayDesignA, [[22, '4mm²'], [28, '6mm²'], [39, '10mm²'], [52, '16mm²'], [69, '25mm²'], [86, '35mm²']]);
-  // 48 V battery: inverter kW at ~90% efficiency; short run, copper.
-  const batteryAmps = (inverterSize * 1000) / (48 * 0.9);
-  const batteryWire = pickCsa(batteryAmps, [[70, '16mm²'], [100, '25mm²'], [125, '35mm²'], [160, '50mm²'], [200, '70mm²'], [245, '95mm²'], [285, '120mm²'], [330, '150mm²']]);
+  // Site design ambient for the AC and battery cable ratings: blank = assumed 40 °C.
+  const cableAmbientC = cableAmbientInput.trim() === '' ? NaN : Number(cableAmbientInput);
+  const cableConditions = { ambientC: Number.isFinite(cableAmbientC) && cableAmbientC >= 0 ? cableAmbientC : undefined };
+  // 48 V battery: inverter kW at ~90% efficiency; short run, copper. Review of
+  // 1bf9dad6, M4: it was a fixed 30 °C table with no breaker (10 kW: 231.5 A on
+  // 95 mm², 224.5 A at 40 °C). Now sized as the engine's battery cable: breaker
+  // at or above 1.25 × I_B, then Iz × Ca × Cg ≥ In.
+  const batt = sizeBatteryCable(inverterSize, cableConditions);
+  const batteryAmps = batt.designA;
+  const batteryWire = batt.csaMm2 ? `${batt.csaMm2}mm²` : OVER;
+  const BATTERY_CABLE_BASIS = batt.basis;
   // AC: single phase to 10 kW, three phase above.
   const threePhase = inverterSize > 10;
   // Breaker at 1.25 x the inverter's AC current, then a cable whose DERATED rating
@@ -217,8 +225,7 @@ export default function SolarDesignStudioPro() {
   // about 41 A, so a 63 A breaker did not protect it) for 3 kW to 15 kW.
   // Review 328c44aa, M4: the rating was the 30 °C figure with no correction; now
   // Iz × Ca × Cg at the site ambient (assumed 40 °C when not entered), one circuit.
-  const cableAmbientC = cableAmbientInput.trim() === '' ? NaN : Number(cableAmbientInput);
-  const ac = sizeAcCable(inverterSize, { ambientC: Number.isFinite(cableAmbientC) && cableAmbientC >= 0 ? cableAmbientC : undefined });
+  const ac = sizeAcCable(inverterSize, cableConditions);
   const acAmps = ac.acAmps;
   const acBreakerA = ac.breakerA;
   const acCsa = ac.csaMm2;
@@ -884,7 +891,7 @@ export default function SolarDesignStudioPro() {
                   <option value={10}>10kW Hybrid</option>
                   <option value={15}>15kW Commercial</option>
                 </select>
-                <label htmlFor="studio-cable-ambient" className="text-slate-500 text-xs mt-2 block">Site design ambient for the AC cable (°C, blank = assumed 40)</label>
+                <label htmlFor="studio-cable-ambient" className="text-slate-500 text-xs mt-2 block">Site design ambient for the AC and battery cables (°C, blank = assumed 40)</label>
                 <input
                   id="studio-cable-ambient"
                   type="number"
@@ -1116,8 +1123,8 @@ EARTHING:
                     </tr>
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Inverter to Battery</td>
-                      <td>Battery Cable ({Math.round(batteryAmps)} A at 48 V)</td>
-                      <td>{batteryWire}</td>
+                      <td>Battery Cable ({Math.round(batteryAmps)} A at 48 V; {batt.breakerA ? `breaker ${batt.breakerA} A` : 'breaker: engineer to size'})</td>
+                      <td>{batteryWire}<div className="text-xs text-slate-400 mt-1">{BATTERY_CABLE_BASIS}</div></td>
                       <td>~3m</td>
                       <td>Red (+) / Black (-)</td>
                     </tr>
