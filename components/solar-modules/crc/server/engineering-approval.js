@@ -23,7 +23,7 @@ const rad2deg = (r) => r * 180 / Math.PI;
 
 // =====================================================================
 // (1) IEC 62446-1 COMMISSIONING REPORT
-//     Per IEC 62446-1:2016 §6 "Verification — Initial verification"
+//     Per IEC 62446-1:2016, initial verification (clause to be confirmed against the purchased standard)
 // =====================================================================
 function iec62446CommissioningReport({
   projectId = 'PROJ-001',
@@ -45,15 +45,15 @@ function iec62446CommissioningReport({
 }) {
   // §6.4 visual inspection items
   const visual = [
-    { id: 'VI-1',  item: 'PV modules free of damage / cracks / discolouration', pass: true, std: 'IEC 62446-1 §6.4.1' },
-    { id: 'VI-2',  item: 'DC cable routing protected from mechanical damage',   pass: true, std: 'IEC 62446-1 §6.4.2 / IEC 60364-7-712 §712.522' },
+    { id: 'VI-1',  item: 'PV modules free of damage / cracks / discolouration', pass: true, std: 'IEC 62446-1, inspection of the PV modules (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-2',  item: 'DC cable routing protected from mechanical damage',   pass: true, std: 'IEC 62446-1, inspection of the DC cabling; IEC 60364-7-712, wiring systems (clauses to be confirmed against the purchased standards)' },
     { id: 'VI-3',  item: 'DC cables UV-resistant solar grade (H1Z2Z2-K)',       pass: true, std: 'EN 50618:2014 / TUV 2 PfG 1169' },
-    { id: 'VI-4',  item: 'DC isolator within 1 m of inverter (or as required)', pass: true, std: 'IEC 60364-7-712 §712.537.2.1.1' },
-    { id: 'VI-5',  item: 'String overcurrent protection rated > 1.25 × Isc',    pass: ocpdRatingA >= 1.25 * iscExpectedA, std: 'IEC 60364-7-712 §712.433' },
-    { id: 'VI-6',  item: 'Equipotential bonding to module frames (continuous)', pass: true, std: 'IEC 62446-1 §6.4.4 / IEC 60364-5-54' },
+    { id: 'VI-4',  item: 'DC isolator within 1 m of inverter (or as required)', pass: true, std: 'IEC 60364-7-712, isolation and switching of the PV array (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-5',  item: 'String overcurrent protection rated > 1.25 × Isc',    pass: ocpdRatingA >= 1.25 * iscExpectedA, std: 'IEC 60364-7-712, overcurrent protection of PV strings (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-6',  item: 'Equipotential bonding to module frames (continuous)', pass: true, std: 'IEC 62446-1, inspection of earthing and bonding; IEC 60364-5-54 (clauses to be confirmed against the purchased standards)' },
     { id: 'VI-7',  item: 'Earthing electrode resistance ≤ 10 Ω',                pass: earthResistanceOhm <= 10, std: 'BS 7430:2011 / IEC 62305-3' },
-    { id: 'VI-8',  item: 'PV array warning labels at DC isolator + meter',      pass: true, std: 'IEC 60364-7-712 §712.514' },
-    { id: 'VI-9',  item: 'Inverter AC connection per manufacturer torque spec', pass: true, std: 'Mfr datasheet + IEC 62548 §6.4' },
+    { id: 'VI-8',  item: 'PV array warning labels at DC isolator + meter',      pass: true, std: 'IEC 60364-7-712, identification and labelling (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-9',  item: 'Inverter AC connection per manufacturer torque spec', pass: true, std: 'Mfr datasheet + IEC 62548, AC connection of the inverter (clause to be confirmed against the purchased standard)' },
     { id: 'VI-10', item: 'Anti-islanding inverter type-tested',                 pass: true, std: 'IEC 62116:2014' },
   ];
 
@@ -67,7 +67,7 @@ function iec62446CommissioningReport({
       measured: '< 0.5 Ω (typ)',
       criterion: '< 1.0 Ω',
       pass: true,
-      std: 'IEC 62446-1 §6.5.1',
+      std: 'IEC 62446-1, test: continuity of protective conductors (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-2',
@@ -75,7 +75,7 @@ function iec62446CommissioningReport({
       measured: 'Correct',
       criterion: 'Polarity matches labelling',
       pass: true,
-      std: 'IEC 62446-1 §6.5.2',
+      std: 'IEC 62446-1, test: string polarity (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-3',
@@ -84,7 +84,7 @@ function iec62446CommissioningReport({
       criterion: `Within ±5% of expected ${vocExpectedV} V`,
       pass: Math.abs(vocPctDiff) <= 5,
       deviationPct: r2(vocPctDiff),
-      std: 'IEC 62446-1 §6.5.3',
+      std: 'IEC 62446-1, test: string open-circuit voltage (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-4',
@@ -93,7 +93,7 @@ function iec62446CommissioningReport({
       criterion: `Within ±5% of expected ${iscExpectedA} A (irradiance corrected)`,
       pass: Math.abs(iscPctDiff) <= 5,
       deviationPct: r2(iscPctDiff),
-      std: 'IEC 62446-1 §6.5.4',
+      std: 'IEC 62446-1, test: string short-circuit current (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-5',
@@ -101,7 +101,7 @@ function iec62446CommissioningReport({
       measured: `${insulationResistanceMOhm} MΩ`,
       criterion: '> 1 MΩ for systems > 120 V',
       pass: insulationResistanceMOhm >= 1,
-      std: 'IEC 62446-1 §6.5.5',
+      std: 'IEC 62446-1, test: insulation resistance (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-6',
@@ -109,7 +109,7 @@ function iec62446CommissioningReport({
       measured: 'Disconnect → 0 W within 200 ms',
       criterion: 'Anti-islanding per IEC 62116',
       pass: true,
-      std: 'IEC 62446-1 §6.5.6 / IEC 62116',
+      std: 'IEC 62446-1, test: functional test; IEC 62116 anti-islanding (clauses to be confirmed against the purchased standards)',
     },
     {
       id: 'T-7',
@@ -187,7 +187,7 @@ function singleLineDiagramSvg({
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="Arial,sans-serif" font-size="11">`;
   svg += `<rect width="${W}" height="${H}" fill="#ffffff" stroke="#000" stroke-width="1"/>`;
   svg += `<text x="${W/2}" y="20" text-anchor="middle" font-weight="bold" font-size="14">SINGLE-LINE DIAGRAM — ${projectId}</text>`;
-  svg += `<text x="${W/2}" y="36" text-anchor="middle" font-size="10" fill="#666">Per IEC 60617 symbols / IEC 62446-1 §5.4 documentation</text>`;
+  svg += `<text x="${W/2}" y="36" text-anchor="middle" font-size="10" fill="#666">Per IEC 60617 symbols / IEC 62446-1 documentation (clause to be confirmed against the purchased standard)</text>`;
 
   // Draw N strings
   const stringX0 = 60;
@@ -273,7 +273,7 @@ function singleLineDiagramSvg({
     standardSymbolsUsed: ['IEC 60617-2 (PV array)', 'IEC 60617-7 (switches/fuses)', 'IEC 60617-11 (transformers/meter)', 'IEC 60617-2 (earth)'],
     provenance: {
       method: 'Programmatic SVG generation per IEC 60617 graphical symbols for diagrams. Topology covers strings → fuses → DC combiner bus → DC isolator → inverter → AC MCB → bi-directional meter → utility grid, with PE bonding shown.',
-      reference: 'IEC 60617:2012 Graphical Symbols for Diagrams; IEC 62446-1 §5.4 (documentation requirements include SLD); IEC 60364-7-712 §712.514 (labelling).',
+      reference: 'IEC 60617:2012 Graphical Symbols for Diagrams; IEC 62446-1, system documentation including the SLD; IEC 60364-7-712, labelling (clauses to be confirmed against the purchased standards).',
       limits: 'Generic topology — for transformer-coupled HV interconnections, multi-MPPT inverter cards, or central inverter blocks, supplement with vendor-supplied SLD or AutoCAD/EPLAN drawing.',
     }
   };
@@ -788,7 +788,7 @@ function peSignOffPackage({
       : ['Generate missing evidence packages first', 'Re-run /api/engapproval/sign-off-package once all submitted', 'Then proceed to engineer signature'],
     provenance: {
       method: 'Aggregator that audits submitted evidence against per-jurisdiction sign-off requirements; computes SHA-256 tamper-evident manifest hash binding inputs + evidence + timestamp + engineer identity.',
-      reference: 'Engineering Council UK CEng Code of Conduct §1.4 (verification before signature); EPRA Kenya Class A1 engineer licensing rules; IEC 62446-1 §5.4 (documentation set); IEEE 1547-2018 §10 (records).',
+      reference: 'Engineering Council UK CEng Code of Conduct §1.4 (verification before signature); EPRA Kenya Class A1 engineer licensing rules; IEC 62446-1, system documentation set (clause to be confirmed against the purchased standard); IEEE 1547-2018 §10 (records).',
       limits: 'This service produces an evidence manifest, not a legally binding signature. Final stamp must be applied by the named licensed engineer using their qualified electronic signature device or wet-stamp seal.',
     }
   };

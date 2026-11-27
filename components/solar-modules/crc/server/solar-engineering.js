@@ -469,7 +469,7 @@ function recommendConductor(args) {
 // 11. OCPD sizing — string fuse + array combiner + AC breaker (NEC 690.9 / IEC 60269-6)
 // ---------------------------------------------------------------------------
 //
-// String fuse rating  ≥ 1.56 × Isc_STC   (NEC 690.9(B); IEC 62548 §6.3.3)
+// String fuse rating  ≥ 1.56 × Isc_STC   (NEC 690.9(B); IEC 62548, string overcurrent protection — clause to be confirmed against the purchased standard)
 // Array fault current ≈ (N_strings_parallel − 1) × 1.25 × Isc_STC
 //   → string fuse must clear before this fault back-feeds a faulted string
 // AC breaker rating   ≥ 1.25 × inverter_AC_continuous_current
@@ -520,7 +520,7 @@ function ocpdSizing({ panelIscStc, stringsInParallel, inverterAcKw, acVoltageV }
       recommendedStdA: acBreakerStdA,
       verdict: `AC breaker sized at 1.25 × inverter continuous current (NEC 690.9(B))`
     } : null,
-    source: 'NEC 690.9; IEC 62548 §6.3; IEC 60269-6 (gPV fuses); IEC 60898 (MCBs)'
+    source: 'NEC 690.9; IEC 62548, overcurrent protection (clause to be confirmed against the purchased standard); IEC 60269-6 (gPV fuses); IEC 60898 (MCBs)'
   };
 }
 
