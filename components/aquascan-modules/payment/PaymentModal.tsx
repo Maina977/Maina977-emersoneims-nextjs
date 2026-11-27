@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { AI_TOOLS_FREE } from '@/lib/featureFlags';
+import { PaymentUnavailableNotice, PAYMENT_UNLOCK_AVAILABLE } from '@/components/payment/PaymentUnavailableNotice';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -112,6 +113,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  // CA-52: payment unlocking is not active (M-Pesa has no credentials in production): say so, never an error.
+  if (!PAYMENT_UNLOCK_AVAILABLE) {
+    return <PaymentUnavailableNotice onClose={onClose} reference={reportId} freeAction={AI_TOOLS_FREE ? () => { onSuccess(); onClose(); } : undefined} />;
+  }
 
   return (
     <div style={{

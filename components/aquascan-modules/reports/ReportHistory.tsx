@@ -1,113 +1,84 @@
 'use client';
+/**
+ * AquaScan report history (CA-52, 2026-11-27, management: customer trust).
+ *
+ * This list used to show three hard-coded analyses (Nairobi, Kisumu, Mombasa,
+ * with probabilities and 2024 dates) as if they were the visitor's own reports.
+ * Those records are kept in git history only and are no longer displayed.
+ *
+ * It now shows only the reports this visitor actually downloaded, which the
+ * engine records in this browser (reportTracker.ts, localStorage key
+ * "aquascan_report_history"). Nothing is stored on EmersonEIMS servers, so the
+ * list is labelled "Saved in this browser only". With none: "You have no saved
+ * reports yet." No demonstration records are shown. Modelled figures (score,
+ * depth, yield) are not repeated here: the downloaded report states them with
+ * their evidence.
+ */
+import React, { useEffect, useState } from 'react';
+import { getHistory, type ReportRecord } from '@/external/borehole-ai-engine/src/reportTracker';
 
-import React, { useState, useEffect } from 'react';
+export const NO_REPORTS_TEXT = 'You have no saved reports yet.';
+export const LOCAL_REPORTS_LABEL = 'Saved in this browser only';
+export const LOCAL_REPORTS_NOTE =
+  'These are the reports you downloaded on this device, listed by this browser. EmersonEIMS does not keep a copy; the downloaded file is on your device. Clearing your browser data removes this list.';
 
-interface Report {
-  id: string;
-  title: string;
-  date: string;
-  probability: number;
-  status: string;
+function placeOf(r: ReportRecord): string {
+  const named = [r.city, r.region, r.country].filter((x) => x && x !== 'Unknown' && x !== 'N/A');
+  return named.length ? named.join(', ') : r.coordinates || 'Location not recorded';
 }
 
 export const ReportHistory: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<ReportRecord[] | null>(null);
 
   useEffect(() => {
-    // Fetch report history
-    const fetchReports = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setReports([
-        { id: '1', title: 'Nairobi Site Analysis', date: '2024-01-15', probability: 0.78, status: 'completed' },
-        { id: '2', title: 'Kisumu Site Analysis', date: '2024-01-10', probability: 0.65, status: 'completed' },
-        { id: '3', title: 'Mombasa Site Analysis', date: '2024-01-05', probability: 0.82, status: 'completed' }
-      ]);
-      setLoading(false);
-    };
-    fetchReports();
+    // Only what this browser recorded when the visitor downloaded a report.
+    const list = typeof window === 'undefined' ? [] : getHistory();
+    setReports([...list].sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp))));
   }, []);
 
-  const viewReport = (reportId: string) => {
-    window.open(`/reports/${reportId}`, '_blank');
-  };
-
-  const downloadReport = (reportId: string) => {
-    window.location.href = `/api/reports/${reportId}/download`;
-  };
-
-  const deleteReport = async (reportId: string) => {
-    if (confirm('Are you sure you want to delete this report?')) {
-      setReports(reports.filter(r => r.id !== reportId));
-    }
-  };
-
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}>Loading reports...</div>;
+  if (reports === null) {
+    return <div style={{ textAlign: 'center', padding: '40px' }}>Loading your saved reports...</div>;
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h3>Report History</h3>
-      
+    <div style={{ padding: '20px' }} data-testid="report-history">
+      <h3 style={{ marginTop: 0 }}>Your saved reports</h3>
+
       {reports.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-          No reports found. Start by analyzing an image.
+        <div data-testid="report-history-empty" style={{ textAlign: 'center', padding: '40px', color: '#475569' }}>
+          <p style={{ margin: '0 0 8px', fontWeight: 600 }}>{NO_REPORTS_TEXT}</p>
+          <p style={{ margin: 0, fontSize: 14 }}>
+            Run an analysis on the <a href="/aquascan-pro-v3">AquaScan page</a> and download its report; it will be listed here, in this browser only.
+          </p>
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Title</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Probability</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.map(report => (
-                <tr key={report.id} style={{ borderBottom: '1px solid #e0e0e0' }}>
-                  <td style={{ padding: '12px' }}>{report.title}</td>
-                  <td style={{ padding: '12px' }}>{new Date(report.date).toLocaleDateString()}</td>
-                  <td style={{ padding: '12px' }}>{(report.probability * 100).toFixed(0)}%</td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ 
-                      padding: '4px 8px', 
-                      borderRadius: '4px', 
-                      backgroundColor: '#e8f5e9', 
-                      color: '#4CAF50',
-                      fontSize: '12px'
-                    }}>
-                      {report.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    <button
-                      onClick={() => viewReport(report.id)}
-                      style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer' }}
-                    >
-                      👁️ View
-                    </button>
-                    <button
-                      onClick={() => downloadReport(report.id)}
-                      style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer' }}
-                    >
-                      📥 Download
-                    </button>
-                    <button
-                      onClick={() => deleteReport(report.id)}
-                      style={{ padding: '4px 8px', backgroundColor: '#ffebee', color: '#F44336', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </td>
+        <>
+          <p data-testid="report-history-local" style={{ margin: '0 0 12px', fontSize: 13, color: '#475569' }}>
+            <strong>{LOCAL_REPORTS_LABEL}.</strong> {LOCAL_REPORTS_NOTE}
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Downloaded</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Site</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Format</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Where it is kept</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {reports.map((r) => (
+                  <tr key={`${r.id}-${r.timestamp}`} style={{ borderBottom: '1px solid #e0e0e0' }}>
+                    <td style={{ padding: '12px' }}>{new Date(r.timestamp).toLocaleString()}</td>
+                    <td style={{ padding: '12px' }}>{placeOf(r)}</td>
+                    <td style={{ padding: '12px' }}>{r.format}</td>
+                    <td style={{ padding: '12px' }}>{LOCAL_REPORTS_LABEL}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
