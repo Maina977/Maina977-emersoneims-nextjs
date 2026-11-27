@@ -1,3 +1,5 @@
+import CookieSettingsButton from '@/components/compliance/CookieSettingsButton';
+
 export const metadata = {
   // Self-referential canonical. Declared here so this route does not depend
   // on the root layout reading headers() — that call forced the whole site
@@ -33,6 +35,32 @@ export default function PrivacyPage() {
             <p className="mt-3">
               To respond to requests, provide quotations and engineering support, maintain security, and improve reliability
               and performance.
+            </p>
+          </section>
+
+          {/* PENDING management/legal approval (privacy correction 2026-11-27).
+              The cookie notice links here for details and withdrawal, and this page
+              said nothing about cookies or Google. Exact text and reasons:
+              EmersonEIMS-proposals/privacy-consent-2026-11-27/PROPOSED-NOTICE-WORDING.md */}
+          <section id="cookies">
+            <h2 className="text-xl font-semibold text-white">Cookies, analytics and advertising</h2>
+            <p className="mt-3">
+              Essential cookies and similar storage keep the site working and remember your cookie choice. They are always on.
+            </p>
+            <p className="mt-3">
+              Only if you choose &ldquo;Accept All&rdquo;, we also use Google Analytics, to measure how the site is used, and
+              Google Ads, to measure our advertising and the enquiries it produces. Google then receives data such as your IP
+              address, device and browser information, the pages you visit and how you arrived, and may process it outside Kenya
+              under its own terms. Before you choose, and if you choose &ldquo;Essential Only&rdquo; or &ldquo;Reject All&rdquo;,
+              these Google services are not loaded and nothing is sent to Google.
+            </p>
+            <p className="mt-3">
+              You can change or withdraw your choice at any time with &ldquo;Cookie settings&rdquo; at the foot of every page
+              {' '}(or here:{' '}
+              <CookieSettingsButton className="text-white underline underline-offset-4" />
+              ). Withdrawing stops future collection straight away and deletes the Google cookies on this site. It does not
+              delete data already sent to Google, which Google handles under its own terms; to ask about it, contact us at the
+              address below or use Google&rsquo;s own privacy tools.
             </p>
           </section>
 

@@ -37,11 +37,19 @@
  * first interaction, browser idle, or a 2.5 s ceiling, whichever comes first.
  * The queue is what makes that safe; see the note beside the loader below.
  *
- * CONSENT COMES FIRST, DELIBERATELY. Nothing is stored until a visitor
- * accepts; components/compliance/CookieConsent.tsx sends the 'update' that
- * grants it. wait_for_update gives that banner half a second to answer before
- * tags decide. ad_user_data and ad_personalization are required by Consent
- * Mode v2 for EEA traffic and are harmless everywhere else.
+ * NO LIBRARY WITHOUT CONSENT (privacy correction 2026-11-27). Until that date
+ * the library was requested for every visitor and Google received cookieless
+ * pings (IP address, user agent) before any choice: 11 requests in 8 s,
+ * measured on production 235e0e37. Now the library is requested only for a
+ * returning visitor whose stored choice is Accept All, or when a visitor
+ * presses Accept All (lib/compliance/googleConsent.ts calls
+ * window.__eimsLoadGtag). Before a choice, and after Essential Only, Reject All
+ * or Close, the stub and the all-denied default stay in the local queue and no
+ * request is made to any Google host. Withdrawal also stops a library that is
+ * already running; see haltGoogleTransmission there.
+ *
+ * ad_user_data and ad_personalization are required by Consent Mode v2 and are
+ * stated on every choice, alongside analytics_storage and ad_storage.
  *
  * IDS LIVE IN lib/analytics/ids.ts, in source rather than in the environment,
  * because a Measurement ID is public by design — see the note there.
@@ -67,10 +75,22 @@ export default function GoogleTags() {
     "ad_user_data:'denied',",
     "ad_personalization:'denied',",
     'wait_for_update:500});',
+    /*
+     * PRIVACY CORRECTION 2026-11-27: the library is requested ONLY with consent.
+     * Until then everything above stays in the local queue and nothing leaves
+     * the browser. A returning visitor who accepted (stored by
+     * lib/compliance/googleConsent.ts under the same key as before) has all four
+     * states granted here, before any config, so the landing page_view carries
+     * the grant. Before this change a returning visitor was never re-granted.
+     */
+    "var eimsC=null;try{eimsC=localStorage.getItem('cookie-consent');}catch(e){}",
+    "var eimsOk=eimsC==='accepted';",
+    "if(eimsOk){gtag('consent','update',{",
+    "analytics_storage:'granted',",
+    "ad_storage:'granted',",
+    "ad_user_data:'granted',",
+    "ad_personalization:'granted'});}",
     "gtag('js',new Date());",
-    // Every GA4 property. gtag reports to each independently.
-    ...GA4_IDS.map((id) => `gtag('config','${id}',{send_page_view:true});`),
-    GOOGLE_ADS_ID ? `gtag('config','${GOOGLE_ADS_ID}');` : '',
     /*
      * THE LIBRARY IS REQUESTED OFF THE CRITICAL PATH.
      *
@@ -116,19 +136,36 @@ export default function GoogleTags() {
     // the tag waits, re-checking each second, for at most 20 s after this script ran,
     // so it always loads. Pages without engineering tools never set the flag:
     // their behaviour is unchanged.
-    '(function(){var done=false,t0=Date.now();',
-    'function load(){if(done)return;',
+    '(function(){var done=false,cfg=false,armed=false,t0=Date.now();',
+    // Every GA4 property (gtag reports to each independently), then Ads. Queued
+    // once: at page load for a returning accepted visitor, or right after the
+    // grant when a visitor presses Accept All.
+    'function config(){if(cfg)return;cfg=true;',
+    ...GA4_IDS.map((id) => `gtag('config','${id}',{send_page_view:true});`),
+    GOOGLE_ADS_ID ? `gtag('config','${GOOGLE_ADS_ID}');` : '',
+    '}',
+    // window.__eimsGtagBlocked is set on withdrawal (lib/compliance/googleConsent.ts):
+    // a load that has not happened yet never happens.
+    'function load(){if(done||window.__eimsGtagBlocked)return;',
     'if((window.__eimsEngineeringBusy|0)>0&&Date.now()-t0<20000){setTimeout(load,1000);return;}',
-    'done=true;',
+    'done=true;config();',
     "var s=document.createElement('script');s.async=true;",
     `s.src='https://www.googletagmanager.com/gtag/js?id=${loaderId}';`,
     'document.head.appendChild(s);}',
     "var evs=['pointerdown','keydown','scroll','touchstart'];",
     'function go(){evs.forEach(function(e){removeEventListener(e,go)});load();}',
+    // Called ONLY with consent: here for a returning accepted visitor (deferred,
+    // as before), or by applyConsentChoice('accepted') with now=true (the
+    // visitor has just interacted, so there is nothing left to defer for).
+    'window.__eimsLoadGtag=function(now){if(done||window.__eimsGtagBlocked)return;',
+    'if(now){t0=Date.now();load();return;}',
+    'if(armed)return;armed=true;',
     "evs.forEach(function(e){addEventListener(e,go,{once:true,passive:true})});",
     'if(window.requestIdleCallback){requestIdleCallback(load,{timeout:2500});}',
     'else{setTimeout(load,2500);}',
-    'setTimeout(load,2500);})();',
+    'setTimeout(load,2500);};',
+    'if(eimsOk){config();window.__eimsLoadGtag(false);}',
+    '})();',
   ].join('');
 
   return (

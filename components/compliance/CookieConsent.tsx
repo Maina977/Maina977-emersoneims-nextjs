@@ -3,6 +3,10 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { releaseConsentBarSpace, reserveConsentBarSpace } from '@/lib/compliance/consentBarSpace';
+// Privacy correction 2026-11-27: choices are applied, and the wording kept, in
+// separate modules (consent logic / text pending approval).
+import { applyConsentChoice, OPEN_COOKIE_SETTINGS_EVENT, takePendingSettingsRequest } from '@/lib/compliance/googleConsent';
+import { COOKIE_NOTICE_FULL, COOKIE_NOTICE_SHORT } from '@/lib/compliance/cookieNoticeText';
 
 /**
  * Cookie Consent Banner - GDPR Compliance
@@ -31,6 +35,15 @@ export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const barRef = useRef<HTMLDivElement | null>(null);
 
+  // "Cookie settings" (footer, privacy page) re-opens the notice at once, so a
+  // stored choice can be changed or withdrawn (privacy correction 2026-11-27).
+  useEffect(() => {
+    const open = () => setShowBanner(true);
+    if (takePendingSettingsRequest()) open();
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, open);
+    return () => window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, open);
+  }, []);
+
   useEffect(() => {
     // Check if user has already consented
     const consent = safeGet('cookie-consent');
@@ -45,9 +58,9 @@ export default function CookieConsent() {
     safeSet('cookie-consent', 'accepted');
     safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
-    
+
     // Initialize analytics after consent
-    if (typeof window !== 'undefined' && (window as any).gtag) {
+    if (typeof window !== 'undefined') {
       /*
        * ad_storage was pinned to 'denied' here with the note "We don't use
        * ads". That changed on 2026-09-22: the business is advertising through
@@ -57,41 +70,29 @@ export default function CookieConsent() {
        *
        * This fires only from acceptCookies(), i.e. after the visitor has
        * pressed Accept. Declining still denies everything below.
+       *
+       * 2026-11-27: grants all four states, THEN loads the library (it is no
+       * longer loaded before consent). See lib/compliance/googleConsent.ts.
        */
-      (window as any).gtag('consent', 'update', {
-        analytics_storage: 'granted',
-        ad_storage: 'granted',
-        ad_user_data: 'granted',
-        ad_personalization: 'granted',
-      });
+      applyConsentChoice('accepted');
     }
   };
 
+  // 2026-11-27: both decline paths deny all four consent states explicitly
+  // (before, only analytics_storage and ad_storage), delete the Google cookies
+  // and stop any further Google sends from this page (withdrawal).
   const declineCookies = () => {
     safeSet('cookie-consent', 'essential');
     safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
-    // Disable analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('consent', 'update', {
-        analytics_storage: 'denied',
-        ad_storage: 'denied',
-      });
-    }
+    if (typeof window !== 'undefined') applyConsentChoice('essential');
   };
 
   const rejectAllCookies = () => {
     safeSet('cookie-consent', 'rejected');
     safeSet('cookie-consent-date', new Date().toISOString());
     setShowBanner(false);
-    // Optionally clear all non-essential cookies here if needed
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('consent', 'update', {
-        analytics_storage: 'denied',
-        ad_storage: 'denied',
-      });
-    }
-    // Optionally, clear other cookies/localStorage here
+    if (typeof window !== 'undefined') applyConsentChoice('rejected');
   };
 
   /*
@@ -160,11 +161,9 @@ export default function CookieConsent() {
             <strong id="cookie-notice-title" className="text-white font-semibold">
               Cookie &amp; Privacy Notice:
             </strong>{' '}
-            <span className="xl:hidden">We use essential and analytics cookies; data stays private. </span>
-            <span className="hidden xl:inline">
-              We use essential cookies to ensure our website works properly and analytics cookies to understand how you interact with it.
-              Your data is processed securely and never shared with third parties.{' '}
-            </span>
+            {/* PENDING management/legal approval (privacy correction 2026-11-27): text in lib/compliance/cookieNoticeText.ts */}
+            <span className="xl:hidden">{COOKIE_NOTICE_SHORT}</span>
+            <span className="hidden xl:inline">{COOKIE_NOTICE_FULL}</span>
             <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
               Privacy Policy
             </a>

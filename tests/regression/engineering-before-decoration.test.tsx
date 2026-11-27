@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { act, render } from '@testing-library/react';
 import { createPreloader, engineeringDownloadsInFlight, trackEngineeringDownload, useEngineeringIdle } from '@/lib/loading/resilientImport';
@@ -42,7 +42,13 @@ describe('engineering downloads are counted while in flight', () => {
 });
 
 describe('the gtag loader waits for engineering downloads, at most 20 s', () => {
-  afterEach(() => { vi.useRealTimers(); document.head.innerHTML = ''; delete (window as unknown as { __eimsEngineeringBusy?: number }).__eimsEngineeringBusy; });
+  // Privacy correction 2026-11-27: the library now loads ONLY for a visitor
+  // whose stored choice is Accept All (before, it loaded for everyone). These
+  // tests pin the deferral and engineering-busy logic, which still applies to
+  // that returning accepted visitor, so each one now starts with the stored
+  // acceptance. The no-consent cases are in privacy-consent-2026-11-27.test.tsx.
+  beforeEach(() => { window.localStorage.setItem('cookie-consent', 'accepted'); });
+  afterEach(() => { vi.useRealTimers(); document.head.innerHTML = ''; window.localStorage.clear(); delete (window as unknown as { __eimsEngineeringBusy?: number }).__eimsEngineeringBusy; });
 
   async function initScript(): Promise<string> {
     const { default: GoogleTags } = await import('@/components/analytics/GoogleTags');
@@ -53,7 +59,7 @@ describe('the gtag loader waits for engineering downloads, at most 20 s', () => 
   }
   const tagLoaded = () => !!document.head.querySelector('script[src*="googletagmanager.com/gtag/js"]');
 
-  it('loads at 2.5 s when no engineering module is downloading (unchanged behaviour)', async () => {
+  it('loads at 2.5 s when no engineering module is downloading (unchanged behaviour, for an accepted visitor)', async () => {
     const src = await initScript();
     vi.useFakeTimers();
     new Function(src)();
