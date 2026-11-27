@@ -30,6 +30,10 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     const b = i.battery;
     if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh)) e.push('battery must be { entry, units, requiredUsableAcKwh }');
   }
+  if (i.site !== undefined) {
+    const st = i.site;
+    if (!isObj(st) || !isStr(st.source) || (st.elevationM !== undefined && !isNum(st.elevationM)) || (st.usableAreaM2 !== undefined && !isNum(st.usableAreaM2)) || (st.mounting !== undefined && st.mounting !== 'roof' && st.mounting !== 'ground')) e.push('site must be { elevationM?, mounting?: roof | ground, usableAreaM2?, source }');
+  }
   const d = i.design;
   if (!isObj(d) || !isNum(d.modulesPerString) || !Array.isArray(d.stringsPerMppt) || !(d.stringsPerMppt as unknown[]).every(isNum)) e.push('design { modulesPerString, stringsPerMppt[] } is required');
   if (!isNum(i.inverterCount)) e.push('inverterCount must be a number');

@@ -12,7 +12,7 @@ import { importModule, importInverter, importBattery, verify, type LibraryEntry 
 import type { Module, Inverter, Battery, CableRun } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
-import type { ProposalInput, PricedLine, Sourced } from './proposal';
+import type { ProposalInput, PricedLine, Sourced, SiteDetails } from './proposal';
 import { PVWATTS_DEFAULT_LOSSES, type Losses } from './production';
 import { parseHorizonText, type HorizonProfile } from './shading';
 import { buildSld, type SldConnections, type SldModel } from './sld';
@@ -150,6 +150,18 @@ export function parseReplacements(text: string, errors: string[]): Array<{ item:
   return out;
 }
 
+/** REQ-01 site details from the form; undefined when none is entered. Bad entries are reported. */
+export function siteFromForm(f: ProposalForm, errors: string[]): SiteDetails | undefined {
+  const el = str(f, 's.elevationM'), mount = str(f, 's.mounting').toLowerCase(), area = str(f, 's.usableAreaM2');
+  if (!el && !mount && !area) return undefined;
+  const out: SiteDetails = { source: str(f, 's.source') };
+  if (el) { const v = Number(el); if (Number.isFinite(v)) out.elevationM = v; else errors.push('Site elevation must be a number of metres'); }
+  if (mount) { if (mount === 'roof' || mount === 'ground') out.mounting = mount; else errors.push('Mounting must be "roof" or "ground"'); }
+  if (area) { const v = Number(area); if (Number.isFinite(v) && v > 0) out.usableAreaM2 = v; else errors.push('Usable area must be a positive number of m²'); }
+  if (!out.source) errors.push('Site details need their source (survey, drawing, map)');
+  return out;
+}
+
 /** Grid / generator connection for the single-line diagram: yes/no answers; unanswered = null (not stated). */
 export function connectionsFromForm(f: ProposalForm): SldConnections | undefined {
   const tri = (k: string) => (str(f, k) === 'yes' ? true : str(f, k) === 'no' ? false : null);
@@ -279,6 +291,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const deg = sourced('Degradation (%/yr)', 'f.degradation', 'f.degradationSource');
   const om = sourced('O&M (KES/yr)', 'f.om', 'f.omSource');
   const replacements = parseReplacements(str(f, 'f.replacements'), errors);
+  const site = siteFromForm(f, errors);
 
   let cables: CableRun[] = [];
   if (anyFilled(f, 'k.')) {
@@ -294,6 +307,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const input: ProposalInput = {
     reference: str(f, 'ref'),
     client: { name: str(f, 'c.name'), siteAddress: str(f, 'c.address'), lat: num(f, 'c.lat'), lon: num(f, 'c.lon') },
+    ...(site ? { site } : {}),
     module: moduleEntry, inverter,
     ...(battery ? { battery: { entry: battery, units: num(f, 'b.units'), requiredUsableAcKwh: num(f, 'b.requiredUsableAcKwh') } } : {}),
     design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },

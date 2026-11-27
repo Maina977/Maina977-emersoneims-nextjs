@@ -35,10 +35,13 @@ import { horizonErrors, type ShadingSummary } from './shading';
 export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.2.0 (2026-11-25, single-line diagram and horizon shading)';
 
 export interface Sourced { value: number; source: string }
+export interface SiteDetails { elevationM?: number; mounting?: 'roof' | 'ground'; usableAreaM2?: number; source: string }
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
 export interface ProposalInput {
   reference: string;
   client: { name: string; siteAddress: string; lat: number; lon: number };
+  /** Site details (P1-B §2 Site, REQ-01), as surveyed or entered by the designer, with their source. */
+  site?: SiteDetails;
   module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
@@ -80,6 +83,8 @@ export interface Proposal {
   /** Set only when status is FOR ISSUE through a verified approval. */
   approval: null | { reviewerId: string; reviewerName: string; registration: string; approvedAt: string };
   client: ProposalInput['client'];
+  /** REQ-01: null when none of elevation, mounting or usable area was entered. */
+  site: SiteDetails | null;
   system: { dcKwp: number; acKw: number; modules: number; strings: number; inverterCount: number; batteryKwh: number | null };
   checks: Check[];
   schedule: Array<{ item: string; model: string; quantity: number; unit: string; datasheet?: string; verified?: boolean }>;
@@ -165,6 +170,15 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (pcts.some((x) => x !== null && !(typeof x === 'number' && x >= 0 && x <= 100))) throw new Error('Horizon shading: loss percentages must be 0–100 %');
     if (Math.abs(shading.annual.shadedAnnualKwh - i.production.annualKwh) > 1) throw new Error('Horizon shading: the shaded annual energy does not match the production result (they must come from the same simulation)');
   }
+  const site = i.site;
+  if (site !== undefined) {
+    if (typeof site !== 'object' || site === null) throw new Error('site must be { elevationM?, mounting?, usableAreaM2?, source }');
+    if (site.elevationM !== undefined && !(Number.isFinite(site.elevationM) && site.elevationM >= -500 && site.elevationM <= 6000)) throw new Error('Site elevation must be −500 to 6,000 m');
+    if (site.mounting !== undefined && site.mounting !== 'roof' && site.mounting !== 'ground') throw new Error('Mounting must be roof or ground');
+    if (site.usableAreaM2 !== undefined && !(Number.isFinite(site.usableAreaM2) && site.usableAreaM2 > 0)) throw new Error('Usable area must be a positive number of m²');
+    if ((site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined) && !String(site.source ?? '').trim()) throw new Error('Site details need their source (survey, drawing, map)');
+  }
+  const siteStated = !!site && (site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined);
   const exportTariff = f.exportTariffKesPerKwh ? need('Export tariff (KES/kWh)', f.exportTariffKesPerKwh, 0, 200) : 0;
   const replacements = f.replacements ?? [];
   if (!Array.isArray(replacements)) throw new Error('finance.replacements must be a list');
@@ -290,7 +304,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   });
 
   return {
-    reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client,
+    reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client, site: siteStated ? site! : null,
     system: { dcKwp, acKw, modules, strings, inverterCount: i.inverterCount, batteryKwh: i.battery ? i.battery.entry.data.nominalKwh * i.battery.units : null },
     checks, schedule, costing: { lines, capexKes: capex, unpriced },
     energy: { year1Kwh: y1, usefulYear1Kwh: useful === null ? null : Math.round(useful), exportYear1Kwh: Math.round(exported), clippedKwh: i.production.clippedKwh, specificYield: i.production.specificYieldKwhPerKwp, performanceRatio: i.production.performanceRatio, source: i.production.assumptions[0] },
@@ -301,6 +315,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'The simulation agrees with pvlib on identical inputs; it has not yet been compared with measured output of installed EmersonEIMS systems.',
       'Shading, soiling and the roof\'s real temperature are only as good as the losses entered; a site survey confirms them.',
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
+      siteStated
+        ? `Site: ${[site!.mounting ? `${site!.mounting}-mounted` : null, site!.elevationM !== undefined ? `elevation ${site!.elevationM} m` : null, site!.usableAreaM2 !== undefined ? `usable area ${site!.usableAreaM2} m²` : null].filter(Boolean).join(', ')} (${site!.source}).`
+        : 'Site elevation, roof or ground mounting and usable area were not entered: the layout is not checked against the available area.',
       replacements.length
         ? `Component replacements in the cash flow (quoted, not escalated): ${replacements.map((r) => `${r.item} in year ${r.year}, KES ${r.costKes.toLocaleString('en-KE')} (${r.source}, ${r.date})`).join('; ')}.`
         : 'No component replacement costs were entered, so none are in the cash flow. Inverters and batteries are often replaced within the project life: enter quoted costs to include them.',
