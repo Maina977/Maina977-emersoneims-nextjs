@@ -18,7 +18,11 @@
 export const NASA_POWER_HOURLY_SOURCE = 'NASA POWER hourly (ALLSKY_SFC_SW_DWN, T2M; community RE; UTC), NASA Langley Research Center';
 
 export type HourlyWeather =
-  | { status: 'OK'; start: string; ghiWm2: number[]; tempC: number[]; hours: number; source: string; notes: string[] }
+  | { status: 'OK'; start: string; ghiWm2: number[]; tempC: number[]; hours: number; source: string; notes: string[];
+      /** When the data were retrieved (ISO 8601 UTC), or null when unknown (REQ-02). */
+      retrievedAt: string | null;
+      /** POWER API name and version as the response states them (header.api), or null when it does not. */
+      apiVersion: string | null }
   | { status: 'INSUFFICIENT EVIDENCE'; reason: string; missingHours?: number }
   | { status: 'SERVICE UNAVAILABLE'; reason: string };
 
@@ -31,8 +35,22 @@ export function hourlyUrl(lat: number, lon: number, year: number): string {
   return `https://power.larc.nasa.gov/api/temporal/hourly/point?${p}`;
 }
 
-/** Converts a POWER hourly JSON body (keys YYYYMMDDHH) into ordered series. */
-export function parsePowerHourly(json: any, year: number): HourlyWeather {
+/**
+ * The API name and version POWER states in its JSON header (header.api.name /
+ * header.api.version), with the header title and data sources when present.
+ * Nothing is assumed: absent fields give null.
+ */
+export function powerApiVersion(json: any): string | null {
+  const api = json?.header?.api;
+  const name = typeof api?.name === 'string' ? api.name.trim() : '';
+  const version = typeof api?.version === 'string' ? api.version.trim() : '';
+  if (!name && !version) return null;
+  const sources = Array.isArray(json?.header?.sources) ? json.header.sources.filter((x: unknown) => typeof x === 'string').join(', ') : '';
+  return `${[name, version].filter(Boolean).join(' ')}${sources ? ` (sources: ${sources})` : ''}`;
+}
+
+/** Converts a POWER hourly JSON body (keys YYYYMMDDHH) into ordered series. retrievedAt = when it was fetched. */
+export function parsePowerHourly(json: any, year: number, retrievedAt: string | null = null): HourlyWeather {
   const ghi = json?.properties?.parameter?.ALLSKY_SFC_SW_DWN as Record<string, number> | undefined;
   const t2m = json?.properties?.parameter?.T2M as Record<string, number> | undefined;
   if (!ghi || !t2m) return { status: 'INSUFFICIENT EVIDENCE', reason: 'NASA POWER answered without hourly irradiance and temperature' };
@@ -48,8 +66,13 @@ export function parsePowerHourly(json: any, year: number): HourlyWeather {
     g.push(Math.max(0, gv)); t.push(tv);
   }
   if (missing > 0) return { status: 'INSUFFICIENT EVIDENCE', reason: `${missing} of ${g.length} hours are missing in NASA POWER for ${year}; gaps are not filled`, missingHours: missing };
+  const apiVersion = powerApiVersion(json);
+  // REQ-02: the source names the retrieval date and the API version, so a
+  // proposal can be traced to the exact data release it used.
+  const provenance = `retrieved ${retrievedAt ?? 'at an unrecorded time'}; ${apiVersion ? `API ${apiVersion}` : 'API version not stated in the response'}`;
   return {
-    status: 'OK', start: new Date(start).toISOString(), ghiWm2: g, tempC: t, hours: g.length, source: `${NASA_POWER_HOURLY_SOURCE}, ${year}`,
+    status: 'OK', start: new Date(start).toISOString(), ghiWm2: g, tempC: t, hours: g.length, source: `${NASA_POWER_HOURLY_SOURCE}, ${year} (${provenance})`,
+    retrievedAt, apiVersion,
     notes: [
       'Regional reanalysis/satellite estimate (~0.5° grid), not a site measurement.',
       'Values placed at the middle of each UTC hour; confirm the time-stamp convention before hour-by-hour comparison with meter data.',
@@ -64,7 +87,7 @@ export async function fetchPowerHourly(lat: number, lon: number, year: number, f
   try {
     const r = await fetchImpl(hourlyUrl(lat, lon, year), { signal: AbortSignal.timeout(45000) });
     if (!r.ok) return { status: 'SERVICE UNAVAILABLE', reason: `NASA POWER HTTP ${r.status}` };
-    return parsePowerHourly(await r.json(), year);
+    return parsePowerHourly(await r.json(), year, new Date().toISOString());
   } catch (e) {
     return { status: 'SERVICE UNAVAILABLE', reason: e instanceof Error ? e.message : 'NASA POWER did not answer' };
   }
