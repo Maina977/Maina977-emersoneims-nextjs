@@ -253,8 +253,36 @@ describe('CA-32 review of 39fa8535: missing or nonsensical data is never valid',
     const cable = { name: 'DC', lengthM: 10, csaMm2: 16, designCurrentA: 40, systemV: 600, tabulatedAmpacityA: 76, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3 };
     for (const bad of [{ kind: 'DC-PV' }, { kind: 'string' }, { mppt: 0 }, { mppt: 1.5 }, { mppt: '1' }]) {
       const r = checkProposalRequest({ format: 'json', input: design({ cables: [{ ...cable, ...bad } as never] }) });
-      expect('error' in r ? r.error : '', JSON.stringify(bad)).toMatch(/cable kind must be dc-pv, dc-battery or ac, and mppt a whole number/);
+      expect('error' in r ? r.error : '', JSON.stringify(bad)).toMatch(/cable kind must be dc-pv, dc-string, dc-battery or ac, and mppt a whole number/);
     }
     expect('error' in checkProposalRequest({ format: 'json', input: design({ cables: [{ ...cable, kind: 'dc-pv', mppt: 1 }] }) })).toBe(false);
+  });
+});
+
+// ── R1: a cable serving ONE string (IEC 62548-1:2023 §7.2.2: Iz ≥ 1.25 × Isc and ≥ the string fuse In) ──
+// Module Isc 13.9 A: 1.25 × Isc = 17.375 A; fuse window 1.5 × 13.9 = 20.85 A < In ≤ min(2.4 × 13.9 = 33.36, 25) = 25 A.
+describe('CA-32 R1: single-string cable on a fused 3-string MPPT', () => {
+  const D = { inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] } };
+  const cable = (o: Record<string, unknown>) => ({ name: 'S1', lengthM: 10, csaMm2: 4, systemV: 600, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'dc-string' as const, mppt: 1, ...o });
+  const run = (o: Record<string, unknown>) => buildProposal(design({ ...D, cables: [cable(o) as never] }));
+  const k = (p: ReturnType<typeof buildProposal>) => p.checks.find((c) => c.id === 'cable-current-S1')!;
+  it('C9: fused 25 A, entered 25 A → required max(17.375, 25) = 25 A: passes (G3 refused it at 52.1 A)', () => {
+    const p = run({ designCurrentA: 25, stringFuseA: 25 });
+    expect(k(p)).toMatchObject({ verdict: 'PASS', limit: 25 });
+    expect(p.checks.filter((c) => c.verdict === 'REFUSE')).toEqual([]);
+    expect(p.status).not.toBe('REFUSED');
+  });
+  it('U26: fused 25 A but entered 20 A → refused (below In)', () => {
+    expect(k(run({ designCurrentA: 20, stringFuseA: 25 })).verdict).toBe('REFUSE');
+  });
+  it('U27: a 20 A fuse is outside the window (≤ 20.85 A) → refused', () => {
+    expect(k(run({ designCurrentA: 25, stringFuseA: 20 }))).toMatchObject({ verdict: 'REFUSE', title: 'S1: string fuse rating' });
+  });
+  it('U28: unfused string cable on 3 strings → (3 − 1) × 17.375 = 34.75 A required; 25 A refused, 35 A passes', () => {
+    expect(k(run({ designCurrentA: 25 }))).toMatchObject({ verdict: 'REFUSE', limit: 34.75 });
+    expect(k(run({ designCurrentA: 35, tabulatedAmpacityA: 41, csaMm2: 6 })).verdict).toBe('PASS');
+  });
+  it('without the dc-string input the safe refusal stays (all-strings current 52.1 A)', () => {
+    expect(k(run({ kind: 'dc-pv', designCurrentA: 25, stringFuseA: 25 })).verdict).toBe('REFUSE');
   });
 });

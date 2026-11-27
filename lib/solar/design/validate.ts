@@ -90,9 +90,15 @@ export interface CableRun {
    * 'dc-battery', or 'ac'. Not stated is treated as a PV cable, so its
    * design current is never below the string current it may carry.
    */
-  kind?: 'dc-pv' | 'dc-battery' | 'ac';
+  kind?: 'dc-pv' | 'dc-string' | 'dc-battery' | 'ac';
   /** For a PV cable: the MPPT (1-based) it serves; absent = the most heavily loaded MPPT. */
   mppt?: number;
+  /**
+   * For kind 'dc-string' (a cable serving ONE string): the rating In of the
+   * string fuse protecting it, A. It must lie in the design's fuse window
+   * (1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse)).
+   */
+  stringFuseA?: number;
 }
 
 export type Verdict = 'PASS' | 'WARN' | 'REFUSE';
@@ -242,6 +248,35 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
   const strings = mpptStated ? per[(c.mppt as number) - 1] : Math.max(...per);
   if (!(Number.isInteger(strings) && strings >= 1)) {
     return { id: `cable-current-${c.name}`, title: `${c.name}: MPPT served`, verdict: 'REFUSE', value: NaN, limit: per.length, unit: '', marginPct: -100, formula: 'mppt must name an MPPT of the design', reference: 'Design input', note: `MPPT ${c.mppt} is not in the design (1–${per.length})` };
+  }
+  // Review of 39fa8535, R1: a cable serving ONE string was sized as if it
+  // carried every string on the MPPT. IEC 62548-1:2023 §7.2.2 (current
+  // rating of PV circuits): a string cable needs at least 1.25 × Isc, and,
+  // where the string has overcurrent protection, at least that device's
+  // rating In (Iz ≥ In). Unfused, a string cable can carry the reverse
+  // current of the other strings, (N − 1) × 1.25 × Isc, so the larger applies.
+  if (c.kind === 'dc-string') {
+    const isc125 = module.iscA * 1.25;
+    const fuse = c.stringFuseA;
+    let required: number, basis: string;
+    if (fuse !== undefined) {
+      const lo = 1.5 * module.iscA, hi = Math.min(2.4 * module.iscA, module.maxSeriesFuseA);
+      if (!(Number.isFinite(fuse) && fuse > lo && fuse <= hi)) {
+        return { id: `cable-current-${c.name}`, title: `${c.name}: string fuse rating`, verdict: 'REFUSE', value: Number.isFinite(fuse) ? fuse : NaN, limit: r2(hi), unit: 'A', marginPct: -100,
+          formula: `1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse) = ${r2(lo)} < In ≤ ${r2(hi)} A`, reference: 'IEC 62548-1 string overcurrent protection', note: `A ${fuse} A string fuse is outside the design's fuse window` };
+      }
+      required = Math.max(isc125, fuse);
+      basis = `string cable, fused: max(1.25 × Isc = ${r2(isc125)} A, fuse In = ${fuse} A)`;
+    } else {
+      required = Math.max(isc125, (strings - 1) * isc125);
+      basis = `string cable, no string fuse stated: max(1.25 × Isc, (N − 1) × 1.25 × Isc reverse current) with N = ${strings}`;
+    }
+    const ok = c.designCurrentA >= required * (1 - 1e-9);
+    return {
+      id: `cable-current-${c.name}`, title: `${c.name}: design current covers the string and its protection`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
+      formula: `${basis} = ${r2(required)} A`, reference: 'IEC 62548-1:2023 §7.2.2 (current rating of PV circuits; Iz ≥ In of the string protection)',
+      ...(ok ? {} : { note: 'The entered design current is below the string cable requirement' }),
+    };
   }
   const required = strings * module.iscA * 1.25;
   const ok = c.designCurrentA >= required * (1 - 1e-9);

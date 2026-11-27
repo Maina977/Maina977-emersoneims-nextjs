@@ -273,11 +273,12 @@ export function buildHybridInput(f: ProposalForm, pvAcKwh: number[], loadKwh: nu
 }
 
 /** Review G3: what the cable carries and which MPPT; blank = treated as a PV cable on the largest MPPT. */
-export function cableKindFromForm(f: ProposalForm): Pick<CableRun, 'kind' | 'mppt'> {
+export function cableKindFromForm(f: ProposalForm): Pick<CableRun, 'kind' | 'mppt' | 'stringFuseA'> {
   const k = str(f, 'k.kind').toLowerCase();
-  const kind = k === 'ac' || k === 'dc-battery' || k === 'dc-pv' ? k : undefined;
+  const kind = k === 'ac' || k === 'dc-battery' || k === 'dc-pv' || k === 'dc-string' ? k : undefined;
   const m = num(f, 'k.mppt');
-  return { ...(kind ? { kind } : {}), ...(Number.isInteger(m) && m >= 1 ? { mppt: m } : {}) };
+  const fuse = num(f, 'k.stringFuseA');
+  return { ...(kind ? { kind } : {}), ...(Number.isInteger(m) && m >= 1 ? { mppt: m } : {}), ...(kind === 'dc-string' && Number.isFinite(fuse) ? { stringFuseA: fuse } : {}) };
 }
 const CABLE_KEYS = ['name', 'lengthM', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
 
