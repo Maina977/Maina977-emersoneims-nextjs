@@ -10,6 +10,8 @@ export interface ClientInfo {
 export interface SiteInfo {
   lat: number | null; lon: number | null; displayName: string;
   elevationM: number | null; irradianceKwhPerM2Day: number | null; temperatureC: number | null;
+  /** REQ-27: the service that gave elevationM (e.g. an SRTM lookup); absent = not looked up. */
+  elevationSource?: string;
   /** Where the sun-hours came from: 'nasa-power' or 'kenya-typical' (NASA did not answer). */
   irradianceSource?: string;
   monthlyConsumptionKwh: number | null; tariffKesPerKwh: number; gridReliabilityNotes: string;

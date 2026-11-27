@@ -130,7 +130,8 @@ describe('invalid datasheet entries are refused, not guessed', () => {
 });
 
 describe('cables (IEC 60364-5-52)', () => {
-  const run = { name: 'string 1', lengthM: 40, csaMm2: 6, designCurrentA: 17.4, systemV: 568, tabulatedAmpacityA: 70, ambientFactor: 0.87, groupingFactor: 0.8, maxDropPct: 1.5 };
+  // REQ-05: a PASS needs the installation method and the conductor (missing data is never compliant; see solar-req05-cables-ac-protection.test.ts).
+  const run = { name: 'string 1', lengthM: 40, csaMm2: 6, designCurrentA: 17.4, systemV: 568, tabulatedAmpacityA: 70, ambientFactor: 0.87, groupingFactor: 0.8, maxDropPct: 1.5, method: 'C', conductor: 'copper' as const };
   it('ΔV = 2 × 40 × 17.4 × 0.0225 ÷ 6 = 5.22 V = 0.92 %', () => {
     const c = checkCable(run).checks.find((x) => x.id.startsWith('vdrop'))!;
     expect(c.value).toBeCloseTo(0.92, 2);

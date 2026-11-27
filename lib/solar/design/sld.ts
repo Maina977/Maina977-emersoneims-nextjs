@@ -15,7 +15,7 @@
  * One layout model feeds every output: sldToSvg (screen) and the PDF and
  * Excel exports (proposalExport.ts), so they cannot disagree.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, generatorConnectionChecks, cableStringCurrentCheck } from './validate';
+import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, type AcProtection, generatorConnectionChecks, cableStringCurrentCheck, acProtectionChecks } from './validate';
 
 export const SLD_ENGINE_VERSION = 'solar-sld 1.0.0 (2026-11-25)';
 export const TBS = 'to be specified by the engineer';
@@ -38,6 +38,8 @@ export interface SldInput {
   module: Module; inverter: Inverter; design: ArrayDesign; inverterCount: number; temps: SiteTemps;
   battery?: { data: Battery; units: number; requiredUsableAcKwh?: number };
   cables: CableRun[];
+  /** REQ-05: AC protective devices (checked by acProtectionChecks, drawn in the AC protection box). */
+  acProtection?: AcProtection;
   connections?: SldConnections;
 }
 export interface SldBox { id: string; title: string; lines: string[]; x: number; y: number; w: number; h: number; dashed: boolean }
@@ -95,6 +97,8 @@ export function buildSld(i: SldInput): SldModel {
       checks.push({ id: 'battery-energy', title: 'Installed battery energy', verdict: 'REFUSE', value: NaN, limit: NaN, unit: 'kWh', marginPct: -100, formula: 'energy needed from the battery per cycle not entered', reference: 'Design input', note: 'Enter the energy needed from the battery per cycle: the battery cannot be checked without it' });
     }
   }
+  const acChecks = acProtectionChecks(i.inverter, i.acProtection, i.cables, i.inverterCount);
+  checks.push(...acChecks);
   // A connected generator is checked as the proposal checks it (CA-32).
   if (i.connections?.generator === true) checks.push(...generatorConnectionChecks(i.inverter, i.connections));
   const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length)
@@ -156,8 +160,16 @@ export function buildSld(i: SldInput): SldModel {
   invBox.h = Math.max(invBox.h, arrayBottom - top);
   boxes.push(invBox);
 
-  const ac = box('ac', `AC protection${multi ? ' (each inverter)' : ''}`, [
-    `AC circuit breaker / isolator: rating ${TBS} (the inverter maximum AC output current, supply voltage and phases are not in the design data)`,
+  // REQ-05: what was entered, with the verdict of the check it feeds; nothing entered stays "to be specified".
+  const ap = i.acProtection;
+  const v = (id: string) => { const k = acChecks.find((c) => c.id === id); return k ? (k.formula === 'not checked' ? 'NOT CHECKED' : k.verdict) : 'NOT CHECKED'; };
+  const ac = box('ac', `AC protection${multi ? ' (each inverter)' : ''}`, ap ? [
+    `AC circuit breaker: ${typeof ap.breakerA === 'number' ? `${ap.breakerA} A` : `rating ${TBS}`}${ap.device ? `, ${ap.device}` : ''}; inverter maximum AC output ${typeof inv.maxAcOutputA === 'number' ? `${inv.maxAcOutputA} A` : 'not entered'} (check ac-breaker-current: ${v('ac-breaker-current')})`,
+    `Protects cable: ${ap.cable ? `${ap.cable} (check ac-breaker-cable: ${v('ac-breaker-cable')})` : `${TBS} (I_n ≤ I_z not checked)`}`,
+    `RCD: ${ap.rcdType === undefined ? TBS : ap.rcdType === 'none' ? 'none fitted' : `type ${ap.rcdType}`}; inverter requirement: ${inv.rcdTypeRequired === undefined ? 'not stated on the datasheet' : inv.rcdTypeRequired === 'not-required' ? 'no particular type' : `type ${inv.rcdTypeRequired}`} (check ac-rcd-type: ${v('ac-rcd-type')})`,
+    `AC SPD: need and type ${TBS}`,
+  ] : [
+    `AC circuit breaker / isolator: rating ${TBS} (AC protection not entered: not checked)`,
     `AC SPD and residual-current protection: need and type ${TBS}`,
   ], X.ac, top, W.ac);
   boxes.push(ac);
@@ -213,7 +225,8 @@ export function buildSld(i: SldInput): SldModel {
   const cableLines = cableResults.length ? cableResults.map(({ c, r }) => {
     if (r.errors.length) return `Cable ${c.name}: refused input (${r.errors.join('; ')})`;
     const amp = find(r.checks, `ampacity-${c.name}`), vd = find(r.checks, `vdrop-${c.name}`);
-    return `Cable ${c.name}: ${c.csaMm2} mm², ${c.lengthM} m one way, design current ${c.designCurrentA} A; capacity ${amp?.verdict} (I_z ${amp?.limit} A), voltage drop ${vd?.value} % ${vd?.verdict} (IEC 60364-5-52)`;
+    const route = c.from || c.to ? ` (${c.from || '?'} → ${c.to || '?'})` : '';
+    return `Cable ${c.name}${route}: ${c.kind ?? 'kind not stated'}, ${c.conductor ?? 'conductor not stated'}, ${c.csaMm2} mm², ${c.lengthM} m one way, method ${c.method?.trim() || 'not stated'}, design current ${c.designCurrentA} A; capacity ${amp?.verdict} (I_z ${amp?.limit} A), voltage drop ${Number.isFinite(vd?.value) ? `${vd?.value} %` : 'not worked out'} ${vd?.verdict} (IEC 60364-5-52)`;
   }) : [`Cable runs: none entered; every cable size and route ${TBS}`];
   const notes = box('notes', 'Notes', [
     ...(designValid ? [] : ['DESIGN CHECKS REFUSE THIS DESIGN: this diagram is for review only.']),

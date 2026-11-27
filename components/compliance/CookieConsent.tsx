@@ -28,18 +28,18 @@ function safeSet(key: string, value: string): void {
 const useBeforePaintEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function CookieConsent() {
-  const [showBanner, setShowBanner] = useState(false);
+  // No stored choice: ask on the first render.
+  // HUB-03 (2026-11-27): the extra 2 s timer that used to sit here is gone.
+  // It added nothing for the visitor and made the notice the LAST thing
+  // painted on a first visit, so on desktop it became the page's LCP element
+  // at 4-5.6 s. Consent is now requested as soon as this component mounts
+  // (ClientSideComponents' first tier, unchanged; it is loaded with
+  // ssr:false, so window and storage are available here). Nothing is granted
+  // until a button is pressed.
+  const [showBanner, setShowBanner] = useState(
+    () => typeof window !== 'undefined' && !safeGet('cookie-consent'),
+  );
   const barRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    // Check if user has already consented
-    const consent = safeGet('cookie-consent');
-    if (!consent) {
-      // Show banner after 2 seconds
-      const t = setTimeout(() => setShowBanner(true), 2000);
-      return () => clearTimeout(t);
-    }
-  }, []);
 
   const acceptCookies = () => {
     safeSet('cookie-consent', 'accepted');
@@ -156,16 +156,40 @@ export default function CookieConsent() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4">
+          {/*
+            LCP (HUB-03, 2026-11-27). Chrome scores text for Largest Contentful
+            Paint per block box: every inline run inside one block is added up.
+            As one <p>, the long desktop (xl) notice measured 30,747 px², larger
+            than the Hub's own caption (26,604 px² on /hub, 10,982 on
+            /hub/solar-ups), so a first visit reported the consent notice as the
+            page's main content, painted last. Chosen fix: CONSTRAIN THE TEXT
+            BLOCK SIZE. At xl the same words are set in short inline-block
+            phrases ([data-notice-phrase]); they flow and wrap like ordinary
+            text in the same two lines (bar height unchanged, 61 px), but each
+            is its own small block (5,100 px² or less, measured at 1280-1920
+            px on a local build). Below xl nothing changes: the phrases stay inline and
+            phones keep the short wording they already had (10,081 px², below
+            the Hub captions).
+            Rejected: a long timer (that games LCP), fading in from opacity 0,
+            content-visibility:hidden or shortening the copy. Nothing is hidden,
+            delayed or removed: the notice is fully visible from its first frame,
+            all of it is the dialog's description (aria-describedby), and the
+            three choices below are unchanged.
+          */}
           <p id="cookie-notice-text" className="flex-1 min-w-0 text-gray-300 text-xs md:text-sm leading-snug">
-            <strong id="cookie-notice-title" className="text-white font-semibold">
+            <strong id="cookie-notice-title" data-notice-phrase="" className="xl:inline-block text-white font-semibold">
               Cookie &amp; Privacy Notice:
             </strong>{' '}
             <span className="xl:hidden">We use essential and analytics cookies; data stays private. </span>
             <span className="hidden xl:inline">
-              We use essential cookies to ensure our website works properly and analytics cookies to understand how you interact with it.
-              Your data is processed securely and never shared with third parties.{' '}
+              <span data-notice-phrase="" className="xl:inline-block">We use essential cookies</span>{' '}
+              <span data-notice-phrase="" className="xl:inline-block">to ensure our website works properly</span>{' '}
+              <span data-notice-phrase="" className="xl:inline-block">and analytics cookies</span>{' '}
+              <span data-notice-phrase="" className="xl:inline-block">to understand how you interact with it.</span>{' '}
+              <span data-notice-phrase="" className="xl:inline-block">Your data is processed securely</span>{' '}
+              <span data-notice-phrase="" className="xl:inline-block">and never shared with third parties.</span>{' '}
             </span>
-            <a href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
+            <a href="/privacy" data-notice-phrase="" className="xl:inline-block text-cyan-400 hover:text-cyan-300 underline">
               Privacy Policy
             </a>
           </p>

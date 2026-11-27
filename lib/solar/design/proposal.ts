@@ -23,7 +23,7 @@
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
  */
-import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, componentChecks, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, componentChecks, acProtectionChecks, type AcProtection, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
@@ -56,6 +56,8 @@ export interface ProposalInput {
   module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number; /** REQ-05: units in series per string (default 1). */ seriesPerString?: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
+  /** REQ-05: AC protective devices on each inverter's AC circuit; absent = not entered (WARN, not checked). */
+  acProtection?: AcProtection;
   /** Grid / generator connection for the single-line diagram; absent = not stated (shown as to be specified by the engineer). */
   connections?: SldConnections;
   production: HourlyResult;
@@ -171,6 +173,11 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   // Review of 39fa8535, M2: −1, 0 or 1.5 inverters gave negative or odd
   // quantities on a DRAFT marked valid.
   if (!(Number.isInteger(i.inverterCount) && i.inverterCount >= 1)) throw new Error('Inverter count must be a whole number ≥ 1');
+  // REQ-05: several cable runs; each check is named after its run, so names must be unique.
+  { const names = i.cables.map((k) => String(k?.name ?? '').trim());
+    if (names.some((n) => !n)) throw new Error('Each cable run needs a name');
+    const dup = names.find((n, k) => names.indexOf(n) !== k);
+    if (dup) throw new Error(`Cable run names must be unique ("${dup}" is used twice)`); }
   const c = i.connections;
   if (c !== undefined && (typeof c !== 'object' || c === null || ![true, false, null].includes(c.grid) || ![true, false, null].includes(c.generator)
     || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0))
@@ -223,6 +230,8 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`));
     const sc = cableStringCurrentCheck(c, i.module.data, i.design); if (sc) checks.push(sc);
   }
+  // REQ-05 AC protection devices (breaker vs inverter output and cable I_z; RCD type).
+  checks.push(...acProtectionChecks(i.inverter.data, i.acProtection, i.cables, i.inverterCount));
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
   // REQ-04 datasheet fields (and REQ-01 usable area, REQ-05 battery arrangement).
   {
@@ -368,7 +377,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, requiredUsableAcKwh: i.battery.requiredUsableAcKwh } } : {}),
     // The diagram shows (and checks) the generator the hybrid balance ran, even
     // when the connection data did not state one (CA-32).
-    cables: i.cables, ...(i.connections || hybridUsedGenerator ? { connections: hybridUsedGenerator && i.connections?.generator !== true ? { grid: i.connections?.grid ?? null, ...(i.connections ?? {}), generator: true } : i.connections! } : {}),
+    cables: i.cables, ...(i.acProtection ? { acProtection: i.acProtection } : {}), ...(i.connections || hybridUsedGenerator ? { connections: hybridUsedGenerator && i.connections?.generator !== true ? { grid: i.connections?.grid ?? null, ...(i.connections ?? {}), generator: true } : i.connections! } : {}),
   });
   // The diagram never says "valid" for a design the proposal refuses (e.g. the
   // REQ-04 area, battery voltage or current checks, which need proposal data).

@@ -7,9 +7,11 @@ import type { Check } from '@/lib/solar/design/validate';
 import { sldToSvg, type SldModel } from '@/lib/solar/design/sld';
 import { horizonElevationDeg, shadingRows, SHADING_HEAD, type HorizonProfile, type ShadingSummary } from '@/lib/solar/design/shading';
 import { onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
+import { applySiteHandoff, browserStore, prefillSource, replaceWithHandoff, takeSiteHandoff, type Prefill } from '@/lib/solar/design/siteHandoff';
 import { proposalRevisionHash, APPROVAL_LOCKED_NOTICE } from '@/lib/solar/design/proposalApproval';
 import {
   buildHourlyInput, buildHybridInput, formToProposalInput, horizonFromForm, hybridRequested, lastFullYear, parseLoadCsv, sldPreviewFromForm,
+  cableRunCount, cableRunPrefix, removeCableRun, MAX_CABLE_RUNS,
   EMPTY_BOM_ROW, LOSSES_SOURCE, LOSSES_SOURCE_WITH_HORIZON, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_PRODUCTION,
   type BomRow, type ProposalForm, type WeatherOk,
 } from '@/lib/solar/design/proposalForm';
@@ -33,8 +35,8 @@ import {
  * is recomputed after a restore or import.
  */
 
-type FieldKind = 'text' | 'date' | 'check' | 'yesno';
-type Field = [key: string, label: string, unit: string, kind?: FieldKind];
+type FieldKind = 'text' | 'date' | 'check' | 'yesno' | 'select';
+type Field = [key: string, label: string, unit: string, kind?: FieldKind, options?: Array<[value: string, label: string]>];
 type Group = { id: string; title: string; note?: string; items: Field[] };
 
 const prov = (p: string): Field[] => [
@@ -46,14 +48,32 @@ const verification = (p: string): Field[] => [[`${p}.verified`, 'Verified agains
 const GROUPS: Group[] = [
   { id: 'client', title: 'Client and site', items: [['ref', 'Proposal reference', ''], ['c.name', 'Client name', ''], ['c.address', 'Site address', ''], ['c.lat', 'Latitude', '°'], ['c.lon', 'Longitude', '°'], ['s.mounting', 'Mounting: roof or ground (optional)', ''], ['s.elevationM', 'Site elevation (optional)', 'm'], ['s.usableAreaM2', 'Usable area for the array (optional)', 'm²'], ['s.source', 'Source of these site details (survey, drawing, map)', '']] },
   { id: 'module', title: 'Module (datasheet)', items: [...prov('m'), ['m.model', 'Model', ''], ['m.pmaxW', 'Pmax', 'W'], ['m.vocV', 'Voc', 'V'], ['m.iscA', 'Isc', 'A'], ['m.vmpV', 'Vmp', 'V'], ['m.impA', 'Imp', 'A'], ['m.betaVocPct', 'β Voc', '%/°C'], ['m.betaVmpPct', 'β Vmp', '%/°C'], ['m.alphaIscPct', 'α Isc', '%/°C'], ['m.gammaPmaxPct', 'γ Pmax', '%/°C'], ['m.noctC', 'NOCT', '°C'], ['m.maxSystemV', 'Max system voltage', 'V'], ['m.maxSeriesFuseA', 'Max series fuse', 'A'], ['m.lengthMm', 'Length (optional)', 'mm'], ['m.widthMm', 'Width (optional)', 'mm'], ...verification('m')] },
-  { id: 'inverter', title: 'Inverter (datasheet)', items: [...prov('i'), ['i.model', 'Model', ''], ['i.acKw', 'AC power', 'kW'], ['i.nominalEfficiency', 'Nominal efficiency (0–1)', ''], ['i.maxDcV', 'Max DC voltage', 'V'], ['i.mpptMinV', 'MPPT min', 'V'], ['i.mpptMaxV', 'MPPT max', 'V'], ['i.mpptCount', 'MPPTs', 'No'], ['i.maxInputA', 'Max input current per MPPT', 'A'], ['i.maxIscA', 'Max Isc per MPPT', 'A'], ['i.batteryMaxDischargeKw', 'Battery discharge power (required with a battery)', 'kW'], ['i.batteryMaxChargeKw', 'Battery charge power (required with a battery)', 'kW'], ['i.generatorCompatibility', 'Generator compatibility statement (required with a generator)', ''], ['i.batteryMinV', 'Battery voltage window, min (optional)', 'V'], ['i.batteryMaxV', 'Battery voltage window, max (optional)', 'V'], ['i.batteryMaxChargeA', 'Battery max charge current (optional)', 'A'], ['i.batteryMaxDischargeA', 'Battery max discharge current (optional)', 'A'], ['i.antiIslanding', 'Anti-islanding statement, e.g. IEC 62116 certificate (needed with a grid connection)', ''], ...verification('i')] },
+  { id: 'inverter', title: 'Inverter (datasheet)', items: [...prov('i'), ['i.model', 'Model', ''], ['i.acKw', 'AC power', 'kW'], ['i.nominalEfficiency', 'Nominal efficiency (0–1)', ''], ['i.maxDcV', 'Max DC voltage', 'V'], ['i.mpptMinV', 'MPPT min', 'V'], ['i.mpptMaxV', 'MPPT max', 'V'], ['i.mpptCount', 'MPPTs', 'No'], ['i.maxInputA', 'Max input current per MPPT', 'A'], ['i.maxIscA', 'Max Isc per MPPT', 'A'], ['i.batteryMaxDischargeKw', 'Battery discharge power (required with a battery)', 'kW'], ['i.batteryMaxChargeKw', 'Battery charge power (required with a battery)', 'kW'], ['i.generatorCompatibility', 'Generator compatibility statement (required with a generator)', ''], ['i.batteryMinV', 'Battery voltage window, min (optional)', 'V'], ['i.batteryMaxV', 'Battery voltage window, max (optional)', 'V'], ['i.batteryMaxChargeA', 'Battery max charge current (optional)', 'A'], ['i.batteryMaxDischargeA', 'Battery max discharge current (optional)', 'A'], ['i.antiIslanding', 'Anti-islanding statement, e.g. IEC 62116 certificate (needed with a grid connection)', ''], ['i.maxAcOutputA', 'Max AC output current (for the AC breaker check)', 'A'], ['i.rcdTypeRequired', 'RCD type the datasheet or manual states for the AC circuit', '', 'select', [['', '— not stated'], ['not-required', 'no particular type required'], ['AC', 'type AC'], ['A', 'type A'], ['F', 'type F'], ['B', 'type B']]], ...verification('i')] },
   { id: 'battery', title: 'Battery (optional, datasheet)', note: 'Leave empty for a system without a battery.', items: [...prov('b'), ['b.model', 'Model', ''], ['b.nominalKwh', 'Nominal energy per unit', 'kWh'], ['b.usableDoD', 'Usable DoD (0–1)', ''], ['b.dischargeEfficiency', 'Discharge efficiency (0–1)', ''], ['b.maxDischargeC', 'Max discharge', 'C'], ['b.maxChargeC', 'Max charge', 'C'], ['b.chemistry', 'Chemistry (optional)', ''], ['b.nominalV', 'Nominal voltage per unit (optional)', 'V'], ['b.chargeV', 'Full-charge voltage per unit (optional)', 'V'], ['b.cutoffV', 'Cut-off voltage per unit (optional)', 'V'], ['b.cycleLife', 'Cycle life (optional)', 'cycles'], ['b.cycleLifeDoD', 'at DoD (0–1, optional)', ''], ['b.minTempC', 'Operating temperature min (optional)', '°C'], ['b.maxTempC', 'Operating temperature max (optional)', '°C'], ['b.warrantyYears', 'Warranty (optional)', 'years'], ['b.units', 'Units', 'No'], ['b.seriesPerString', 'Units in series per string (optional; blank = 1)', 'No'], ['b.requiredUsableAcKwh', 'Energy needed from the battery per cycle', 'kWh'], ...verification('b')] },
   { id: 'design', title: 'Array design', items: [['d.modulesPerString', 'Modules per string', 'No'], ['d.stringsPerMppt', 'Strings on each MPPT (e.g. 1,1)', ''], ['d.inverterCount', 'Inverter count', 'No'], ['d.tilt', 'Tilt', '°'], ['d.azimuth', 'Azimuth (0 = N, 180 = S)', '°'], ['d.albedo', 'Ground albedo (optional; blank = 0.2)', '']] },
   { id: 'load', title: 'Load (optional; from the bills, a logger or a survey)', note: 'Used for the checks it allows (inverter peak, critical backup) and stated in the proposal. Nothing is filled in for you.', items: [['l.monthlyKwh', 'Monthly kWh, January–December (12 numbers)', 'kWh'], ['l.peakKw', 'Peak load', 'kW'], ['l.motorStartingKva', 'Largest motor starting', 'kVA'], ['l.criticalLoadKw', 'Critical load', 'kW'], ['l.outageHoursPerDay', 'Outage hours per day', 'h'], ['l.diesel', 'Diesel price', 'KES/L'], ['l.dieselSource', 'Source of the diesel price', ''], ['l.source', 'Source of the load data', '']] },
   { id: 'temps', title: 'Site temperatures', items: [['t.recordLowC', 'Site record low', '°C'], ['t.maxAmbientC', 'Max ambient while generating', '°C'], ['t.source', 'Source of these temperatures', '']] },
   { id: 'sld', title: 'Connections (for the single-line diagram)', note: 'Leave unanswered if not yet decided: the diagram then marks it "to be specified by the engineer".', items: [['sld.grid', 'Connected to the utility grid', '', 'yesno'], ['sld.generator', 'Generator connected', '', 'yesno'], ['sld.pvBackfeed', 'With a generator: can PV feed power back into the running generator (no export limiting or reverse-power relay)? Unanswered is refused', '', 'yesno'], ['sld.genMinSiteLoadKw', 'With a generator: lowest site load while it runs', 'kW'], ['sld.genOemMinLoadPct', 'With a generator: OEM minimum load (if stated; 30 % assumed otherwise)', '%']] },
-  { id: 'cable', title: 'Cable run (optional)', note: 'Values from IEC 60364-5-52 for the installation method. Leave empty to skip.', items: [['k.name', 'Name', ''], ['k.lengthM', 'One-way length', 'm'], ['k.csaMm2', 'Cross-section', 'mm²'], ['k.designCurrentA', 'Design current', 'A'], ['k.systemV', 'System voltage', 'V'], ['k.tabulatedAmpacityA', 'Tabulated ampacity It', 'A'], ['k.ambientFactor', 'Ambient factor Ca', ''], ['k.groupingFactor', 'Grouping factor Cg', ''], ['k.maxDropPct', 'Max voltage drop', '%'], ['k.kind', 'Carries: dc-pv (all strings of an MPPT), dc-string (one string), dc-battery or ac (blank = dc-pv)', ''], ['k.mppt', 'PV cable: MPPT it serves (blank = the most loaded MPPT)', 'No'], ['k.stringFuseA', 'dc-string: string fuse rating In (blank = unfused)', 'A']] },
 ];
+/** REQ-05: one fieldset per cable run (prefix k., k2., …); each run is checked on its own. */
+const cableRunGroup = (n: number): Group => {
+  const p = cableRunPrefix(n);
+  return { id: `cable-${n}`, title: `Cable run ${n}`, note: n === 1 ? 'Optional. Values from IEC 60364-5-52 for the installation method; a run with anything in it must be complete. Each run is checked for capacity, voltage drop and the current it must carry.' : undefined, items: [
+    [`${p}name`, 'Name (unique)', ''], [`${p}from`, 'From', ''], [`${p}to`, 'To', ''],
+    [`${p}kind`, 'Carries', '', 'select', [['', '— dc-pv (all strings of an MPPT)'], ['dc-pv', 'dc-pv: all strings of an MPPT'], ['dc-string', 'dc-string: one string'], ['dc-battery', 'dc-battery'], ['ac', 'ac']]],
+    [`${p}mppt`, 'PV cable: MPPT it serves (blank = the most loaded MPPT)', 'No'], [`${p}stringFuseA`, 'dc-string: string fuse rating In (blank = unfused)', 'A'],
+    [`${p}lengthM`, 'One-way length', 'm'], [`${p}method`, 'Installation method (IEC 60364-5-52 reference method, e.g. C)', ''],
+    [`${p}conductor`, 'Conductor', '', 'select', [['', '—'], ['copper', 'copper'], ['aluminium', 'aluminium']]],
+    [`${p}csaMm2`, 'Cross-section', 'mm²'], [`${p}designCurrentA`, 'Design current', 'A'], [`${p}systemV`, 'System voltage', 'V'],
+    [`${p}tabulatedAmpacityA`, 'Tabulated ampacity It', 'A'], [`${p}ambientFactor`, 'Ambient factor Ca', ''], [`${p}groupingFactor`, 'Grouping factor Cg', ''], [`${p}maxDropPct`, 'Max voltage drop', '%'],
+  ] };
+};
+/** REQ-05: AC protective devices on each inverter's AC circuit. */
+const acProtectionGroup = (runNames: string[]): Group => ({ id: 'ac-protection', title: 'AC protection (each inverter)', note: 'Checked: breaker rating ≥ the inverter maximum AC output current, breaker rating ≤ I_z of the AC cable it protects, and the RCD type against what the inverter manufacturer states. Anything not entered is shown as NOT CHECKED, never as a pass.', items: [
+  ['ap.breakerA', 'AC breaker / MCB rating In', 'A'], ['ap.device', 'Device (e.g. MCB, C curve, 4-pole)', ''],
+  ['ap.cable', 'AC cable run it protects', '', 'select', [['', '—'], ...runNames.map((n): [string, string] => [n, n])]],
+  ['ap.rcdType', 'RCD fitted', '', 'select', [['', '—'], ['none', 'none'], ['AC', 'type AC'], ['A', 'type A'], ['F', 'type F'], ['B', 'type B']]],
+] });
 const HYBRID_GROUPS: Group[] = [
   { id: 'hb', title: 'Hybrid battery (optional)', items: [['hb.usableKwh', 'Usable energy', 'kWh'], ['hb.maxChargeKw', 'Max charge power', 'kW'], ['hb.maxDischargeKw', 'Max discharge power', 'kW'], ['hb.roundTripEfficiency', 'Round-trip efficiency (0.5–1)', ''], ['hb.minSocFrac', 'Minimum SOC (0–1)', ''], ['hb.initialSocFrac', 'Initial SOC (0–1)', ''], ['hb.source', 'Source (datasheet)', '']] },
   { id: 'hg', title: 'Grid (optional)', items: [['hg.exportAllowed', 'Export allowed', '', 'yesno'], ['hg.importLimitKw', 'Import limit (optional)', 'kW'], ['hg.exportLimitKw', 'Export limit (optional)', 'kW'], ['hg.source', 'Source (utility agreement, outage record)', '']] },
@@ -84,7 +104,7 @@ function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v
       <legend style={{ fontWeight: 600, color: '#fbbf24', padding: '0 4px' }}>{g.title}</legend>
       {g.note ? <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>{g.note}</p> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
-        {g.items.map(([k, l, u, kind = 'text']) => kind === 'check' ? (
+        {g.items.map(([k, l, u, kind = 'text', options]) => kind === 'check' ? (
           <label key={k} style={{ fontSize: 12, color: '#cbd5e1', display: 'flex', gap: 6, alignItems: 'center', gridColumn: '1 / -1' }}>
             <input type="checkbox" checked={f[k] === 'yes'} onChange={(e) => set(k, e.target.checked ? 'yes' : '')} /> {l}
           </label>
@@ -95,9 +115,15 @@ function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v
               <select value={f[k] ?? ''} onChange={(e) => set(k, e.target.value)} style={inputStyle}>
                 <option value="">—</option><option value="yes">yes</option><option value="no">no</option>
               </select>
+            ) : kind === 'select' ? (
+              <select value={f[k] ?? ''} onChange={(e) => set(k, e.target.value)} style={inputStyle}>
+                {(options ?? []).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+                {f[k] && !(options ?? []).some(([v]) => v === f[k]) ? <option value={f[k]}>{f[k]} (not a listed value)</option> : null}
+              </select>
             ) : (
               <input type={kind === 'date' ? 'date' : 'text'} value={f[k] ?? ''} onChange={(e) => set(k, e.target.value)} inputMode={u ? 'decimal' : undefined} style={inputStyle} />
             )}
+            {prefillSource(f, k) ? <span data-prefill-source={k} style={{ display: 'block', fontSize: 11, color: '#7dd3fc', marginTop: 2 }}>Pre-filled from the Dashboard: {prefillSource(f, k)}</span> : null}
           </label>
         ))}
       </div>
@@ -137,7 +163,12 @@ export default function ProposalPage() {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [builtFor, setBuiltFor] = useState('');
   const [serverError, setServerError] = useState('');
+  // REQ-27: the site confirmed on the Dashboard (address, coordinates, elevation if ticked).
+  const [handoff, setHandoff] = useState<{ confirmedAt: string; applied: Prefill[]; differences: Array<Prefill & { current: string }> } | null>(null);
   const set = (k: string, v: string) => setF((x) => ({ ...x, [k]: v }));
+  // Runs shown: at least up to the last filled run, or more if "Add cable run" was pressed.
+  const [runsRequested, setRunsRequested] = useState(1);
+  const runsShown = Math.min(MAX_CABLE_RUNS, Math.max(cableRunCount(f), runsRequested));
   const setRow = (i: number, k: keyof BomRow, v: string) => setBom((rows) => rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
   const year = lastFullYear();
 
@@ -181,9 +212,13 @@ export default function ProposalPage() {
 
   useEffect(() => {
     const r = loadDraft();
-    if (r.status === 'restored') { applyProject(r.project); setRestored({ savedAt: r.savedAt, production: r.project.production, stripped: r.stripped }); }
+    let base: ProposalForm = {};
+    if (r.status === 'restored') { applyProject(r.project); base = r.project.form; setRestored({ savedAt: r.savedAt, production: r.project.production, stripped: r.stripped }); }
     else if (r.status === 'blocked') setStorageMsg(r.message);
     else if (r.status === 'rejected') { setDraftError(r.message); if (r.reason === 'newer') setAutosavePaused(true); }
+    // REQ-27: a site the user confirmed on the Dashboard fills the blank fields only, labelled with its source.
+    const h = takeSiteHandoff(browserStore());
+    if (h) { const a = applySiteHandoff(base, h); setF(a.form); setHandoff({ confirmedAt: h.confirmedAt, applied: a.applied, differences: a.differences }); }
     setHydrated(true);
     // Runs once, on mount.
   }, []);
@@ -281,8 +316,8 @@ export default function ProposalPage() {
     finally { setBusy(''); }
   };
 
-  const loadExample = () => { setF(WORKED_EXAMPLE_FORM); setBom(WORKED_EXAMPLE_BOM.map((r) => ({ ...r }))); setExample(true); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
-  const clear = () => { setF({}); setBom([{ ...EMPTY_BOM_ROW }]); setExample(false); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
+  const loadExample = () => { setF(WORKED_EXAMPLE_FORM); setRunsRequested(1); setBom(WORKED_EXAMPLE_BOM.map((r) => ({ ...r }))); setExample(true); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
+  const clear = () => { setF({}); setRunsRequested(1); setBom([{ ...EMPTY_BOM_ROW }]); setExample(false); setWeather(null); setWeatherMsg(''); setLoad(null); setLoadMsg(''); setProposal(null); setServerError(''); setRestored(null); setOpened(null); };
 
   const p = production.result;
   const h = hybrid.result;
@@ -304,6 +339,20 @@ export default function ProposalPage() {
         <div role="note" style={{ ...box, borderColor: '#f59e0b', color: '#fde68a', fontSize: 13, marginBottom: 12 }}>
           TEST VALUES: the worked example uses the module, inverter, prices, tariff and production figures from the regression test. They are not a product recommendation, a real price or a real tariff. The production figures are test values, not a simulation, until you fetch the hourly weather.
         </div>
+      ) : null}
+
+      {handoff ? (
+        <section role="status" aria-label="Site from the Dashboard" style={{ ...box, borderColor: '#38bdf8', marginBottom: 12, fontSize: 13 }}>
+          <div style={{ fontWeight: 600, color: '#7dd3fc' }}>Site from the Dashboard (confirmed {when(handoff.confirmedAt)})</div>
+          {handoff.applied.length ? <div>Pre-filled: {handoff.applied.map((x) => `${x.label} ${x.value}`).join(' · ')}. Each is labelled with its source; edit any of them freely.</div> : <div>Nothing was pre-filled: every field it carries was already filled.</div>}
+          {handoff.differences.length ? (
+            <div style={{ marginTop: 6 }}>
+              Already filled here, so not changed: {handoff.differences.map((x) => `${x.label}: "${x.current}" here, "${x.value}" on the Dashboard`).join(' · ')}
+              <div style={{ marginTop: 6 }}><button type="button" style={btn} onClick={() => { setF((x) => replaceWithHandoff(x, handoff.differences)); setHandoff({ ...handoff, applied: [...handoff.applied, ...handoff.differences], differences: [] }); }}>Use the Dashboard values instead</button></div>
+            </div>
+          ) : null}
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Not carried: irradiance, the current air temperature and the roof footprint (not design values). Fetch the hourly weather below for this site.</div>
+        </section>
       ) : null}
 
       <section style={{ ...box, marginBottom: 12 }} aria-label="Saved project">
@@ -343,6 +392,20 @@ export default function ProposalPage() {
 
       <div style={{ display: 'grid', gap: 12 }}>
         {GROUPS.map((g) => <Fieldset key={g.id} g={g} f={f} set={set} />)}
+
+        <section style={box} aria-label="Cable runs">
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Cable runs (optional)</h2>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {Array.from({ length: runsShown }, (_, k) => (
+              <div key={k}>
+                <Fieldset g={cableRunGroup(k + 1)} f={f} set={set} />
+                {runsShown > 1 ? <button type="button" onClick={() => { setF((x) => removeCableRun(x, k + 1)); setRunsRequested(Math.max(1, runsShown - 1)); }} style={{ ...btn, marginTop: 4 }} aria-label={`Remove cable run ${k + 1}`}>Remove cable run {k + 1}</button> : null}
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={() => setRunsRequested(runsShown + 1)} disabled={runsShown >= MAX_CABLE_RUNS} style={{ ...btn, marginTop: 8, opacity: runsShown >= MAX_CABLE_RUNS ? 0.5 : 1 }}>Add cable run{runsShown >= MAX_CABLE_RUNS ? ` (${MAX_CABLE_RUNS} at most)` : ''}</button>
+        </section>
+        <Fieldset g={acProtectionGroup(Array.from({ length: runsShown }, (_, k) => (f[`${cableRunPrefix(k + 1)}name`] ?? '').trim()).filter(Boolean))} f={f} set={set} />
 
         <section style={box} aria-label="Weather and production">
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Weather and production</h2>

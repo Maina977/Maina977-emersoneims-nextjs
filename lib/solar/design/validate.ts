@@ -44,8 +44,20 @@ export interface Inverter {
   batteryMinV?: number; batteryMaxV?: number;
   batteryMaxChargeA?: number; batteryMaxDischargeA?: number;
   antiIslanding?: string | null;
+  /** REQ-05 AC protection (optional): maximum AC output current per inverter, A, from the datasheet. */
+  maxAcOutputA?: number;
+  /**
+   * The RCD type the inverter manufacturer states for the inverter's AC circuit
+   * ('A', 'B', …), or 'not-required' when the manufacturer states that no
+   * particular RCD type is required by the inverter. Absent = not stated.
+   */
+  rcdTypeRequired?: RcdType | 'not-required';
   datasheet: string;
 }
+
+/** RCD types, weakest first: a type B device also meets the type F, A and AC duties; F meets A and AC; A meets AC. */
+export const RCD_TYPES = ['AC', 'A', 'F', 'B'] as const;
+export type RcdType = typeof RCD_TYPES[number];
 
 export interface Battery {
   model: string;
@@ -101,6 +113,35 @@ export interface CableRun {
    * (1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse)).
    */
   stringFuseA?: number;
+  /** REQ-05: where the run starts and ends (e.g. "Inverter 1 AC terminals" → "Main DB"). */
+  from?: string; to?: string;
+  /**
+   * REQ-05: the IEC 60364-5-52 installation (reference) method the tabulated
+   * It was read for (e.g. "C, clipped direct"). Not stated = the capacity
+   * check is never a PASS (the It cannot be traced to a method).
+   */
+  method?: string;
+  /** REQ-05: conductor material. Not stated = the voltage drop is never a PASS (the copper ρ is only an assumption). */
+  conductor?: CableConductor;
+}
+
+export const CABLE_CONDUCTORS = ['copper', 'aluminium'] as const;
+export type CableConductor = typeof CABLE_CONDUCTORS[number];
+
+/**
+ * REQ-05: the AC protective devices on each inverter's AC circuit. Every
+ * field is optional; a missing one makes the check it feeds a WARN "not
+ * checked", never a PASS.
+ */
+export interface AcProtection {
+  /** Rated current In of the inverter's AC circuit-breaker / MCB, A (one per inverter). */
+  breakerA?: number;
+  /** The device as specified, e.g. "MCB, C curve, 4-pole" (text, shown on the diagram). */
+  device?: string;
+  /** Name of the AC cable run this breaker protects (one of the design's cable runs, kind 'ac'). */
+  cable?: string;
+  /** RCD type fitted on the inverter's AC circuit; 'none' = no RCD fitted. */
+  rcdType?: RcdType | 'none';
 }
 
 export type Verdict = 'PASS' | 'WARN' | 'REFUSE';
@@ -217,21 +258,111 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
     if (!(Number.isFinite(v) && v > 0)) errors.push(`${c.name}: ${k} must be a positive number`);
   }
   if (!(c.ambientFactor > 0 && c.ambientFactor <= 1.25) || !(c.groupingFactor > 0 && c.groupingFactor <= 1)) errors.push(`${c.name}: correction factors must come from the IEC 60364-5-52 tables (ambient 0–1.25, grouping 0–1)`);
+  if (c.conductor !== undefined && !(CABLE_CONDUCTORS as readonly string[]).includes(c.conductor)) errors.push(`${c.name}: conductor must be copper or aluminium`);
   if (errors.length) return { checks: [], errors };
   const iz = c.tabulatedAmpacityA * c.ambientFactor * c.groupingFactor;
   // ρ = 0.0225 Ω·mm²/m: copper at normal service temperature, IEC 60364-5-52 Annex G (1.25 × ρ at 20 °C).
   const RHO = 0.0225;
   const vd = (2 * c.lengthM * c.designCurrentA * RHO) / c.csaMm2;
   const pct = (vd / c.systemV) * 100;
-  return {
-    errors,
-    checks: [
-      { id: `ampacity-${c.name}`, title: `${c.name}: current-carrying capacity`, verdict: iz >= c.designCurrentA ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(iz), unit: 'A', marginPct: margin(c.designCurrentA, iz, true),
-        formula: `I_z = I_t × C_a × C_g = ${c.tabulatedAmpacityA} × ${c.ambientFactor} × ${c.groupingFactor}`, reference: 'IEC 60364-5-52 (tabulated value and correction factors for the installation method)' },
-      { id: `vdrop-${c.name}`, title: `${c.name}: voltage drop`, verdict: pct <= c.maxDropPct ? 'PASS' : 'WARN', value: r2(pct), limit: c.maxDropPct, unit: '%', marginPct: margin(pct, c.maxDropPct, true),
-        formula: `ΔV = 2 × L × I × ρ ÷ A = 2 × ${c.lengthM} × ${c.designCurrentA} × 0.0225 ÷ ${c.csaMm2} = ${r2(vd)} V`, reference: 'IEC 60364-5-52 Annex G (ρ for copper in service = 0.0225 Ω·mm²/m)' },
-    ],
-  };
+  // REQ-05: missing data is never compliant. Without the installation method
+  // the tabulated It cannot be traced, so a capacity that fits is a WARN, not
+  // a PASS (a capacity that does not fit is still REFUSED).
+  const method = typeof c.method === 'string' ? c.method.trim() : '';
+  const fits = iz >= c.designCurrentA;
+  const ampacity: Check = { id: `ampacity-${c.name}`, title: `${c.name}: current-carrying capacity`, verdict: fits ? (method ? 'PASS' : 'WARN') : 'REFUSE', value: r2(c.designCurrentA), limit: r2(iz), unit: 'A', marginPct: margin(c.designCurrentA, iz, true),
+    formula: `I_z = I_t × C_a × C_g = ${c.tabulatedAmpacityA} × ${c.ambientFactor} × ${c.groupingFactor}${method ? ` (installation method ${method})` : ''}`, reference: 'IEC 60364-5-52 (tabulated value and correction factors for the installation method)',
+    ...(fits && !method ? { note: 'Installation method not stated: the tabulated It cannot be traced to a reference method, so the capacity is NOT confirmed' } : {}) };
+  // Only the copper resistivity is built in. Aluminium is not checked; an
+  // unstated conductor is worked out as copper but never passed.
+  let vdrop: Check;
+  if (c.conductor === 'aluminium') {
+    vdrop = { id: `vdrop-${c.name}`, title: `${c.name}: voltage drop`, verdict: 'WARN', value: NaN, limit: c.maxDropPct, unit: '%', marginPct: NaN, formula: 'not checked', reference: 'IEC 60364-5-52 Annex G (voltage drop)',
+      note: 'Aluminium conductor: only the copper resistivity is built in, so the voltage drop is NOT checked; work it out with the aluminium resistivity from the standard and record it' };
+  } else {
+    const within = pct <= c.maxDropPct;
+    vdrop = { id: `vdrop-${c.name}`, title: `${c.name}: voltage drop`, verdict: within && c.conductor === 'copper' ? 'PASS' : 'WARN', value: r2(pct), limit: c.maxDropPct, unit: '%', marginPct: margin(pct, c.maxDropPct, true),
+      formula: `ΔV = 2 × L × I × ρ ÷ A = 2 × ${c.lengthM} × ${c.designCurrentA} × 0.0225 ÷ ${c.csaMm2} = ${r2(vd)} V`, reference: 'IEC 60364-5-52 Annex G (ρ for copper in service = 0.0225 Ω·mm²/m)',
+      ...(c.conductor === undefined ? { note: `Conductor not stated: worked out as copper${within ? ', so the voltage drop is NOT confirmed' : ''}` } : {}) };
+  }
+  return { errors, checks: [ampacity, vdrop] };
+}
+
+/** REQ-05: stated basis of the AC breaker coordination checks (no clause number until the standard is read). */
+export const AC_PROTECTION_BASIS = 'IEC 60364-4-43, protection against overcurrent: coordination of the conductor and its protective device (I_B ≤ I_n ≤ I_z). Clause to be confirmed against the purchased standard.';
+/** REQ-05: stated basis of the RCD type check. */
+export const RCD_BASIS = 'IEC 60364-7-712 (solar PV power supply systems), RCD on the inverter AC circuit as the inverter manufacturer states it; RCD types AC, A, F, B (IEC 61008-1, IEC 62423), a type B device also meeting the type F, A and AC duties. Clauses to be confirmed against the purchased standards.';
+
+/**
+ * REQ-05: AC protective devices on each inverter's AC circuit.
+ *  - ac-breaker-current: the breaker rating In covers the inverter's maximum AC output current I_B (I_B ≤ I_n), else REFUSE;
+ *  - ac-cable-current-<run>: the protected AC cable's design current is at least I_B, else REFUSE
+ *    (otherwise its capacity check would use a figure the inverter can exceed);
+ *  - ac-breaker-cable: In ≤ I_z of the AC cable it protects, else REFUSE;
+ *  - ac-rcd-type: the RCD fitted is at least the type the inverter manufacturer states, else REFUSE.
+ * Missing data: WARN "not checked" (never a PASS). A breaker naming a cable that
+ * is not in the design, or is not an AC cable, is REFUSED (inconsistent input).
+ */
+export function acProtectionChecks(inverter: Inverter, ac: AcProtection | undefined, cables: CableRun[], inverterCount: number): Check[] {
+  const notChecked = (id: string, title: string, note: string, reference: string): Check => ({ id, title, verdict: 'WARN', value: NaN, limit: NaN, unit: '', marginPct: NaN, formula: 'not checked', reference, note });
+  const refuse = (id: string, title: string, note: string, reference: string): Check => ({ id, title, verdict: 'REFUSE', value: NaN, limit: NaN, unit: '', marginPct: -100, formula: 'design input', reference, note });
+  if (!ac) return [notChecked('ac-protection', 'AC protection devices', 'AC protection not entered: the AC breaker rating, the cable it protects and the RCD type are NOT checked', AC_PROTECTION_BASIS)];
+  const out: Check[] = [];
+  const pos = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x > 0;
+  const ib = inverter.maxAcOutputA, inA = ac.breakerA;
+  const each = inverterCount > 1 ? ' (each inverter)' : '';
+  const T1 = `AC breaker rating covers the inverter maximum AC output current${each}`;
+  if (!pos(inA)) out.push(notChecked('ac-breaker-current', T1, 'AC breaker rating In not entered (or not above 0 A): not checked', AC_PROTECTION_BASIS));
+  else if (!pos(ib)) out.push(notChecked('ac-breaker-current', T1, 'Inverter maximum AC output current not entered from the datasheet (or not above 0 A): not checked', AC_PROTECTION_BASIS));
+  else out.push({ id: 'ac-breaker-current', title: T1, verdict: inA >= ib ? 'PASS' : 'REFUSE', value: inA, limit: ib, unit: 'A', marginPct: margin(inA, ib, false),
+    formula: `I_B ≤ I_n: inverter maximum AC output ${ib} A ≤ breaker ${inA} A`, reference: AC_PROTECTION_BASIS,
+    note: inA >= ib ? 'Also confirm the breaker rating the inverter manual recommends' : 'The breaker is rated below the current the inverter can deliver: it will trip, or be overloaded, at full output' });
+
+  const T2 = `AC breaker protects its cable (I_n ≤ I_z)${each}`;
+  const name = typeof ac.cable === 'string' ? ac.cable.trim() : '';
+  const run = name ? cables.find((c) => c.name === name) : undefined;
+  if (!name) out.push(notChecked('ac-breaker-cable', T2, 'The AC cable this breaker protects is not named: I_n ≤ I_z is NOT checked', AC_PROTECTION_BASIS));
+  else if (!run) out.push(refuse('ac-breaker-cable', T2, `"${name}" is not one of the design's cable runs`, AC_PROTECTION_BASIS));
+  else if (run.kind !== 'ac') out.push(refuse('ac-breaker-cable', T2, `"${name}" is not an AC cable (its kind is ${run.kind ?? 'not stated, treated as dc-pv'})`, AC_PROTECTION_BASIS));
+  else {
+    const r = checkCable(run);
+    const iz = run.tabulatedAmpacityA * run.ambientFactor * run.groupingFactor;
+    if (r.errors.length) out.push(notChecked('ac-breaker-cable', T2, `Cable "${name}" has invalid data (${r.errors.join('; ')}): not checked`, AC_PROTECTION_BASIS));
+    else if (!pos(inA)) out.push(notChecked('ac-breaker-cable', T2, 'AC breaker rating In not entered (or not above 0 A): not checked', AC_PROTECTION_BASIS));
+    else {
+      const ok = inA <= iz * (1 + 1e-9);
+      const traced = typeof run.method === 'string' && run.method.trim() !== '';
+      out.push({ id: 'ac-breaker-cable', title: T2, verdict: ok ? (traced ? 'PASS' : 'WARN') : 'REFUSE', value: inA, limit: r2(iz), unit: 'A', marginPct: margin(inA, iz, true),
+        formula: `I_n ≤ I_z: breaker ${inA} A ≤ I_z of "${name}" = ${run.tabulatedAmpacityA} × ${run.ambientFactor} × ${run.groupingFactor} = ${r2(iz)} A`, reference: AC_PROTECTION_BASIS,
+        note: !ok ? 'The breaker is rated above what the cable can carry: the cable is not protected against overload'
+          : !traced ? `Cable "${name}" has no installation method: its I_z is not traceable, so the coordination is NOT confirmed`
+          : 'The second condition (conventional tripping current I_2 ≤ 1.45 × I_z) is not worked out: confirm it from the breaker datasheet' });
+    }
+    // The cable's own design current must cover the inverter output it carries.
+    if (pos(ib) && Number.isFinite(run.designCurrentA)) {
+      const ok = run.designCurrentA >= ib * (1 - 1e-9);
+      out.push({ id: `ac-cable-current-${name}`, title: `${name}: design current covers the inverter maximum AC output`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(run.designCurrentA), limit: ib, unit: 'A', marginPct: margin(run.designCurrentA, ib, false),
+        formula: `design current ≥ inverter maximum AC output current = ${ib} A`, reference: AC_PROTECTION_BASIS,
+        note: ok ? (inverterCount > 1 ? 'Per inverter: a cable shared by several inverters must be sized for their sum' : undefined) : 'The entered design current is below what the inverter can deliver: size the AC cable for the inverter output' });
+    } else if (!pos(ib)) out.push(notChecked(`ac-cable-current-${name}`, `${name}: design current covers the inverter maximum AC output`, 'Inverter maximum AC output current not entered: not checked', AC_PROTECTION_BASIS));
+  }
+
+  const T3 = `RCD type on the inverter AC circuit${each}`;
+  const req = inverter.rcdTypeRequired, fit = ac.rcdType;
+  const rank = (t: unknown) => (RCD_TYPES as readonly unknown[]).indexOf(t);
+  if (req === undefined) out.push(notChecked('ac-rcd-type', T3, 'The inverter datasheet RCD requirement is not entered: the RCD type is NOT checked', RCD_BASIS));
+  else if (req !== 'not-required' && rank(req) < 0) out.push(refuse('ac-rcd-type', T3, `"${String(req)}" is not an RCD type (AC, A, F, B or not-required)`, RCD_BASIS));
+  else if (fit !== undefined && fit !== 'none' && rank(fit) < 0) out.push(refuse('ac-rcd-type', T3, `"${String(fit)}" is not an RCD type (AC, A, F, B or none)`, RCD_BASIS));
+  else if (req === 'not-required') out.push({ id: 'ac-rcd-type', title: T3, verdict: 'PASS', value: fit === undefined || fit === 'none' ? 0 : 1, limit: 0, unit: '', marginPct: 0, formula: 'inverter manufacturer: no particular RCD type required by the inverter', reference: RCD_BASIS,
+    note: `Fitted: ${fit === undefined ? 'not stated' : fit === 'none' ? 'none' : `type ${fit}`}. Whether the wiring rules require an RCD on this circuit (earthing system, location) is the engineer's decision` });
+  else if (fit === undefined) out.push(notChecked('ac-rcd-type', T3, `The inverter requires type ${req}; the RCD fitted is not entered: not checked`, RCD_BASIS));
+  else {
+    const ok = fit !== 'none' && rank(fit) >= rank(req);
+    out.push({ id: 'ac-rcd-type', title: T3, verdict: ok ? 'PASS' : 'REFUSE', value: rank(fit), limit: rank(req), unit: '', marginPct: ok ? 0 : -100,
+      formula: `fitted ${fit === 'none' ? 'no RCD' : `type ${fit}`} must be at least type ${req} (order AC < A < F < B)`, reference: RCD_BASIS,
+      ...(ok ? {} : { note: `The inverter manufacturer requires a type ${req} RCD; ${fit === 'none' ? 'none is fitted' : `type ${fit} does not meet it`}` }) });
+  }
+  return out;
 }
 
 /**
