@@ -405,7 +405,6 @@ export function daylightAdf(b: Body) {
   };
 }
 
-/** Reverberation time: Sabine T = 0.161 V / ΣSα; Eyring T = 0.161 V / (−S·ln(1 − ᾱ)). */
 /**
  * Airborne sound insulation of a single homogeneous wall or floor
  * (register R-39, 2026-11-27): the empirical mass law of EN 12354-1:2000
@@ -429,18 +428,20 @@ export function soundInsulation(b: Body) {
     rows.push({ description: String(l.description ?? `Layer ${i + 1}`), thickness_m: t, density_kg_m3: rho, mass_kg_m2: r(t * rho, 1) });
   }
   if (m < 150) return bad(`The mass per unit area is ${r(m, 1)} kg/m²: the EN 12354-1 Annex B mass law used here is valid from 150 kg/m². Lighter, cavity or multi-leaf constructions need tested values or a specialist.`);
-  if (m > 1500) return bad(`The mass per unit area is ${r(m, 1)} kg/m², beyond the range this empirical law is used for (up to 1,500 kg/m²): check the layers.`);
+  if (m > 1500) return bad(`The mass per unit area is ${r(m, 1)} kg/m², above this tool's own upper limit of 1,500 kg/m² (not a limit of EN 12354-1 Annex B): check the layers.`);
   const Rw = 37.5 * Math.log10(m) - 42;
   const target = optN(b, 'target_Rw_dB');
   return {
+    basis: 'Estimate: EN 12354-1 Annex B empirical mass law, not a tested or in-situ value',
     mass_kg_m2: r(m, 1), Rw_dB: r(Rw, 1), layers: rows,
     ...(target !== undefined ? { checks: [{ check: 'Rw ≥ target Rw (laboratory-type estimate)', value: `${r(Rw, 1)} ≥ ${target} dB`, pass: Rw >= target }] } : {}),
     not_checked: ['flanking transmission: the in-situ R′w (and DnT,w) is lower and needs EN 12354-1 with the junctions, or a site test', 'impact sound of floors'],
     assumptions: ['Single homogeneous leaf (layers bonded, no cavity)', 'Mass law of EN 12354-1:2000 Annex B, valid for m′ ≥ 150 kg/m²'],
-    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB',
+    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB (EN 12354-1:2000 is superseded by EN ISO 12354-1:2017; the single-leaf mass-law estimate used here is kept as stated)',
   };
 }
 
+/** Reverberation time: Sabine T = 0.161 V / ΣSα; Eyring T = 0.161 V / (−S·ln(1 − ᾱ)). */
 export function reverberation(b: Body) {
   const V = pick(b, 'volume_m3');
   const method = String(b.method ?? 'sabine').toLowerCase();
@@ -1331,7 +1332,7 @@ export function rcColumn(b: Body) {
   const bw = pick(b, 'b_mm'), h = pick(b, 'h_mm'), As = pick(b, 'As_mm2'), fck = pick(b, 'fck_MPa'), fyk = pick(b, 'fyk_MPa'), N = pick(b, 'NEd_kN'), l0 = pick(b, 'l0_m');
   const err = missing({ b_mm: bw, h_mm: h, As_mm2: As, fck_MPa: fck, fyk_MPa: fyk, NEd_kN: N, l0_m: l0 });
   if (err) return err;
-  if (!(bw! >= 150 && bw! <= 3000 && h! >= 150 && h! <= 3000)) return bad('b_mm and h_mm must be between 150 and 3,000 mm (EN 1992-1-1 column section)');
+  if (!(bw! >= 150 && bw! <= 3000 && h! >= 150 && h! <= 3000)) return bad('b_mm and h_mm must be between 150 and 3,000 mm (this tool\'s range for a column section, not an EN 1992-1-1 clause)');
   if (!(fck! >= 12 && fck! <= 50)) return bad('fck_MPa must be between 12 and 50 MPa');
   if (!(fyk! >= 400 && fyk! <= 600)) return bad('fyk_MPa must be between 400 and 600 MPa');
   if (!(N! > 0 && N! <= 1e5)) return bad('NEd_kN must be a compressive design load greater than 0 (kN)');
