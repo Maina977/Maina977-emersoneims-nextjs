@@ -31,6 +31,8 @@ export interface CatalogueItem {
   dims: DimSpec[];
   /** What the description should state (spec, size, thickness …). */
   specHint: string;
+  /** When the dimensions do not simply multiply: quantity = measurement × combine(d1, d2, d3), with its formula text. */
+  combine?: { fn: (d: number[]) => number; text: string };
 }
 
 const D = (key: string, label: string, min: number, max: number): DimSpec => ({ key, label, unit: 'm', min, max });
@@ -93,7 +95,22 @@ export const PAINTING_WORKS: Record<string, CatalogueItem> = {
   metal: { takes: 'area', unit: 'm²', label: 'Metalwork (area)', dims: [], specHint: 'e.g. 1 zinc phosphate primer + 2 enamel on steel grilles' },
 };
 
-export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting';
+/**
+ * R-10 in-situ concrete (P1-D §4) for slabs, beams, columns and walls, from
+ * measured slab areas, beam and wall lengths and column counts, and the
+ * member sizes from the structural drawings. Beams are measured as the
+ * downstand BELOW the slab (the slab is measured through), so no volume is
+ * counted twice. Grade, wastage and reinforcement are not computed here.
+ */
+export const CONCRETE_WORKS: Record<string, CatalogueItem> = {
+  slab: { takes: 'area', unit: 'm³', label: 'Slab (area × thickness)', dims: [D('thickness', 'slab thickness', 0.05, 1.5)], specHint: 'grade from the structural drawings, e.g. C25/30 suspended slab' },
+  beam: { takes: 'linear', unit: 'm³', label: 'Beam downstand below the slab (length × width × downstand)', dims: [D('width', 'beam width', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. C25/30 beam 230 wide, 450 overall − 150 slab = 300 downstand' },
+  column: { takes: 'count', unit: 'm³', label: 'Columns (number × width × depth × height)', dims: [D('width', 'column width', 0.1, 3), D('depth', 'column depth', 0.1, 3), D('height', 'height to slab soffit', 0.3, 20)], specHint: 'e.g. C30/37 columns 300 × 300, floor to soffit' },
+  wall: { takes: 'linear', unit: 'm³', label: 'RC walls (length × thickness × height)', dims: [D('thickness', 'wall thickness', 0.05, 2), D('height', 'wall height', 0.1, 20)], specHint: 'e.g. C30/37 retaining wall, 200 thick' },
+  groundBeam: { takes: 'linear', unit: 'm³', label: 'Ground beams (length × width × depth)', dims: [D('width', 'beam width', 0.1, 3), D('depth', 'beam depth', 0.1, 3)], specHint: 'e.g. C25/30 ground beam 230 × 450' },
+};
+
+export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting' | 'concrete';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
@@ -114,9 +131,14 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
     note: 'Measured as the area painted; the number of coats is stated in the description, not multiplied into the quantity. Measure walls as areas with their openings (the take-off deducts them) for net quantities.',
     notMeasured: ['Surface preparation beyond normal (stripping, filling cracks)', 'Signwriting and special finishes', 'Plaster itself (Plaster / render trade)'],
   },
+  concrete: {
+    trade: 'Concrete', items: CONCRETE_WORKS,
+    note: 'Net volumes as designed: sizes and grades from the structural drawings. Beams are measured as the downstand below the slab, so the slab-beam overlap is not counted twice. Openings in slabs: measure the slab as an area with its openings. Strip footings: Strip foundation trade.',
+    notMeasured: ['Reinforcement (needs the bar bending schedule; enter it as a scheduled quantity)', 'Wastage (state it in the rate build-up)', 'Formwork (Formwork trade)', 'Precast elements'],
+  },
 };
 
-export interface WorksRow { item: string; spec: string; measurement: Quantity | undefined; /** In the catalogue's order (at most two). */ dims: Array<Param | undefined> }
+export interface WorksRow { item: string; spec: string; measurement: Quantity | undefined; /** In the catalogue's order (at most three). */ dims: Array<Param | undefined> }
 export interface WorksInput { code: string; description: string; trade: WorksTrade; rows: WorksRow[] }
 
 function need(name: string, p: Param | undefined, min: number, max: number, unit: string): number {
@@ -144,17 +166,18 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
     const prev = used.get(q.id);
     if (prev) throw new TradeError(`${name}: measurement ${q.id} is already used by ${prev} (double counting)`);
     used.set(q.id, name);
-    let v = q.net;
+    let v = q.net; const xs: number[] = [];
     const inputs = [`${q.kind === 'count' ? 'count' : q.kind === 'linear' ? 'length' : 'area'} ${r3(q.net)} ${q.unit} (take-off ${q.id})`];
     for (const [k, d] of c.dims.entries()) {
       const x = need(`${name} (${c.label}) ${d.label}`, row.dims[k], d.min, d.max, d.unit);
-      v *= x;
+      xs.push(x);
       inputs.push(`${d.label} ${x} ${d.unit} (${row.dims[k]!.source.trim()})`);
     }
+    v *= c.combine ? c.combine.fn(xs) : xs.reduce((a, b) => a * b, 1);
     return {
       code: `${i.code}.${n + 1}`, trade: cat.trade, unit: c.unit, quantity: c.unit === 'No' ? q.net : r3(v),
       description: `${i.description}: ${c.label}, ${spec}`,
-      formula: c.dims.length ? `measured ${q.kind} × ${c.dims.map((d) => d.label).join(' × ')}` : `measured ${q.kind === 'count' ? 'count' : q.kind}`,
+      formula: c.combine ? `measured ${q.kind} × ${c.combine.text}` : c.dims.length ? `measured ${q.kind} × ${c.dims.map((d) => d.label).join(' × ')}` : `measured ${q.kind === 'count' ? 'count' : q.kind}`,
       inputs,
     };
   });

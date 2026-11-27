@@ -186,6 +186,7 @@ function WorksFields({ f, edit, pick }: { f: WorksForm; edit: (f: WorksForm) => 
             {c && <MeasurementPick label={`Item ${i + 1} measurement`} kind={c.takes} value={r.measurementId} onChange={(id) => up({ ...r, measurementId: id })} {...pick} />}
             {c?.dims[0] && <ParamField label={`Item ${i + 1} ${c.dims[0].label}`} unit={c.dims[0].unit} value={r.d1} onChange={(v) => up({ ...r, d1: v })} />}
             {c?.dims[1] && <ParamField label={`Item ${i + 1} ${c.dims[1].label}`} unit={c.dims[1].unit} value={r.d2} onChange={(v) => up({ ...r, d2: v })} />}
+            {c?.dims[2] && <ParamField label={`Item ${i + 1} ${c.dims[2].label}`} unit={c.dims[2].unit} value={r.d3} onChange={(v) => up({ ...r, d3: v })} />}
           </>
         );
       }} />

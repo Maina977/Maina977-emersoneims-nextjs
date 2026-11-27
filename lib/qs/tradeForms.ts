@@ -38,6 +38,7 @@ export const TRADE_LABELS: Record<TradeKind, string> = {
   hvac: 'HVAC (quantities only)',
   drainage: 'Below-ground drainage',
   painting: 'Painting & decoration',
+  concrete: 'Concrete (slabs, beams, columns, walls)',
 };
 
 // ---- MEP rows (lib/qs/mep). Measurement ids are take-off ids; '' = none chosen.
@@ -79,9 +80,9 @@ export interface StripForm {
 export interface OpeningsForm { trade: 'openings'; code: string; openings: OpeningForm[] }
 export interface ElectricalForm { trade: 'electrical'; code: string; description: string; points: PointRowForm[]; runs: CircuitRunForm[]; enumerated: EnumeratedRowForm[] }
 export interface PlumbingForm { trade: 'plumbing'; code: string; description: string; fixtures: FixtureRowForm[]; pipes: PipeRunForm[] }
-/** Measured-item trades (lib/qs/works): one row per item; d1, d2 are the catalogue's dimensions in order. */
-export interface WorksRowForm { item: string; spec: string; measurementId: string; d1: ParamForm; d2: ParamForm }
-export const emptyWorksRow = (): WorksRowForm => ({ item: '', spec: '', measurementId: '', d1: P(), d2: P() });
+/** Measured-item trades (lib/qs/works): one row per item; d1, d2, d3 are the catalogue's dimensions in order. */
+export interface WorksRowForm { item: string; spec: string; measurementId: string; d1: ParamForm; d2: ParamForm; d3: ParamForm }
+export const emptyWorksRow = (): WorksRowForm => ({ item: '', spec: '', measurementId: '', d1: P(), d2: P(), d3: P() });
 export interface WorksForm { trade: WorksTrade; code: string; description: string; works: WorksRowForm[] }
 export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm | ElectricalForm | PlumbingForm | WorksForm;
 
@@ -265,7 +266,7 @@ export function calculateTrade(f: TradeForm, quantities: Map<string, Quantity>):
           return {
             item: w.item, spec: w.spec,
             measurement: c ? optPick(`Item ${i + 1}: measurement`, w.measurementId, quantities, c.takes) : undefined,
-            dims: (c?.dims ?? []).map((d, k) => param(`Item ${i + 1}: ${d.label}`, k === 0 ? w.d1 : w.d2)),
+            dims: (c?.dims ?? []).map((d, k) => param(`Item ${i + 1}: ${d.label}`, k === 0 ? w.d1 : k === 1 ? w.d2 : w.d3)),
           };
         }),
       });
