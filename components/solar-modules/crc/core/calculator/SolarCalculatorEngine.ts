@@ -16,6 +16,7 @@ import {
   PANEL_KES_PER_W, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR,
   tieredKes, inverterBands, pricesVerified, type SizingResult, type SystemType,
 } from '@/lib/solar/sizing';
+import { resolveConditions, cableBasisText, type CableConditions } from '@/lib/solar/cableCorrections';
 
 // ==================== TYPES ====================
 
@@ -85,6 +86,8 @@ export interface WiringSpec {
   breaker: string;
   disconnect: boolean;
   notes: string;
+  /** Method, ambient, Ca, Cg, Iz and In of cableSize, shown next to the size (review 328c44aa, M4). */
+  sizingBasis: string;
 }
 
 export interface CalculationResult {
@@ -146,15 +149,30 @@ const AMPACITY_A: [number, number][] = [
 const RHO_70C = 0.0225; // Ω·mm²/m, copper at 70 °C operating temperature
 const BREAKERS_A = [10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630];
 
-/** Smallest conductor carrying the current with the drop within the limit, or null. */
-export function sizeConductor(currentA: number, oneWayM: number, volts: number, maxDropPct: number): { mm2: number; dropPct: number } | null {
+export interface ConductorChoice { mm2: number; dropPct: number; izTabA: number; ca: number; cg: number; izA: number }
+
+/**
+ * Smallest conductor whose DERATED rating carries `currentA` (the protective device rating In)
+ * with the drop within the limit, or null. Review 328c44aa, M4 (management 2026-11-27): the
+ * tabulated method-C rating was used at 30 °C with no correction, so a 4 mm² cable (36 A at
+ * 30 °C, 31.3 A at 40 °C) was put on a 32 A breaker. Now Iz = Iz,tab × Ca × Cg ≥ In, with Ca
+ * (Table B.52.14) and Cg (Table B.52.17) from lib/solar/cableCorrections (lib's own tables);
+ * the ambient defaults to an assumed 40 °C and the grouping to one circuit.
+ */
+export function sizeConductor(currentA: number, oneWayM: number, volts: number, maxDropPct: number, conditions: CableConditions = {}): ConductorChoice | null {
+  const { ca, cg } = resolveConditions(conditions);
+  if (ca === undefined || cg === undefined) return null;
   for (const [mm2, amp] of AMPACITY_A) {
-    if (amp < currentA) continue;
+    const iz = amp * ca * cg;
+    if (iz < currentA) continue;
     const dropPct = ((2 * oneWayM * currentA * RHO_70C) / mm2 / volts) * 100;
-    if (dropPct <= maxDropPct) return { mm2, dropPct: Math.round(dropPct * 100) / 100 };
+    if (dropPct <= maxDropPct) return { mm2, dropPct: Math.round(dropPct * 100) / 100, izTabA: amp, ca, cg, izA: iz };
   }
   return null;
 }
+/** The basis line shown next to a size chosen by sizeConductor. */
+export const conductorBasis = (choice: ConductorChoice | null, inA: number, conditions: CableConditions = {}) =>
+  cableBasisText({ method: 'C (clipped direct)', cond: resolveConditions(conditions), izTabA: choice?.izTabA, izA: choice?.izA, inA: Math.round(inA * 10) / 10, mm2: choice?.mm2 });
 const breakerFor = (designA: number) => BREAKERS_A.find((b) => b >= designA) ?? null;
 
 // ==================== ENGINE ====================
@@ -202,7 +220,7 @@ export class SolarCalculatorEngine {
   }
 
   /** Wiring for a 48 V battery system: string, battery and AC cables. */
-  generateWiringSpecs(s: SizingResponse): WiringSpec[] {
+  generateWiringSpecs(s: SizingResponse, conditions: CableConditions = {}): WiringSpec[] {
     const specs: WiringSpec[] = [];
     // 550 W module: Isc about 14 A, Vmp about 41.6 V. Up to 9 in series keeps
     // Voc at 10 °C under a typical 500 V MPPT input.
@@ -214,39 +232,46 @@ export class SolarCalculatorEngine {
     // IEC 62548 (rule to be confirmed against the purchased standard): string fuse at least 1.5 × Isc (21 A for Isc 14 A) and not
     // above the module's maximum series fuse (typically 25-30 A).
     const stringFuse = BREAKERS_A.find((b) => b >= 14 * 1.5) ?? 25;
-    const pv = sizeConductor(Math.max(stringA, stringFuse), 25, perString * 41.6, 1.5);
+    const pvIn = Math.max(stringA, stringFuse);
+    const pvSized = sizeConductor(pvIn, 25, perString * 41.6, 1.5, conditions);
+    // Never below 4 mm² for PV strings: state the rating of the size actually shown.
+    const pvMin = AMPACITY_A.find(([mm2]) => mm2 === 4)![1];
+    const pv = pvSized && pvSized.mm2 < 4 ? { ...pvSized, mm2: 4, izTabA: pvMin, izA: pvMin * pvSized.ca * pvSized.cg } : pvSized;
     specs.push({
       segment: `PV strings to inverter (${strings} × ${perString} panels)`, voltage: Math.round(perString * 41.6), current: Math.round(stringA * 10) / 10, distance: 25,
-      cableSize: pv ? String(Math.max(pv.mm2, 4)) : '—', cableType: 'PV1-F / H1Z2Z2-K solar cable', colors: ['Red (+)', 'Black (−)'],
+      cableSize: pv ? String(pv.mm2) : '—', cableType: 'PV1-F / H1Z2Z2-K solar cable', colors: ['Red (+)', 'Black (−)'],
       breaker: strings > 2 ? `${stringFuse} A gPV fuse per string (≥ 1.5 × Isc; check the module's maximum series fuse)` : 'DC isolator', disconnect: true,
       notes: 'UV-rated cable, MC4 connectors of one make; DC isolator at the inverter',
+      sizingBasis: conductorBasis(pv, pvIn, conditions),
     });
     if (s.batteryKwh > 0) {
       const battA = ((s.inverterKw * 1000) / (48 * 0.9)) * 1.25;
       const battBreaker = breakerFor(battA);
-      const b = battBreaker ? sizeConductor(battBreaker, 3, 48, 1) : null;
+      const b = battBreaker ? sizeConductor(battBreaker, 3, 48, 1, conditions) : null;
       specs.push({
         segment: 'Battery to inverter (48 V)', voltage: 48, current: Math.round(battA), distance: 3,
         cableSize: b ? String(b.mm2) : '—', cableType: 'Flexible battery cable', colors: ['Red (+)', 'Black (−)'],
         breaker: battBreaker && b ? `${battBreaker} A DC breaker or fuse` : '—', disconnect: true,
         notes: b ? `Voltage drop ${b.dropPct}% over 3 m` : 'Above a single 240 mm² cable: use parallel runs sized by an electrician, or a higher-voltage battery',
+        sizingBasis: conductorBasis(b, battBreaker ?? battA, conditions),
       });
     }
     const acA = ((s.inverterKw * 1000) / 230) * 1.25;
     const acBreaker = breakerFor(acA);
-    const ac = acBreaker ? sizeConductor(acBreaker, 20, 230, 3) : null;
+    const ac = acBreaker ? sizeConductor(acBreaker, 20, 230, 3, conditions) : null;
     specs.push({
       segment: 'Inverter AC out to distribution board (single-phase 230 V)', voltage: 230, current: Math.round(acA), distance: 20,
       cableSize: ac ? String(ac.mm2) : '—', cableType: 'PVC copper', colors: ['Brown (L)', 'Blue (N)', 'Green/Yellow (PE)'],
       breaker: acBreaker && ac ? `${acBreaker} A AC MCB` : '—', disconnect: true,
       notes: s.inverterKw > 10 ? 'Above about 10 kW use a three-phase inverter and size per phase' : (ac ? `Voltage drop ${ac.dropPct}% over 20 m` : 'Beyond a single cable: engineer to size'),
+      sizingBasis: conductorBasis(ac, acBreaker ?? acA, conditions),
     });
     return specs;
   }
 
   /** Everything the page shows, from the appliance list and the shared calculator's answer. */
-  buildResult(location: Location, load: LoadProfile, s: SizingResponse): CalculationResult {
-    const wiringSpecs = this.generateWiringSpecs(s);
+  buildResult(location: Location, load: LoadProfile, s: SizingResponse, conditions: CableConditions = {}): CalculationResult {
+    const wiringSpecs = this.generateWiringSpecs(s, conditions);
     const recommendation: SystemRecommendation = {
       systemType: s.systemType,
       systemSizeKW: s.pvKwp,

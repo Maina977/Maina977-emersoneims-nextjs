@@ -39,6 +39,8 @@ export const AdvancedSolarCalculator: React.FC = () => {
   ]);
   const [systemType, setSystemType] = useState<SystemType>('hybrid');
   const [tariff, setTariff] = useState('');
+  // Site design ambient for the cable ratings (review 328c44aa, M4): blank = assumed 40 °C.
+  const [siteAmbient, setSiteAmbient] = useState('');
   const [calcBusy, setCalcBusy] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
 
@@ -112,7 +114,9 @@ export const AdvancedSolarCalculator: React.FC = () => {
       setCalcBusy(true);
       const s = (await core.calculate(calculator.sizingRequest(location, load, systemType, Number(tariff) > 0 ? Number(tariff) : undefined))) as SizingResponse;
       if (!s || typeof s.pvKwp !== 'number') throw new Error((s as any)?.error || 'The calculator did not answer. Try again.');
-      setCalculationResult(calculator.buildResult(location, load, s));
+      const amb = siteAmbient.trim() === '' ? undefined : Number(siteAmbient);
+      if (amb !== undefined && !(Number.isFinite(amb) && amb >= 0 && amb <= 60)) throw new Error('Site design ambient must be between 0 and 60 °C, or blank for the assumed 40 °C.');
+      setCalculationResult(calculator.buildResult(location, load, s, { ambientC: amb }));
     } catch (e: any) {
       setCalcError(e?.message || String(e));
     } finally {
@@ -207,6 +211,10 @@ export const AdvancedSolarCalculator: React.FC = () => {
           <div className="form-group">
             <label htmlFor="ac-tariff">Tariff (KES/kWh, blank = 25)</label>
             <input id="ac-tariff" type="number" min="1" value={tariff} onChange={(e) => setTariff(e.target.value)} placeholder="bill total ÷ kWh" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="ac-ambient">Site design ambient for cables (°C, blank = assumed 40)</label>
+            <input id="ac-ambient" type="number" min="0" max="60" value={siteAmbient} onChange={(e) => setSiteAmbient(e.target.value)} placeholder="hottest air around the cable runs" />
           </div>
           <div className="form-group">
             <label htmlFor="ac-lat">Latitude</label>
@@ -507,7 +515,7 @@ export const AdvancedSolarCalculator: React.FC = () => {
                     <td>{spec.segment}</td>
                     <td>{spec.voltage}V</td>
                     <td>{Math.round(spec.current)}A</td>
-                    <td>{spec.cableSize} mm²</td>
+                    <td>{spec.cableSize} mm²<div className="cable-sizing-basis" style={{ fontSize: 11, opacity: 0.8 }}>{spec.sizingBasis}</div></td>
                     <td>{spec.colors.join(', ')}</td>
                     <td>{spec.breaker}</td>
                   </tr>

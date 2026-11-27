@@ -16,6 +16,7 @@ import {
   AlertTriangle, CheckCircle2, Settings, Box, MapPin, Printer, Share2, Activity
 } from 'lucide-react';
 import { estimateInstalledCost, gridSaving, pricesVerified, customerRate, REQUEST_QUOTATION } from '@/lib/solar/sizing';
+import { sizeAcCable } from './acCableSizing';
 
 // Roof drawing scale and module size (metres). See the panel size state below.
 const PX_PER_M = 20;
@@ -112,6 +113,8 @@ export default function SolarDesignStudioPro() {
 
   // System
   const [inverterSize, setInverterSize] = useState(5);
+  // Site design ambient for the AC cable rating (review 328c44aa, M4): blank = assumed 40 °C.
+  const [cableAmbientInput, setCableAmbientInput] = useState('');
   const [batteryCapacity, setBatteryCapacity] = useState(10);
   const [stringConfig, setStringConfig] = useState({ series: 2, parallel: 2 });
 
@@ -206,20 +209,21 @@ export default function SolarDesignStudioPro() {
   const batteryWire = pickCsa(batteryAmps, [[70, '16mm²'], [100, '25mm²'], [125, '35mm²'], [160, '50mm²'], [200, '70mm²'], [245, '95mm²'], [285, '120mm²'], [330, '150mm²']]);
   // AC: single phase to 10 kW, three phase above.
   const threePhase = inverterSize > 10;
-  const acAmps = threePhase ? (inverterSize * 1000) / (Math.sqrt(3) * 400) : (inverterSize * 1000) / 230;
-  // Breaker at 1.25 x the inverter's AC current, then a cable whose rating is
-  // at least the breaker's, so the breaker protects the cable (IEC 60364-4-43).
+  // Breaker at 1.25 x the inverter's AC current, then a cable whose DERATED rating
+  // is at least the breaker's, so the breaker protects the cable (IEC 60364-4-43).
   // Ratings: IEC 60364-5-52, method B1 (PVC in conduit), copper: Table B.52.2 (two
   // loaded conductors) for single phase, Table B.52.4 (three loaded conductors) for three phase.
   // 2026-10-27 audit: the diagram always printed "63A MCB + 6 mm²" (6 mm² is
   // about 41 A, so a 63 A breaker did not protect it) for 3 kW to 15 kW.
-  const STD_MCB = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160];
-  const acBreakerA = STD_MCB.find((s) => s >= acAmps * 1.25);
-  const CABLE_B1: [number, number][] = threePhase
-    ? [[4, 28], [6, 36], [10, 50], [16, 68], [25, 89], [35, 110], [50, 134], [70, 171], [95, 207]]
-    : [[4, 32], [6, 41], [10, 57], [16, 76], [25, 101], [35, 125], [50, 151], [70, 192], [95, 232]];
-  const acCsa = acBreakerA ? CABLE_B1.find(([, iz]) => iz >= acBreakerA)?.[0] : undefined;
+  // Review 328c44aa, M4: the rating was the 30 °C figure with no correction; now
+  // Iz × Ca × Cg at the site ambient (assumed 40 °C when not entered), one circuit.
+  const cableAmbientC = cableAmbientInput.trim() === '' ? NaN : Number(cableAmbientInput);
+  const ac = sizeAcCable(inverterSize, { ambientC: Number.isFinite(cableAmbientC) && cableAmbientC >= 0 ? cableAmbientC : undefined });
+  const acAmps = ac.acAmps;
+  const acBreakerA = ac.breakerA;
+  const acCsa = ac.csaMm2;
   const acWire = acCsa ? `${acCsa}mm²` : OVER;
+  const AC_CABLE_BASIS = ac.basis;
   const acBreakerLabel = acBreakerA ? `${acBreakerA}A ${threePhase ? '4-pole (3P+N)' : 'double-pole'} MCB` : 'Above MCB range: MCCB, engineer to size';
   // Protective earth (IEC 60364-5-54): as the phase up to 16 mm², 16 mm² to 35, half above.
   const earthCsa = !acCsa ? 0 : acCsa <= 16 ? acCsa : acCsa <= 35 ? 16 : acCsa / 2;
@@ -880,6 +884,17 @@ export default function SolarDesignStudioPro() {
                   <option value={10}>10kW Hybrid</option>
                   <option value={15}>15kW Commercial</option>
                 </select>
+                <label htmlFor="studio-cable-ambient" className="text-slate-500 text-xs mt-2 block">Site design ambient for the AC cable (°C, blank = assumed 40)</label>
+                <input
+                  id="studio-cable-ambient"
+                  type="number"
+                  min={0}
+                  max={60}
+                  value={cableAmbientInput}
+                  onChange={(e) => setCableAmbientInput(e.target.value)}
+                  placeholder="hottest air around the cable run"
+                  className="w-full bg-slate-700 text-white rounded px-2 py-2 sm:py-1 min-h-[44px] sm:min-h-0"
+                />
               </div>
 
               {/* Battery */}
@@ -1031,6 +1046,7 @@ SPECIFICATIONS:
   Battery Capacity     : ${batteryCapacity} kWh
   DC Cable Size        : ${wireSize} (UV resistant)
   AC Cable Size        : ${acWire} (to DB; rated at least the breaker)
+                         ${AC_CABLE_BASIS}
 
 PROTECTION:
 ───────────────────────────────────────────────────────────────────────────────
@@ -1108,7 +1124,7 @@ EARTHING:
                     <tr className="border-b border-slate-700/50">
                       <td className="py-2">Inverter to DB</td>
                       <td>AC Cable ({Math.round(acAmps)} A{threePhase ? ', 3-phase' : ''}; breaker {acBreakerA} A)</td>
-                      <td>{acWire}</td>
+                      <td>{acWire}<div className="text-xs text-slate-400 mt-1">{AC_CABLE_BASIS}</div></td>
                       <td>~15m</td>
                       <td>Brown/Blue/Green-Yellow</td>
                     </tr>
