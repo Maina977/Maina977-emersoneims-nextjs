@@ -34,6 +34,8 @@ import {
 
 export default function NotificationSettings() {
   const [isSupported, setIsSupported] = useState(true);
+  /** The browser supports notifications but the notification service could not start here (usability pass 2026-11-27). */
+  const [setupFailed, setSetupFailed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [subscribed, setSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,14 +54,22 @@ export default function NotificationSettings() {
         return;
       }
 
-      // Register service worker
-      await registerServiceWorker();
+      try {
+        // Register service worker; when it cannot start, say so instead of waiting for it.
+        const registration = await registerServiceWorker();
+        if (!registration) {
+          setIsSupported(false);
+          setSetupFailed(true);
+          return;
+        }
 
-      // Check permission and subscription
-      setPermission(getNotificationPermission());
-      setSubscribed(await isSubscribed());
-      setPreferences(getNotificationPreferences());
-      setIsLoading(false);
+        // Check permission and subscription
+        setPermission(getNotificationPermission());
+        setSubscribed(await isSubscribed());
+        setPreferences(getNotificationPreferences());
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     init();
@@ -147,9 +157,11 @@ export default function NotificationSettings() {
           <div className="flex items-start gap-3 p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg">
             <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-yellow-400 font-medium">Not Supported</p>
+              <p className="text-yellow-400 font-medium">{setupFailed ? 'Notifications unavailable here' : 'Not Supported'}</p>
               <p className="text-sm text-yellow-400/70">
-                Push notifications are not supported in this browser.
+                {setupFailed
+                  ? 'The notification service could not start in this browser (it may be blocked by a browser setting or private browsing). Everything else in Generator Oracle works without it.'
+                  : 'Push notifications are not supported in this browser.'}
               </p>
             </div>
           </div>

@@ -116,11 +116,22 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
   if (!isPushSupported()) return null;
 
   try {
-    return await navigator.serviceWorker.ready;
+    // Usability pass 2026-11-27: navigator.serviceWorker.ready never settles when no worker is
+    // registered (registration refused or failed), which left the Alerts tab spinning forever.
+    // Look the registration up instead; wait for activation only when one exists.
+    const registration = await navigator.serviceWorker.getRegistration('/');
+    if (!registration) return null;
+    if (registration.active) return registration;
+    return await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), SW_ACTIVATION_WAIT_MS)),
+    ]);
   } catch {
     return null;
   }
 }
+/** How long the screen waits for a registered worker to activate before showing the result (UI wait, not an engineering value). */
+const SW_ACTIVATION_WAIT_MS = 10_000;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUSH SUBSCRIPTION

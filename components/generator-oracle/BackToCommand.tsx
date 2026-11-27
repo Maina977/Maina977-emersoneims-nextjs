@@ -96,7 +96,7 @@ export default function BackToCommand({ onBack, currentPanel, showPanelInfo = tr
           <ArrowLeft className="w-5 h-5 text-cyan-400" />
           <div className="flex items-center gap-2">
             <Home className="w-4 h-4 text-slate-400 group-hover:text-cyan-400 transition-colors" />
-            <span className="text-cyan-400 font-medium">Back to Fault Lookup</span>
+            <span className="text-cyan-400 font-medium">Back to Fault Center</span>
           </div>
         </motion.button>
       )}

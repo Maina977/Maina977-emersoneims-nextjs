@@ -5,7 +5,7 @@
  * Displays legal disclaimers to protect against copyright/trademark claims
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DisclaimerBannerProps {
@@ -207,6 +207,22 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
   // Storage can throw (private browsing), so the read is guarded.
   const [accepted, setAccepted] = useState(false);
   const [checked, setChecked] = useState(false);
+  // Usability pass 2026-11-27: the notice is a modal (aria-modal) but keyboard focus stayed on the page
+  // behind it, so Tab walked through hidden links. Focus now moves to the notice's button and Tab
+  // stays inside the notice until it is accepted.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const continueRef = useRef<HTMLButtonElement>(null);
+  const open = checked && !accepted;
+  useEffect(() => { if (open) continueRef.current?.focus(); }, [open]);
+  const keepFocusInside = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab' || !dialogRef.current) return;
+    const items = [...dialogRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    const active = document.activeElement as HTMLElement | null;
+    if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (active === last || !dialogRef.current.contains(active))) { e.preventDefault(); first.focus(); }
+  };
 
   useEffect(() => {
     let stored = false;
@@ -240,6 +256,8 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
       role="dialog"
       aria-modal="true"
       aria-labelledby="oracle-notice-title"
+      ref={dialogRef}
+      onKeyDown={keepFocusInside}
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -271,6 +289,8 @@ export function DisclaimerAcknowledgment({ onAccept }: { onAccept: () => void })
           </li>
         </ul>
         <button
+          ref={continueRef}
+          type="button"
           onClick={handleAccept}
           className="mt-5 w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-colors"
         >
