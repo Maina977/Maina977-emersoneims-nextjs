@@ -34,6 +34,12 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     const st = i.site;
     if (!isObj(st) || !isStr(st.source) || (st.elevationM !== undefined && !isNum(st.elevationM)) || (st.usableAreaM2 !== undefined && !isNum(st.usableAreaM2)) || (st.mounting !== undefined && st.mounting !== 'roof' && st.mounting !== 'ground')) e.push('site must be { elevationM?, mounting?: roof | ground, usableAreaM2?, source }');
   }
+  if (i.load !== undefined) {
+    const l = i.load;
+    if (!isObj(l) || !isStr(l.source) || (l.monthlyKwh !== undefined && !(Array.isArray(l.monthlyKwh) && (l.monthlyKwh as unknown[]).every(isNum)))
+      || ['peakKw', 'motorStartingKva', 'criticalLoadKw', 'outageHoursPerDay'].some((k) => l[k] !== undefined && !isNum(l[k]))
+      || (l.dieselKesPerLitre !== undefined && !(isObj(l.dieselKesPerLitre) && isNum(l.dieselKesPerLitre.value) && isStr(l.dieselKesPerLitre.source)))) e.push('load must be { monthlyKwh?[12], peakKw?, motorStartingKva?, criticalLoadKw?, outageHoursPerDay?, dieselKesPerLitre?: { value, source }, source }');
+  }
   const d = i.design;
   if (!isObj(d) || !isNum(d.modulesPerString) || !Array.isArray(d.stringsPerMppt) || !(d.stringsPerMppt as unknown[]).every(isNum)) e.push('design { modulesPerString, stringsPerMppt[] } is required');
   if (!isNum(i.inverterCount)) e.push('inverterCount must be a number');

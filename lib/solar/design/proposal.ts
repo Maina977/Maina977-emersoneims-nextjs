@@ -35,6 +35,15 @@ import { horizonErrors, type ShadingSummary } from './shading';
 export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.2.0 (2026-11-25, single-line diagram and horizon shading)';
 
 export interface Sourced { value: number; source: string }
+/**
+ * Load facts (P1-B §2 Load, REQ-03), as measured or surveyed, with their
+ * source: monthly kWh from the bills, peak kW, largest motor starting kVA,
+ * critical load, outage hours per day, and the customer's diesel price.
+ */
+export interface LoadDetails {
+  monthlyKwh?: number[]; peakKw?: number; motorStartingKva?: number; criticalLoadKw?: number; outageHoursPerDay?: number;
+  dieselKesPerLitre?: Sourced; source: string;
+}
 export interface SiteDetails { elevationM?: number; mounting?: 'roof' | 'ground'; usableAreaM2?: number; source: string }
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
 export interface ProposalInput {
@@ -42,6 +51,8 @@ export interface ProposalInput {
   client: { name: string; siteAddress: string; lat: number; lon: number };
   /** Site details (P1-B §2 Site, REQ-01), as surveyed or entered by the designer, with their source. */
   site?: SiteDetails;
+  /** Load details (REQ-03). */
+  load?: LoadDetails;
   module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number; /** REQ-05: units in series per string (default 1). */ seriesPerString?: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
@@ -85,6 +96,8 @@ export interface Proposal {
   client: ProposalInput['client'];
   /** REQ-01: null when none of elevation, mounting or usable area was entered. */
   site: SiteDetails | null;
+  /** REQ-03: the load facts entered, with the annual consumption from the bills; null when none. */
+  load: (LoadDetails & { annualKwhFromBills: number | null }) | null;
   system: { dcKwp: number; acKw: number; modules: number; strings: number; inverterCount: number; batteryKwh: number | null };
   checks: Check[];
   schedule: Array<{ item: string; model: string; quantity: number; unit: string; datasheet?: string; verified?: boolean }>;
@@ -178,6 +191,15 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (site.usableAreaM2 !== undefined && !(Number.isFinite(site.usableAreaM2) && site.usableAreaM2 > 0)) throw new Error('Usable area must be a positive number of m²');
     if ((site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined) && !String(site.source ?? '').trim()) throw new Error('Site details need their source (survey, drawing, map)');
   }
+  const load = i.load;
+  if (load !== undefined) {
+    if (typeof load !== 'object' || load === null || !String(load.source ?? '').trim()) throw new Error('Load details need their source (bills, logger, survey)');
+    if (load.monthlyKwh !== undefined && !(Array.isArray(load.monthlyKwh) && load.monthlyKwh.length === 12 && load.monthlyKwh.every((x) => Number.isFinite(x) && x >= 0))) throw new Error('Monthly kWh must be 12 values ≥ 0 (January–December, from the bills)');
+    for (const [k, v, max] of [['Peak load (kW)', load.peakKw, 100000], ['Motor starting (kVA)', load.motorStartingKva, 100000], ['Critical load (kW)', load.criticalLoadKw, 100000], ['Outage hours per day', load.outageHoursPerDay, 24]] as const) {
+      if (v !== undefined && !(Number.isFinite(v) && v >= 0 && v <= max)) throw new Error(`${k} must be 0–${max}`);
+    }
+    if (load.dieselKesPerLitre) need('Diesel price (KES/L)', load.dieselKesPerLitre, 50, 1000);
+  }
   const siteStated = !!site && (site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined);
   const exportTariff = f.exportTariffKesPerKwh ? need('Export tariff (KES/kWh)', f.exportTariffKesPerKwh, 0, 200) : 0;
   const replacements = f.replacements ?? [];
@@ -204,6 +226,28 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     const nMod = i.design.stringsPerMppt.reduce((a, b) => a + b, 0) * i.inverterCount * i.design.modulesPerString;
     checks.push(...componentChecks({ module: i.module.data, inverter: i.inverter.data, modules: nMod, usableAreaM2: i.site?.usableAreaM2, temps: i.temps, grid: i.connections?.grid ?? null,
       ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, seriesPerString: i.battery.seriesPerString } } : {}) }));
+  }
+  // REQ-03 load checks. A battery-backed or off-grid inverter must carry the
+  // peak (REFUSE); the critical load over the stated outage is compared with
+  // the battery's usable AC energy (WARN: it is a service level, the customer's choice).
+  if (i.load) {
+    const acTotal = i.inverter.data.acKw * i.inverterCount;
+    const backup = !!i.battery || i.connections?.grid === false;
+    if (i.load.peakKw !== undefined && backup) {
+      checks.push({ id: 'inverter-peak', title: 'Inverter carries the peak load (backup / off-grid)', verdict: i.load.peakKw <= acTotal ? 'PASS' : 'REFUSE', value: i.load.peakKw, limit: acTotal, unit: 'kW', marginPct: Math.round(((acTotal - i.load.peakKw) / acTotal) * 10000) / 100,
+        formula: `peak ${i.load.peakKw} kW ≤ inverter AC ${i.inverter.data.acKw} kW × ${i.inverterCount}`, reference: 'Inverter datasheet continuous AC rating' });
+    }
+    if (i.load.motorStartingKva !== undefined && backup) {
+      checks.push({ id: 'motor-start', title: 'Largest motor start on the inverter', verdict: 'WARN', value: i.load.motorStartingKva, limit: NaN, unit: 'kVA', marginPct: NaN, formula: 'not checked', reference: 'Inverter datasheet surge rating required',
+        note: `A ${i.load.motorStartingKva} kVA motor start is not checked: the inverter surge rating is not in the library; confirm it on the datasheet or use a soft starter` });
+    }
+    if (i.battery && i.load.criticalLoadKw !== undefined && i.load.outageHoursPerDay !== undefined) {
+      const need = i.load.criticalLoadKw * i.load.outageHoursPerDay;
+      const b = i.battery.entry.data;
+      const usable = b.nominalKwh * i.battery.units * b.usableDoD * b.dischargeEfficiency;
+      checks.push({ id: 'critical-backup', title: 'Battery carries the critical load through the stated outage', verdict: usable >= need * (1 - 1e-9) ? 'PASS' : 'WARN', value: Math.round(usable * 100) / 100, limit: Math.round(need * 100) / 100, unit: 'kWh', marginPct: need > 0 ? Math.round(((usable - need) / need) * 10000) / 100 : 0,
+        formula: `need = ${i.load.criticalLoadKw} kW × ${i.load.outageHoursPerDay} h; usable = ${b.nominalKwh} kWh × ${i.battery.units} × ${b.usableDoD} × ${b.dischargeEfficiency}`, reference: 'Customer outage record; battery datasheet' });
+    }
   }
   // Generator (CA-32, 2026-11-26): checkGenerator was never run here, so an
   // inverter without a generator-compatibility statement, or PV able to
@@ -317,6 +361,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
 
   return {
     reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client, site: siteStated ? site! : null,
+    load: load ? { ...load, annualKwhFromBills: load.monthlyKwh ? Math.round(load.monthlyKwh.reduce((a, b) => a + b, 0)) : null } : null,
     system: { dcKwp, acKw, modules, strings, inverterCount: i.inverterCount, batteryKwh: i.battery ? i.battery.entry.data.nominalKwh * i.battery.units : null },
     checks, schedule, costing: { lines, capexKes: capex, unpriced },
     energy: { year1Kwh: y1, usefulYear1Kwh: useful === null ? null : Math.round(useful), exportYear1Kwh: Math.round(exported), clippedKwh: i.production.clippedKwh, specificYield: i.production.specificYieldKwhPerKwp, performanceRatio: i.production.performanceRatio, source: i.production.assumptions[0] },
@@ -328,6 +373,8 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'Shading, soiling and the roof\'s real temperature are only as good as the losses entered; a site survey confirms them.',
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
       ...(i.battery ? [`Battery (datasheet): ${[i.battery.entry.data.chemistry ?? 'chemistry not entered', i.battery.entry.data.nominalV ? `${i.battery.entry.data.nominalV} V per unit` : 'voltage not entered', i.battery.entry.data.cycleLife ? `${i.battery.entry.data.cycleLife} cycles${i.battery.entry.data.cycleLifeDoD ? ` at ${Math.round(i.battery.entry.data.cycleLifeDoD * 100)} % DoD` : ''}` : 'cycle life not entered', i.battery.entry.data.warrantyYears ? `${i.battery.entry.data.warrantyYears}-year warranty` : 'warranty not entered'].join(', ')}; ${i.battery.units} units${i.battery.seriesPerString ? ` as ${i.battery.units / i.battery.seriesPerString} string(s) of ${i.battery.seriesPerString} in series` : ''}.`] : []),
+      ...(load ? [`Load (${load.source}): ${[load.monthlyKwh ? `${Math.round(load.monthlyKwh.reduce((a, b) => a + b, 0)).toLocaleString('en-KE')} kWh a year from 12 monthly bills` : null, load.peakKw !== undefined ? `peak ${load.peakKw} kW` : null, load.motorStartingKva !== undefined ? `largest motor start ${load.motorStartingKva} kVA` : null, load.criticalLoadKw !== undefined ? `critical ${load.criticalLoadKw} kW` : null, load.outageHoursPerDay !== undefined ? `outages ${load.outageHoursPerDay} h/day` : null, load.dieselKesPerLitre ? `diesel KES ${load.dieselKesPerLitre.value}/L (${load.dieselKesPerLitre.source})` : null].filter(Boolean).join(', ')}.`] : []),
+      ...(load?.dieselKesPerLitre && i.hybrid && i.hybrid.totals.generatorFuelL > 0 ? [`Generator fuel in the hybrid balance: ${Math.round(i.hybrid.totals.generatorFuelL).toLocaleString('en-KE')} L × KES ${load.dieselKesPerLitre.value}/L = KES ${Math.round(i.hybrid.totals.generatorFuelL * load.dieselKesPerLitre.value).toLocaleString('en-KE')} a year at the customer's diesel price.`] : []),
       siteStated
         ? `Site: ${[site!.mounting ? `${site!.mounting}-mounted` : null, site!.elevationM !== undefined ? `elevation ${site!.elevationM} m` : null, site!.usableAreaM2 !== undefined ? `usable area ${site!.usableAreaM2} m²` : null].filter(Boolean).join(', ')} (${site!.source}).`
         : 'Site elevation, roof or ground mounting and usable area were not entered: the layout is not checked against the available area.',

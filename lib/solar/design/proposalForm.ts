@@ -12,7 +12,7 @@ import { importModule, importInverter, importBattery, verify, type LibraryEntry 
 import type { Module, Inverter, Battery, CableRun } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
-import type { ProposalInput, PricedLine, Sourced, SiteDetails } from './proposal';
+import type { ProposalInput, PricedLine, Sourced, SiteDetails, LoadDetails } from './proposal';
 import { PVWATTS_DEFAULT_LOSSES, type Losses } from './production';
 import { parseHorizonText, type HorizonProfile } from './shading';
 import { buildSld, type SldConnections, type SldModel } from './sld';
@@ -147,6 +147,30 @@ export function parseReplacements(text: string, errors: string[]): Array<{ item:
     if (Number.isNaN(Date.parse(date))) { errors.push(`Replacement ${n + 1} (${item}): the quote date must be a date (YYYY-MM-DD)`); return; }
     out.push({ item, year: y, costKes: c, source, date });
   });
+  return out;
+}
+
+/** REQ-03 load facts from the form; undefined when none is entered. */
+export function loadFromForm(f: ProposalForm, errors: string[]): LoadDetails | undefined {
+  const keys = ['l.monthlyKwh', 'l.peakKw', 'l.motorStartingKva', 'l.criticalLoadKw', 'l.outageHoursPerDay', 'l.diesel'];
+  if (keys.every((k) => !str(f, k))) return undefined;
+  const out: LoadDetails = { source: str(f, 'l.source') };
+  if (!out.source) errors.push('Load details need their source (bills, logger, survey)');
+  const m = str(f, 'l.monthlyKwh');
+  if (m) {
+    const v = m.split(/[,;\s]+/).filter(Boolean).map(Number);
+    if (v.length === 12 && v.every((x) => Number.isFinite(x) && x >= 0)) out.monthlyKwh = v; else errors.push('Monthly kWh: give 12 numbers, January to December, from the bills');
+  }
+  for (const [k, field, label] of [['l.peakKw', 'peakKw', 'Peak load'], ['l.motorStartingKva', 'motorStartingKva', 'Motor starting kVA'], ['l.criticalLoadKw', 'criticalLoadKw', 'Critical load'], ['l.outageHoursPerDay', 'outageHoursPerDay', 'Outage hours per day']] as const) {
+    if (!str(f, k)) continue;
+    const v = num(f, k);
+    if (Number.isFinite(v) && v >= 0) out[field] = v; else errors.push(`${label} must be a number ≥ 0`);
+  }
+  if (str(f, 'l.diesel')) {
+    const v = num(f, 'l.diesel');
+    if (Number.isFinite(v) && v > 0 && str(f, 'l.dieselSource')) out.dieselKesPerLitre = { value: v, source: str(f, 'l.dieselSource') };
+    else errors.push('Diesel price needs a number of KES/L and its source (the customer\'s receipt or pump price)');
+  }
   return out;
 }
 
@@ -299,6 +323,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const om = sourced('O&M (KES/yr)', 'f.om', 'f.omSource');
   const replacements = parseReplacements(str(f, 'f.replacements'), errors);
   const site = siteFromForm(f, errors);
+  const load = loadFromForm(f, errors);
 
   let cables: CableRun[] = [];
   if (anyFilled(f, 'k.')) {
@@ -315,6 +340,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
     reference: str(f, 'ref'),
     client: { name: str(f, 'c.name'), siteAddress: str(f, 'c.address'), lat: num(f, 'c.lat'), lon: num(f, 'c.lon') },
     ...(site ? { site } : {}),
+    ...(load ? { load } : {}),
     module: moduleEntry, inverter,
     ...(battery ? { battery: { entry: battery, units: num(f, 'b.units'), requiredUsableAcKwh: num(f, 'b.requiredUsableAcKwh'), ...(Number.isInteger(num(f, 'b.seriesPerString')) && num(f, 'b.seriesPerString') >= 1 ? { seriesPerString: num(f, 'b.seriesPerString') } : {}) } } : {}),
     design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },
