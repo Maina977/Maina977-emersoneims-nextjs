@@ -401,7 +401,7 @@ export function daylightAdf(b: Body) {
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
     assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
-    method: 'Average daylight factor, BRE Digest 309 / BS 8206-2 formula',
+    method: 'Average daylight factor, BRE Digest 309 / BS 8206-2:2008 formula',
   };
 }
 
@@ -495,7 +495,7 @@ export function uValue(b: Body) {
     R_total_m2K_W: r(R, 3),
     surface_resistances: { Rsi: rsi, Rse: rse, heat_flow: flow },
     layers: rows,
-    method: 'BS EN ISO 6946 (no correction for air gaps, fixings or thermal bridges)',
+    method: 'BS EN ISO 6946:2017 (no correction for air gaps, fixings or thermal bridges)',
   };
 }
 
@@ -646,7 +646,7 @@ export function windEurocode(b: Body) {
     vb_ms: r(vb), vm_ms: r(vm), Iv: r(Iv, 3), cr: r(cr, 3), kr: r(kr, 3),
     rho_kg_m3: rho, co, z_used_m: zEff,
     assumptions,
-    method: 'EN 1991-1-4 §4.2–4.5 (recommended values; check the National Annex)',
+    method: 'EN 1991-1-4:2005 §4.2–4.5 (recommended values; check the National Annex)',
   };
 }
 
@@ -789,7 +789,7 @@ export function rcBeam(b: Body) {
     checks,
     ...(Med === undefined ? { not_checked: ['M_Ed not given, so the moment demand was not checked'] } : {}),
     assumptions: ['Singly reinforced; compression steel ignored', 'αcc = 0.85 (UK/Kenya practice; recommended value is 1.0)', 'Shear and deflection are separate checks (EC2 shear, span/depth); crack width not checked'],
-    method: 'EN 1992-1-1 §3.1.7 rectangular stress block, §6.1',
+    method: 'EN 1992-1-1:2004 §3.1.7 rectangular stress block, §6.1',
   };
 }
 
@@ -816,7 +816,7 @@ export function steelBolt(b: Body) {
     if (grade !== null && Math.round(Number(grade.split('.')[0]) * 100) !== Math.round(fub!)) return bad(`grade ${grade} has fub = ${Number(grade.split('.')[0]) * 100} MPa, not ${fub} MPa`);
     const av = optN(b, 'alpha_v') ?? (grade ? (['4.6', '5.6', '8.8'].includes(grade) ? 0.6 : 0.5) : fub === 800 ? 0.6 : 0.5);
     if (av !== 0.5 && av !== 0.6) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
-    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8 Table 3.4, one shear plane' };
+    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8:2005 Table 3.4, one shear plane' };
   }
   const desig = String(b.designation ?? '').toUpperCase();
   const grade = String(b.grade ?? '');
@@ -934,7 +934,7 @@ export function steelBolt(b: Body) {
     FvEd !== undefined && out.Fb_Rd_kN === undefined ? 'plate bearing (give t_ply_mm, fu_ply_MPa and e1_mm)' : null,
     FtEd === undefined ? 'Ft,Ed not given, so tension demand was not checked' : null,
   ].filter(Boolean);
-  return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8 Table 3.4 (γM2 = 1.25)' };
+  return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8:2005 Table 3.4 (γM2 = 1.25)' };
 }
 
 // ───────────────────────────── Geotechnics ──────────────────────────────
@@ -1139,7 +1139,7 @@ export function bearingEc7(b: Body) {
     combinations: results,
     checks,
     assumptions,
-    method: 'EN 1997-1 Annex D bearing resistance, Design Approach 1',
+    method: 'EN 1997-1:2004 Annex D bearing resistance, Design Approach 1',
   };
 }
 
@@ -1234,7 +1234,7 @@ export function ec2Shear(b: Body) {
     const X = (bw! * z * nu1 * fcd) / (VEd * 1000);
     if (X < 2) {
       checks.push({ check: 'V_Ed ≤ V_Rd,max at θ = 45° (strut crushing)', value: `${VEd} ≤ ${r(VRdmax(1), 1)} kN`, pass: false });
-      return { ...out, V_Rd_max_kN: r(VRdmax(1), 1), checks, warning: 'The concrete struts crush even at θ = 45°: enlarge the section or raise fck.', method: 'EN 1992-1-1 §6.2.2 and §6.2.3' };
+      return { ...out, V_Rd_max_kN: r(VRdmax(1), 1), checks, warning: 'The concrete struts crush even at θ = 45°: enlarge the section or raise fck.', method: 'EN 1992-1-1:2004 §6.2.2 and §6.2.3' };
     }
     cot = Math.min(2.5, (X + Math.sqrt(X * X - 4)) / 2);
     out.cot_theta = r(cot, 3);
@@ -1276,7 +1276,7 @@ export function ec2Shear(b: Body) {
       VEd !== undefined ? `cot θ = ${r(cot, 3)}: the flattest strut (≤ 2.5) for which V_Rd,max ≥ V_Ed` : 'No V_Ed given: cot θ = 2.5',
       'Beams need at least the minimum links even where V_Ed ≤ V_Rd,c (§6.2.1(4), §9.2.2)',
     ],
-    method: 'EN 1992-1-1 §6.2.2 (members without shear reinforcement) and §6.2.3 (variable strut inclination)',
+    method: 'EN 1992-1-1:2004 §6.2.2 (members without shear reinforcement) and §6.2.3 (variable strut inclination)',
   };
 }
 
@@ -1348,7 +1348,7 @@ export function ec2Deflection(b: Body) {
       'Span over 7 m (8.5 m for flat slabs) × 7/leff; flanged with beff/bw > 3 × 0.8',
       'A span/depth check, not a calculated deflection: brittle finishes or long-term creep may need §7.4.3',
     ],
-    method: 'EN 1992-1-1 §7.4.2 limiting span/depth ratio',
+    method: 'EN 1992-1-1:2004 §7.4.2 limiting span/depth ratio',
   };
 }
 
@@ -1457,7 +1457,7 @@ export function padFooting(b: Body) {
       method: 'Plan size from allowable bearing',
     };
   }
-  return { ...out, checks, assumptions, method: 'Plan size from allowable bearing; EN 1992-1-1 §6.1, §6.2.2 and §6.4 (punching)' };
+  return { ...out, checks, assumptions, method: 'Plan size from allowable bearing; EN 1992-1-1:2004 §6.1, §6.2.2 and §6.4 (punching)' };
 }
 
 /** EN 1998-1 §4.3.3.2 lateral force method with the §3.2.2.5 design spectrum
@@ -1546,7 +1546,7 @@ export function seismicEc8(b: Body) {
       'Recommended spectrum values (EN 1998-1 Tables 3.2/3.3) and β = 0.2: a National Annex may differ. agR comes from the national seismic hazard map',
       'Regular in elevation assumed; force distribution over the height (§4.3.3.2.3) and torsion (§4.3.3.2.4) not computed',
     ],
-    method: 'EN 1998-1 §4.3.3.2 lateral force method, §3.2.2.5 design spectrum',
+    method: 'EN 1998-1:2004 §4.3.3.2 lateral force method, §3.2.2.5 design spectrum',
   };
 }
 
