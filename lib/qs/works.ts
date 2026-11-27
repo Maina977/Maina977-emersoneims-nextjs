@@ -21,7 +21,7 @@ export const WORKS_ENGINE_VERSION = 'qs-works 1.0.0 (2026-11-27)';
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 
 /** A dimension that multiplies the measurement (name, unit and plausible range). */
-export interface DimSpec { key: string; label: string; unit: 'm'; min: number; max: number }
+export interface DimSpec { key: string; label: string; unit: 'm' | 'No'; min: number; max: number; integer?: boolean }
 export interface CatalogueItem {
   /** Kind of take-off measurement the item uses. */
   takes: Quantity['kind'];
@@ -110,7 +110,28 @@ export const CONCRETE_WORKS: Record<string, CatalogueItem> = {
   groundBeam: { takes: 'linear', unit: 'm³', label: 'Ground beams (length × width × depth)', dims: [D('width', 'beam width', 0.1, 3), D('depth', 'beam depth', 0.1, 3)], specHint: 'e.g. C25/30 ground beam 230 × 450' },
 };
 
-export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting' | 'concrete';
+/**
+ * R-12 formwork FROM MEASURED CONTACT AREAS ONLY (P1-D §4): the area of
+ * concrete face in contact with the formwork (m²), from the same measured
+ * slab areas, edges, beam and wall lengths and column counts as the
+ * concrete, and the drawn member sizes. Edges are measured as an area
+ * (edge length × edge height). A ground-bearing slab has no soffit
+ * formwork: do not measure one.
+ */
+export const FORMWORK_WORKS: Record<string, CatalogueItem> = {
+  soffit: { takes: 'area', unit: 'm²', label: 'Soffit of suspended slab (contact area = soffit area)', dims: [], specHint: 'e.g. plywood to soffit of 150 mm suspended slab, propping ≤ 3.5 m' },
+  slabEdge: { takes: 'linear', unit: 'm²', label: 'Slab edges (edge length × edge height)', dims: [D('height', 'edge height', 0.05, 1.5)], specHint: 'e.g. edge of 150 mm slab' },
+  beam: { takes: 'linear', unit: 'm²', label: 'Beam sides and soffit (length × (width + 2 × downstand))', dims: [D('width', 'beam width (soffit)', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. 230 × 450 beam under 150 slab',
+    combine: { fn: ([w, h]) => w + 2 * h, text: '(beam width + 2 × downstand)' } },
+  column: { takes: 'count', unit: 'm²', label: 'Column sides (number × 2 × (width + depth) × height)', dims: [D('width', 'column width', 0.1, 3), D('depth', 'column depth', 0.1, 3), D('height', 'height to slab soffit', 0.3, 20)], specHint: 'e.g. 300 × 300 columns, floor to soffit',
+    combine: { fn: ([b, d, h]) => 2 * (b + d) * h, text: '2 × (column width + column depth) × height' } },
+  wall: { takes: 'linear', unit: 'm²', label: 'Wall faces (length × height × faces)', dims: [D('height', 'wall height', 0.1, 20), { key: 'faces', label: 'faces formed (1 or 2)', unit: 'No', min: 1, max: 2, integer: true }], specHint: 'e.g. both faces of 200 mm RC wall',
+    combine: { fn: ([h, f]) => h * f, text: 'wall height × faces formed' } },
+  groundBeamSides: { takes: 'linear', unit: 'm²', label: 'Ground beam sides (length × depth × 2)', dims: [D('depth', 'beam depth formed', 0.1, 3)], specHint: 'e.g. both sides of 230 × 450 ground beam',
+    combine: { fn: ([d]) => 2 * d, text: '2 × beam depth formed' } },
+};
+
+export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting' | 'concrete' | 'formwork';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
@@ -135,6 +156,11 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
     trade: 'Concrete', items: CONCRETE_WORKS,
     note: 'Net volumes as designed: sizes and grades from the structural drawings. Beams are measured as the downstand below the slab, so the slab-beam overlap is not counted twice. Openings in slabs: measure the slab as an area with its openings. Strip footings: Strip foundation trade.',
     notMeasured: ['Reinforcement (needs the bar bending schedule; enter it as a scheduled quantity)', 'Wastage (state it in the rate build-up)', 'Formwork (Formwork trade)', 'Precast elements'],
+  },
+  formwork: {
+    trade: 'Formwork', items: FORMWORK_WORKS,
+    note: 'Measured from contact areas only: the area of concrete face the formwork touches, from the measured elements and the drawn sizes. Use the same measurements and sizes as the Concrete trade, but in a separate formwork take-off (one measurement feeds one item). No soffit formwork for a ground-bearing slab.',
+    notMeasured: ['Propping and back-propping design (temporary works designer)', 'Formwork to openings and boxes ≤ the contract’s small-void rule (add as your own items)', 'Permanent formwork, profiled or special finishes'],
   },
 };
 
@@ -170,6 +196,7 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
     const inputs = [`${q.kind === 'count' ? 'count' : q.kind === 'linear' ? 'length' : 'area'} ${r3(q.net)} ${q.unit} (take-off ${q.id})`];
     for (const [k, d] of c.dims.entries()) {
       const x = need(`${name} (${c.label}) ${d.label}`, row.dims[k], d.min, d.max, d.unit);
+      if (d.integer && !Number.isInteger(x)) throw new TradeError(`${name} (${c.label}) ${d.label} must be a whole number`);
       xs.push(x);
       inputs.push(`${d.label} ${x} ${d.unit} (${row.dims[k]!.source.trim()})`);
     }

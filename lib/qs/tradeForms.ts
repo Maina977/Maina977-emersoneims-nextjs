@@ -39,6 +39,7 @@ export const TRADE_LABELS: Record<TradeKind, string> = {
   drainage: 'Below-ground drainage',
   painting: 'Painting & decoration',
   concrete: 'Concrete (slabs, beams, columns, walls)',
+  formwork: 'Formwork (contact areas)',
 };
 
 // ---- MEP rows (lib/qs/mep). Measurement ids are take-off ids; '' = none chosen.
