@@ -270,7 +270,11 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (hybridUsedGenerator && c?.generator !== true) reasons.push('The hybrid balance runs a generator but the connection data does not say a generator is connected: state it (connections.generator) with its rating and back-feed status');
   }
   const refused = checks.filter((k) => k.verdict === 'REFUSE');
-  refused.forEach((c) => reasons.push(`REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`));
+  // A refusal for missing or unusable data has no measured value: say what is
+  // required instead of printing "NaN A" (CA-32 third review).
+  refused.forEach((c) => reasons.push(Number.isFinite(c.value)
+    ? `REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`
+    : `REFUSE: ${c.title}${Number.isFinite(c.limit) ? ` (required ${c.limit} ${c.unit})` : ''}${c.note ? `: ${c.note}` : ''}`));
 
   // 2. Schedule and costing
   const strings = i.design.stringsPerMppt.reduce((a, b) => a + b, 0) * i.inverterCount;

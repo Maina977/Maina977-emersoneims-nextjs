@@ -498,7 +498,10 @@ export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMi
   if (probableFraction) {
     const k = checks.find((x) => x.id === 'gen-min-load')!;
     const pct = gen.oemMinLoadPct as number;
-    Object.assign(k, { verdict: 'WARN', note: `Check units: an OEM minimum of ${pct} % is probably a fraction; did you mean ${Math.round(pct * 100 * 100) / 100} %? Minimum loading is not passed on this value.` });
+    // Only a value ≤ 1 can be a fraction (0.3 → 30 %); 1–5 % is just unusual (CA-32 third review).
+    Object.assign(k, { verdict: 'WARN', note: pct <= 1
+      ? `Check units: an OEM minimum of ${pct} % is probably a fraction; did you mean ${Math.round(pct * 100 * 100) / 100} %? Minimum loading is not passed on this value.`
+      : `Check the OEM minimum load: ${pct} % is below 5 %, which is unusual for a diesel set. Minimum loading is not passed on this value.` });
   }
   if (pvCanBackfeed) {
     checks.push({ id: 'gen-reverse-power', title: 'Reverse power into the generator', verdict: 'REFUSE', value: 1, limit: 0, unit: '', marginPct: -100,

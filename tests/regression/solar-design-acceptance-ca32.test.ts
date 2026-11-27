@@ -351,3 +351,20 @@ describe('CA-32 re-review of 221d977a: S1, S3, S4, fraction guard, bifacial note
     expect(buildProposal(design()).disclosures.join(' ')).toMatch(/1.25 × Isc at STC, which does not cover bifacial gain: for bifacial modules, use the datasheet's bifacial Isc/);
   });
 });
+
+describe('CA-32 third review: display', () => {
+  const gen = (pct: number) => buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 0.5, generatorOemMinLoadPct: pct, pvCanBackfeedGenerator: false } })).checks.find((c) => c.id === 'gen-min-load')!;
+  it('OEM minimum ≤ 1 suggests × 100; 1–5 % says it is unusual (no "did you mean 499 %")', () => {
+    expect(gen(1).note).toMatch(/did you mean 100 %\?/);
+    const k = gen(4.99);
+    expect(k.verdict).toBe('WARN');
+    expect(k.note).toMatch(/Check the OEM minimum load: 4.99 % is below 5 %, which is unusual/);
+    expect(k.note).not.toMatch(/did you mean/);
+  });
+  it('the S2 refusal reason gives the required current, never "NaN A"', () => {
+    const p = buildProposal(design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'S1', lengthM: 10, csaMm2: 16, designCurrentA: 35, systemV: 600, tabulatedAmpacityA: 76, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'dc-string', mppt: 1 }] }));
+    const r = p.statusReasons.find((x) => x.startsWith('REFUSE: S1: string fuse rating'))!;
+    expect(r).toBe('REFUSE: S1: string fuse rating (required 34.75 A): String fuses are required on this MPPT: give the string fuse rating');
+    expect(p.statusReasons.join(' ')).not.toMatch(/NaN/);
+  });
+});
