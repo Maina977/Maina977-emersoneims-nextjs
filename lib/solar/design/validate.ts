@@ -55,6 +55,8 @@ export interface Battery {
   maxDischargeC: number; maxChargeC: number;
   /** REQ-04 (optional): chemistry, nominal voltage per unit, cycle life at a DoD, operating temperature window, warranty. */
   chemistry?: string; nominalV?: number;
+  /** Per unit, from the datasheet: full-charge (absorption) voltage and discharge cut-off voltage (review advisory A2). */
+  chargeV?: number; cutoffV?: number;
   cycleLife?: number; cycleLifeDoD?: number;
   minTempC?: number; maxTempC?: number;
   warrantyYears?: number;
@@ -301,6 +303,9 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
  *    (the battery may be indoors);
  *  - anti-islanding: a grid connection with no statement is a WARN.
  */
+/** Plausible PV module length/width range, mm (smallest residential to largest utility modules); outside it the value is treated as a unit mistake. */
+export const MODULE_DIM_MM = { min: 300, max: 3500 };
+
 export function componentChecks(o: {
   module: Module; inverter: Inverter; modules: number; usableAreaM2?: number;
   battery?: { data: Battery; units: number; seriesPerString?: number };
@@ -310,11 +315,18 @@ export function componentChecks(o: {
   const notChecked = (id: string, title: string, note: string): Check => ({ id, title, verdict: 'WARN', value: NaN, limit: NaN, unit: '', marginPct: NaN, formula: 'not checked', reference: 'Datasheet value required', note });
   const m = o.module;
   if (o.usableAreaM2 !== undefined) {
-    if (m.lengthMm && m.widthMm) {
+    const AREA_TITLE = 'Gross module area (before row spacing and access) fits the usable area';
+    // Review Q1/Q2: a negative dimension (JSON) or metres typed as mm (2.278)
+    // gave a negative or near-zero area that PASSED. Only a finite dimension
+    // in the plausible module range is used; otherwise not checked.
+    const dimOk = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= MODULE_DIM_MM.min && x <= MODULE_DIM_MM.max;
+    if (dimOk(m.lengthMm) && dimOk(m.widthMm)) {
       const area = (o.modules * m.lengthMm * m.widthMm) / 1e6;
-      out.push({ id: 'array-area', title: 'Module area fits the usable area', verdict: area <= o.usableAreaM2 ? 'PASS' : 'REFUSE', value: r2(area), limit: o.usableAreaM2, unit: 'm²', marginPct: margin(area, o.usableAreaM2, true),
-        formula: `modules × length × width = ${o.modules} × ${m.lengthMm} mm × ${m.widthMm} mm = ${r2(area)} m² (before row spacing and access paths)`, reference: 'Module datasheet dimensions; site survey usable area' });
-    } else out.push(notChecked('array-area', 'Module area fits the usable area', 'Module dimensions not entered: the array area is not checked against the usable area'));
+      out.push({ id: 'array-area', title: AREA_TITLE, verdict: area <= o.usableAreaM2 ? 'PASS' : 'REFUSE', value: r2(area), limit: o.usableAreaM2, unit: 'm²', marginPct: margin(area, o.usableAreaM2, true),
+        formula: `gross module area = modules × length × width = ${o.modules} × ${m.lengthMm} mm × ${m.widthMm} mm = ${r2(area)} m² (before row spacing and access paths; a PASS does not mean the layout fits)`, reference: 'Module datasheet dimensions; site survey usable area' });
+    } else out.push(notChecked('array-area', AREA_TITLE, m.lengthMm === undefined || m.widthMm === undefined
+      ? 'Module dimensions not entered: the array area is not checked against the usable area'
+      : `Module dimensions ${m.lengthMm} × ${m.widthMm} mm are outside ${MODULE_DIM_MM.min}–${MODULE_DIM_MM.max} mm (metres typed in a mm field?): not checked`));
   }
   const b = o.battery;
   if (b) {
@@ -324,19 +336,32 @@ export function componentChecks(o: {
       out.push({ id: 'battery-arrangement', title: 'Battery series/parallel arrangement', verdict: 'REFUSE', value: b.units, limit: series, unit: 'units', marginPct: -100, formula: 'units must be a whole number of strings of seriesPerString units', reference: 'Design input', note: `${b.units} units cannot be arranged in strings of ${series}` });
     } else {
       const parallel = b.units / series;
-      const bankV = b.data.nominalV ? b.data.nominalV * series : undefined;
-      if (bankV !== undefined && inv.batteryMinV && inv.batteryMaxV) {
+      const pos = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x > 0;
+      const bankV = pos(b.data.nominalV) ? b.data.nominalV * series : undefined;
+      if (bankV !== undefined && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
         const ok = bankV >= inv.batteryMinV && bankV <= inv.batteryMaxV;
-        out.push({ id: 'battery-voltage', title: 'Battery bank voltage inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(bankV), limit: bankV > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: bankV > inv.batteryMaxV ? margin(bankV, inv.batteryMaxV, true) : margin(bankV, inv.batteryMinV, false),
+        out.push({ id: 'battery-voltage', title: 'Nominal bank voltage inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(bankV), limit: bankV > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: bankV > inv.batteryMaxV ? margin(bankV, inv.batteryMaxV, true) : margin(bankV, inv.batteryMinV, false),
           formula: `unit nominal V × units in series = ${b.data.nominalV} × ${series} = ${r2(bankV)} V; window ${inv.batteryMinV}–${inv.batteryMaxV} V`, reference: 'Inverter and battery datasheets' });
-      } else out.push(notChecked('battery-voltage', 'Battery bank voltage inside the inverter battery window', 'Battery nominal voltage or the inverter battery voltage window not entered: not checked'));
-      if (bankV !== undefined) {
-        // A string of units in series has the Ah of one unit (unit Wh ÷ unit V).
-        const unitAh = (b.data.nominalKwh * 1000) / b.data.nominalV!;
-        for (const [dir, invA, c] of [['discharge', inv.batteryMaxDischargeA, b.data.maxDischargeC], ['charge', inv.batteryMaxChargeA, b.data.maxChargeC]] as const) {
-          if (!(typeof invA === 'number' && invA > 0)) continue;
+      } else out.push(notChecked('battery-voltage', 'Nominal bank voltage inside the inverter battery window', 'Battery nominal voltage or the inverter battery voltage window not entered: not checked'));
+      // Review advisory A2: the nominal voltage can sit inside the window while
+      // the full-charge or cut-off voltage does not (16S LFP charges at ~57.6 V).
+      if (pos(b.data.chargeV) && pos(b.data.cutoffV) && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
+        const hi = b.data.chargeV * series, lo = b.data.cutoffV * series;
+        const ok = hi <= inv.batteryMaxV && lo >= inv.batteryMinV;
+        out.push({ id: 'battery-voltage-range', title: 'Charge and cut-off bank voltages inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(hi > inv.batteryMaxV ? hi : lo), limit: hi > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: hi > inv.batteryMaxV ? margin(hi, inv.batteryMaxV, true) : margin(lo, inv.batteryMinV, false),
+          formula: `charge ${b.data.chargeV} × ${series} = ${r2(hi)} V ≤ ${inv.batteryMaxV} V; cut-off ${b.data.cutoffV} × ${series} = ${r2(lo)} V ≥ ${inv.batteryMinV} V`, reference: 'Battery datasheet charge and cut-off voltages; inverter battery window' });
+      } else out.push(notChecked('battery-voltage-range', 'Charge and cut-off bank voltages inside the inverter battery window', 'Battery charge / cut-off voltages or the inverter window not entered: only the nominal voltage is checked; confirm the charge and cut-off voltages on the datasheets'));
+      // Review Q3: a missing battery voltage or inverter battery current made the
+      // current checks disappear; they are now shown as not checked.
+      for (const [dir, invA, c] of [['discharge', inv.batteryMaxDischargeA, b.data.maxDischargeC], ['charge', inv.batteryMaxChargeA, b.data.maxChargeC]] as const) {
+        const title = `Inverter battery ${dir} current within the battery limit`;
+        if (bankV === undefined) { out.push(notChecked(`battery-${dir}-current`, title, 'Battery nominal voltage not entered: the battery current limit cannot be worked out')); continue; }
+        if (!pos(invA)) { out.push(notChecked(`battery-${dir}-current`, title, `Inverter battery ${dir} current not entered: not checked`)); continue; }
+        {
+          // A string of units in series has the Ah of one unit (unit Wh ÷ unit V).
+          const unitAh = (b.data.nominalKwh * 1000) / (b.data.nominalV as number);
           const bankA = c * unitAh * parallel;
-          out.push({ id: `battery-${dir}-current`, title: `Inverter battery ${dir} current within the battery limit`, verdict: invA <= bankA * (1 + 1e-9) ? 'PASS' : 'REFUSE', value: invA, limit: r2(bankA), unit: 'A', marginPct: margin(invA, bankA, true),
+          out.push({ id: `battery-${dir}-current`, title, verdict: invA <= bankA * (1 + 1e-9) ? 'PASS' : 'REFUSE', value: invA, limit: r2(bankA), unit: 'A', marginPct: margin(invA, bankA, true),
             formula: `battery limit = C × unit Ah × parallel strings = ${c} × ${r2(unitAh)} Ah × ${parallel} = ${r2(bankA)} A`, reference: 'Inverter battery-port current; battery datasheet C-rate' });
         }
       }

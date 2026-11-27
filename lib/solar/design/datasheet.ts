@@ -7,6 +7,7 @@
  * it off. Only verified entries may be used for a design that is quoted.
  */
 import type { Battery, Inverter, Module } from './validate';
+import { MODULE_DIM_MM } from './validate';
 
 export type Kind = 'module' | 'inverter' | 'battery';
 export interface Provenance {
@@ -88,6 +89,11 @@ export function importModule(r: Record<string, string>): ImportResult<Module> {
   const p = provenance(r, errors);
   const n = numbers(r, MODULE_FIELDS, errors) as unknown as Module;
   Object.assign(n, optionalNumbers(r, ['lengthMm', 'widthMm'], errors));
+  // Review Q2: 2.278 typed into a mm field (metres) made the array ~0 m².
+  for (const k of ['lengthMm', 'widthMm'] as const) {
+    const v = (n as Module)[k];
+    if (v !== undefined && !(v >= MODULE_DIM_MM.min && v <= MODULE_DIM_MM.max)) errors.push(`${k} ${v} mm is outside ${MODULE_DIM_MM.min}–${MODULE_DIM_MM.max} mm: enter the module size in millimetres (2,278, not 2.278)`);
+  }
   if (!errors.length) {
     if (!(n.vmpV < n.vocV)) errors.push('Vmp must be below Voc');
     if (!(n.impA < n.iscA)) errors.push('Imp must be below Isc');
@@ -129,9 +135,10 @@ export function importBattery(r: Record<string, string>): ImportResult<Battery> 
   const errors: string[] = []; const warnings: string[] = [];
   const p = provenance(r, errors);
   const n = numbers(r, BATTERY_FIELDS, errors) as unknown as Battery;
-  Object.assign(n, optionalNumbers(r, ['nominalV', 'cycleLife', 'cycleLifeDoD', 'warrantyYears'], errors), optionalNumbers(r, ['minTempC', 'maxTempC'], errors, true), (r.chemistry ?? '').trim() ? { chemistry: r.chemistry.trim() } : {});
+  Object.assign(n, optionalNumbers(r, ['nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'warrantyYears'], errors), optionalNumbers(r, ['minTempC', 'maxTempC'], errors, true), (r.chemistry ?? '').trim() ? { chemistry: r.chemistry.trim() } : {});
   if (n.cycleLifeDoD !== undefined && !(n.cycleLifeDoD > 0 && n.cycleLifeDoD <= 1)) errors.push('cycleLifeDoD is a fraction 0–1');
   if (n.minTempC !== undefined && n.maxTempC !== undefined && !(n.minTempC < n.maxTempC)) errors.push('minTempC must be below maxTempC');
+  if (n.chargeV !== undefined && n.cutoffV !== undefined && !(n.cutoffV < n.chargeV)) errors.push('cutoffV must be below chargeV');
   if (!errors.length) {
     if (!(n.usableDoD > 0 && n.usableDoD <= 1)) errors.push('usableDoD is a fraction 0–1 (90 % → 0.9)');
     if (!(n.dischargeEfficiency > 0 && n.dischargeEfficiency <= 1)) errors.push('dischargeEfficiency is a fraction 0–1');
@@ -159,5 +166,5 @@ export function usableForQuotation(...entries: Array<LibraryEntry<unknown>>): { 
 export const DATASHEET_CSV_HEADERS = {
   module: [...PROV_FIELDS, ...MODULE_FIELDS, 'lengthMm', 'widthMm'],
   inverter: [...PROV_FIELDS, ...INVERTER_FIELDS, 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding'],
-  battery: [...PROV_FIELDS, ...BATTERY_FIELDS, 'chemistry', 'nominalV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'],
+  battery: [...PROV_FIELDS, ...BATTERY_FIELDS, 'chemistry', 'nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'],
 };

@@ -69,7 +69,7 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
   const sch = wb.addWorksheet('Equipment & costs');
   sch.addRow(['Item', 'Model', 'Qty', 'Unit', 'Rate (KES)', 'Rate source', 'Rate date', 'Amount (KES)']);
   p.costing.lines.forEach((l) => sch.addRow([l.item, l.model, l.quantity, l.unit, l.rate?.valueKes ?? REQUEST_QUOTATION, l.rate?.source ?? '', l.rate?.date ?? '', l.amountKes ?? '']));
-  sch.addRow([]); sch.addRow(['Capital cost', '', '', '', '', '', '', p.costing.capexKes ?? 'incomplete']);
+  sch.addRow([]); sch.addRow(['Capital cost', '', '', '', '', '', '', p.costing.capexKes ?? `No total: ${REQUEST_QUOTATION.toLowerCase()} for ${p.costing.unpriced.join(', ')}`]); // review A1 (REQ-19 wording)
 
   if (p.finance) {
     const cf = wb.addWorksheet('Cash flow');
