@@ -30,6 +30,7 @@ import { DigitalReadout } from '@/components/hub/cockpit/DigitalReadout';
 import { AlarmController, type AlarmSignal } from '@/components/hub/cockpit/AlarmController';
 import { UpsTopologyBoard, type UpsTopologyState } from '@/components/hub/cockpit/UpsTopologyBoard';
 import { SimpleUpsBoard } from '@/components/hub/cockpit/SimpleUpsBoard';
+import { upsRuntimeMinutes, surgeWatts, UPS_RUNTIME_DOD } from '@/lib/hub/upsMath';
 
 type UpsViewMode = 'simple' | 'engineering';
 
@@ -97,10 +98,33 @@ const LOAD_TYPES: LoadType[] = [
 
 /* ────────── State + math ────────── */
 
+/**
+ * Short-term surge the Lab allows above the rated W: 105 %. An ASSUMPTION
+ * (the catalogue holds no manufacturer overload curve), stated on screen.
+ */
+export const UPS_SURGE_ALLOWANCE = 1.05;
+
+/**
+ * What the overload check covers, shown on screen (review 2026-11-26): the
+ * catalogue gives rating, output pf and efficiency only, so the manufacturer's
+ * overload-versus-time curve, ambient and altitude derating are NOT checked
+ * and must be confirmed on the model's datasheet. No compliance is assumed.
+ */
+/**
+ * What the Lab may say when nothing trips (review 2026-11-26, N1): it checks
+ * kW, kVA and surge only, so a clear result is NOT a green "All systems
+ * nominal"; the datasheet items in UPS_LIMITS_NOTE are not verified.
+ */
+export const UPS_CLEAR_TEXT = 'Within the checked limits (kW, kVA, surge); datasheet items not verified';
+
+export const UPS_LIMITS_NOTE =
+  'Checked: continuous load ≤ 100 % of rated kW and of rated kVA (exactly 100 % passes, above faults), and the starting surge ≤ 105 % of rated kW (an assumed short-term allowance). ' +
+  'Not in this catalogue, so NOT checked: the manufacturer’s overload-versus-time curve, ambient-temperature and altitude derating. Confirm those on the model’s datasheet before relying on a pass.';
+
 interface UpsRow { modelId: string; qty: number }
 interface LoadRow { kind: LoadKind; qty: number }
 
-interface Composition {
+export interface Composition {
   ups: UpsRow[];
   loads: LoadRow[];
   mainsPresent: boolean;
@@ -120,8 +144,18 @@ interface LiveResult {
   upsCapacityW: number;     // sum of model.kVA × pf × 1000
   upsBatteryWh: number;     // sum of model.batteryWh
   upsAvgEff: number;
+  /** Quantity-weighted output power factor of the UPS units. */
+  upsAvgPf: number;
   loadContinuousW: number;
   loadStartingW: number;
+  /** Surge if every load group started at the same instant (cold start / return from bypass). */
+  loadSimultaneousStartW: number;
+  /** Apparent power of the loads, Σ W ÷ load pf. */
+  loadVa: number;
+  /** Σ UPS kVA rating × 1000. */
+  upsCapacityVa: number;
+  /** Which limit tripped, when overloaded. */
+  overloadReasons: string[];
   loadAdvisedW: number;     // load actually appropriate for UPS
   inputW: number;           // mains input the UPS pulls (load + losses) when mains present
   outputW: number;          // delivered to load
@@ -135,7 +169,7 @@ interface LiveResult {
   topology: Topology[];
 }
 
-function compute(c: Composition): LiveResult {
+export function compute(c: Composition): LiveResult {
   const ups = c.ups.map((r) => ({ row: r, model: UPS_MODELS.find((m) => m.id === r.modelId)! })).filter((x) => x.model);
   const loads = c.loads.map((r) => ({ row: r, type: LOAD_TYPES.find((t) => t.id === r.kind)! })).filter((x) => x.type);
 
@@ -145,16 +179,30 @@ function compute(c: Composition): LiveResult {
     ? 0.94
     : ups.reduce((a, x) => a + x.model.efficiency * x.row.qty, 0) / Math.max(1, ups.reduce((a, x) => a + x.row.qty, 0));
 
+  const upsQty = ups.reduce((a, x) => a + x.row.qty, 0);
+  const upsAvgPf = upsQty === 0 ? 0 : ups.reduce((a, x) => a + x.model.pf * x.row.qty, 0) / upsQty;
+
   const loadContinuousW = loads.reduce((a, x) => a + x.type.watts * x.row.qty, 0);
-  const loadStartingW = Math.max(
-    loadContinuousW,
-    loads.reduce((peak, x) => Math.max(peak, x.type.watts * x.row.qty * x.type.startMult), 0),
-  );
+  // Everything running plus the largest group's inrush (audit 2026-11-26: the
+  // running loads were left out of the surge, so an overload went unflagged).
+  const loadStartingW = surgeWatts(loads.map((x) => ({ watts: x.type.watts, qty: x.row.qty, startMult: x.type.startMult })));
   const loadAdvisedW = loads
     .filter((x) => x.type.upsAdvised)
     .reduce((a, x) => a + x.type.watts * x.row.qty, 0);
 
-  const isOverloaded = upsCapacityW > 0 && loadStartingW > upsCapacityW * 1.05;
+  const loadSimultaneousStartW = loads.reduce((a, x) => a + x.type.watts * x.row.qty * Math.max(1, x.type.startMult), 0);
+  const upsCapacityVa = ups.reduce((a, x) => a + x.model.ratingKva * 1000 * x.row.qty, 0);
+  const loadVa = loads.reduce((a, x) => a + (x.type.watts * x.row.qty) / Math.max(0.1, x.type.pf), 0);
+  // A UPS has two continuous limits, kW and kVA, and a short surge allowance
+  // (here 105 %). Review 2026-11-26 (R1, R2): only the surge was checked, so
+  // 100-105 % continuous W gave a warning, and the kVA limit was never
+  // checked (Vertiv APM 20 kVA with pf 0.9 loads reached 111 % VA unflagged).
+  // Exactly 100 % of a rating is at the limit and passes; anything above faults.
+  const overloadReasons: string[] = [];
+  if (upsCapacityW > 0 && loadStartingW > upsCapacityW * UPS_SURGE_ALLOWANCE) overloadReasons.push(`surge ${formatValue(loadStartingW / 1000, { unit: 'kW', decimals: 2 })} > 105 % of ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}`);
+  if (upsCapacityW > 0 && loadContinuousW > upsCapacityW) overloadReasons.push(`continuous ${formatValue(loadContinuousW / 1000, { unit: 'kW', decimals: 2 })} > rated ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}`);
+  if (upsCapacityVa > 0 && loadVa > upsCapacityVa) overloadReasons.push(`apparent power ${formatValue(loadVa / 1000, { unit: 'kVA', decimals: 2 })} > rated ${formatValue(upsCapacityVa / 1000, { unit: 'kVA', decimals: 2 })}`);
+  const isOverloaded = overloadReasons.length > 0;
   const hasNoUps = ups.length === 0 || upsCapacityW === 0;
   const hasNoLoad = loads.length === 0 || loadContinuousW === 0;
 
@@ -166,21 +214,24 @@ function compute(c: Composition): LiveResult {
   const headroomPct = upsCapacityW > 0 ? Math.max(-100, ((upsCapacityW - loadContinuousW) / upsCapacityW) * 100) : 0;
 
   // Battery runtime — usable energy at avg efficiency, 90 % DoD, sample heuristic.
-  const usableWh = upsBatteryWh * 0.9 * upsAvgEff;
-  const runtimeMin = loadContinuousW > 0 ? (usableWh / loadContinuousW) * 60 : Infinity;
+  const runtimeMin = upsRuntimeMinutes(upsBatteryWh, loadContinuousW, upsAvgEff, UPS_RUNTIME_DOD);
 
   const signals: AlarmSignal[] = [];
   if (hasNoUps && !hasNoLoad) signals.push({ id: 'no-ups',   severity: 'fault', label: 'No UPS in the system',          detail: 'Add a UPS to support the connected loads.' });
-  if (isOverloaded)            signals.push({ id: 'overload', severity: 'fault', label: 'UPS overload — surge exceeds capacity', detail: `Surge ${formatValue(loadStartingW/1000,{unit:'kW',decimals:2})} > UPS ${formatValue(upsCapacityW/1000,{unit:'kW',decimals:2})}.` });
-  if (!isOverloaded && upsCapacityW > 0 && loadContinuousW > upsCapacityW * 0.85) signals.push({ id: 'high-load', severity: 'warn', label: 'Continuous load > 85 % UPS capacity', detail: 'Reduces battery life and runtime margin.' });
+  if (isOverloaded)            signals.push({ id: 'overload', severity: 'fault', label: 'UPS overload', detail: `${overloadReasons.join('; ')}.` });
+  // High load on EITHER rating, kW or kVA (review 2026-11-26, N3: kW only).
+  if (!isOverloaded && ((upsCapacityW > 0 && loadContinuousW > upsCapacityW * 0.85) || (upsCapacityVa > 0 && loadVa > upsCapacityVa * 0.85))) signals.push({ id: 'high-load', severity: 'warn', label: 'Continuous load > 85 % of the UPS kW or kVA rating', detail: `${formatValue(loadContinuousW / 1000, { unit: 'kW', decimals: 2 })} of ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}; ${formatValue(loadVa / 1000, { unit: 'kVA', decimals: 2 })} of ${formatValue(upsCapacityVa / 1000, { unit: 'kVA', decimals: 2 })}. Reduces battery life and runtime margin.` });
+  // The surge model staggers starts; a cold start or a return from bypass can
+  // start everything at once (review 2026-11-26, N2: shown but not checked).
+  if (!isOverloaded && upsCapacityW > 0 && loadSimultaneousStartW > upsCapacityW * UPS_SURGE_ALLOWANCE) signals.push({ id: 'simultaneous-start', severity: 'warn', label: 'All-at-once start exceeds the surge allowance', detail: `If every load starts together (cold start, return from bypass) the surge is ${formatValue(loadSimultaneousStartW / 1000, { unit: 'kW', decimals: 2 })} > 105 % of ${formatValue(upsCapacityW / 1000, { unit: 'kW', decimals: 2 })}: stagger the starts or add capacity.` });
   if (motorOrHeatOnUps)        signals.push({ id: 'mismatch', severity: 'warn',  label: 'Motor / heating load on UPS',   detail: 'Motors and resistive heaters are not advised on UPS — move to mains/genset and keep UPS for IT/critical only.' });
   if (!hasNoUps && upsBatteryWh > 0 && loadContinuousW > 0 && runtimeMin < 5) signals.push({ id: 'short-runtime', severity: 'warn', label: 'Battery runtime < 5 min', detail: 'Increase UPS rating, add EBM modules or extend battery autonomy.' });
   if (!c.mainsPresent && upsBatteryWh === 0) signals.push({ id: 'no-power', severity: 'fault', label: 'Mains down and no battery available', detail: 'Output is zero — the system cannot support the load.' });
 
   const topology = Array.from(new Set(ups.map((x) => x.model.topology)));
   return {
-    upsCapacityW, upsBatteryWh, upsAvgEff,
-    loadContinuousW, loadStartingW, loadAdvisedW,
+    upsCapacityW, upsBatteryWh, upsAvgEff, upsAvgPf,
+    loadContinuousW, loadStartingW, loadAdvisedW, loadSimultaneousStartW, loadVa, upsCapacityVa, overloadReasons,
     inputW, outputW, headroomPct, runtimeMin,
     isOverloaded, isMismatched: motorOrHeatOnUps, hasNoUps, hasNoLoad,
     signals, topology,
@@ -247,9 +298,10 @@ export default function UpsLabClient() {
     });
   }
 
-  const overallLamp: 'ok' | 'warn' | 'fault' =
+  // 'info', never a green 'ok': only kW, kVA and surge are checked (N1).
+  const overallLamp: 'info' | 'warn' | 'fault' =
     result.signals.some((s) => s.severity === 'fault') ? 'fault'
-    : result.signals.length > 0 ? 'warn' : 'ok';
+    : result.signals.length > 0 ? 'warn' : 'info';
 
   return (
     <div className="space-y-6">
@@ -291,7 +343,7 @@ export default function UpsLabClient() {
             unit="kW"
             decimals={2}
             status={result.hasNoUps ? 'fault' : 'ok'}
-            caption={`Σ rating · pf ${(result.upsAvgEff*100/100).toFixed(2)} eff ${(result.upsAvgEff*100).toFixed(0)} %`}
+            caption={`Σ rating · pf ${result.upsAvgPf.toFixed(2)} eff ${(result.upsAvgEff*100).toFixed(0)} %`}
             size="lg"
           />
           <DigitalReadout
@@ -300,7 +352,7 @@ export default function UpsLabClient() {
             unit="kW"
             decimals={2}
             status={result.isOverloaded ? 'fault' : (result.headroomPct < 15 ? 'warn' : 'ok')}
-            caption={`Surge ${(result.loadStartingW/1000).toFixed(2)} kW`}
+            caption={`Surge ${(result.loadStartingW/1000).toFixed(2)} kW, assuming load groups start one at a time; all at once: ${(result.loadSimultaneousStartW/1000).toFixed(2)} kW · ${(result.loadVa/1000).toFixed(2)} kVA`}
             size="lg"
           />
           <DigitalReadout
@@ -366,11 +418,11 @@ export default function UpsLabClient() {
         {/* Alarms + status lights */}
         <div className="grid gap-3 md:grid-cols-[1.1fr_1fr]">
           <CockpitPanel eyebrow="Annunciator" title="Live alarms" right={<SampleBadge />}>
-            <AlarmController signals={result.signals} />
+            <AlarmController signals={result.signals} clearState="info" clearDescription={UPS_CLEAR_TEXT} />
             <ul className="mt-3 space-y-1.5">
               {result.signals.length === 0 && (
                 <li className="flex items-center gap-2 text-[12px]" style={{ color: 'var(--cockpit-ink-muted)' }}>
-                  <StatusLight state="ok" label="All systems nominal" />
+                  <StatusLight state="info" label={UPS_CLEAR_TEXT} />
                 </li>
               )}
               {result.signals.map((s) => (
@@ -404,14 +456,19 @@ export default function UpsLabClient() {
               <div className="rounded-md border p-2 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>
                 Drop the mains to see how runtime, alarms and output respond. The UPS keeps delivering output from its battery for as long as autonomy allows.
               </div>
+              <div className="rounded-md border p-2 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }} data-testid="ups-limits-note">
+                {UPS_LIMITS_NOTE}
+              </div>
               <div className="grid grid-cols-2 gap-2">
-                <DigitalReadout label="Battery autonomy" value={result.upsBatteryWh / 1000} unit="kWh" decimals={2} status="info" />
+                {/* Energy, not autonomy: autonomy is the runtime beside it (audit 2026-11-26). */}
+                <DigitalReadout label="Battery energy" value={result.upsBatteryWh / 1000} unit="kWh" decimals={2} status="info" />
                 <DigitalReadout
                   label="Runtime @ load"
                   value={Number.isFinite(result.runtimeMin) ? result.runtimeMin : null}
                   unit="min"
                   decimals={1}
                   status={result.runtimeMin < 5 ? 'warn' : 'ok'}
+                  caption={`Assumed: battery Wh × ${Math.round(UPS_RUNTIME_DOD * 100)} % usable × UPS efficiency ÷ load; real runtime at high load is shorter.`}
                 />
               </div>
               <div className="rounded-md border px-2 py-1.5 text-xs" style={{ borderColor: 'var(--cockpit-rail)', color: 'var(--cockpit-ink-muted)' }}>

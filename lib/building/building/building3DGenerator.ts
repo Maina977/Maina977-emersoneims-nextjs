@@ -59,6 +59,10 @@ export interface Building3DModel {
 // MATERIAL DEFINITIONS
 // =============================================================================
 
+/** Concept plinth depth for the 3D view, the same for every building (not a design depth). */
+export const ILLUSTRATIVE_PLINTH_DEPTH_MM = 300;
+export const FOUNDATION_LABEL = 'Foundation (illustrative only - foundation depth needs a structural/geotechnical design)';
+
 const MATERIALS = {
   external_wall: { color: '#e5e7eb', opacity: 1, metalness: 0, roughness: 0.8 },
   internal_wall: { color: '#f3f4f6', opacity: 1, metalness: 0, roughness: 0.9 },
@@ -144,16 +148,20 @@ export class Building3DGenerator {
   }
 
   /**
-   * Generate foundation mesh
+   * Generate foundation mesh: a visual plinth only. Its depth used to be the
+   * generator's foundation depth, chosen from the floor count (1.0 m up to two
+   * floors, 1.5 m above): the rule withdrawn from the floor-plan API on
+   * 2026-11-26. It is now one fixed concept depth for every building, named
+   * as illustrative, never a design depth.
    */
   private generateFoundation(plan: BuildingPlan): Mesh3D {
     const width = plan.building.width * this.scale;
     const depth = plan.building.depth * this.scale;
-    const height = plan.foundation.depth * this.scale;
+    const height = ILLUSTRATIVE_PLINTH_DEPTH_MM * this.scale;
 
     return this.createBox(
       `foundation`,
-      'Foundation',
+      FOUNDATION_LABEL,
       'foundation',
       width + 0.2,
       height,

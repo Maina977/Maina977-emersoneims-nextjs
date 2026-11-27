@@ -5,7 +5,7 @@
  * @copyright 2026 EmersonEIMS - Solar Bible
  */
 
-import { sizeSolar, tieredKes, inverterBands, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR, type SizingResult, type SystemType } from '@/lib/solar/sizing';
+import { sizeSolar, tieredKes, inverterBands, PV_KES_PER_KWP_BANDS, BATTERY_KES_PER_KWH, INSTALLATION_FACTOR, BATTERY_DOD, DISCHARGE_PATH_EFFICIENCY, type SizingResult, type SystemType } from '@/lib/solar/sizing';
 import { proposalFinance } from '@/components/solar-modules/crc/src/services/proposalFinance';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -537,6 +537,10 @@ export const ACCESSORIES: Accessory[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // KENYA CLIMATE DATA (Expanded)
 // ═══════════════════════════════════════════════════════════════════════════════
+// NO CITED SOURCE (audit 2026-11-26): these are table values, shown to the
+// customer as an assumption. `avgSunHours` is hours of sunshine (duration);
+// `irradiance` is kWh/m²/day, the quantity energy sizing needs ("peak sun
+// hours"). Sizing uses NASA POWER whenever the calculator API returns it.
 
 export const KENYA_CLIMATE: Record<string, { avgSunHours: number; avgTemp: number; irradiance: number; humidity: number; altitude: number }> = {
   'Nairobi': { avgSunHours: 5.5, avgTemp: 18, irradiance: 5.2, humidity: 65, altitude: 1795 },
@@ -709,10 +713,14 @@ export function findOptimalSystem(
   sun?: { annual: number; worstMonth: number },
 ): OptimizationResult[] {
   const climate = KENYA_CLIMATE[location] || KENYA_CLIMATE['Default'];
-  // NASA sun-hours when given; otherwise the table value with the cloudiest
-  // month at about 0.8 of the year (2026-10-30 re-audit: off-grid sized on the annual).
-  const pshAnnual = sun && sun.annual > 0 ? sun.annual : climate.avgSunHours;
-  const pshWorst = sun && sun.worstMonth > 0 ? sun.worstMonth : climate.avgSunHours * 0.8;
+  // NASA sun-hours when given; otherwise the table's irradiance (kWh/m²/day)
+  // with the cloudiest month at about 0.8 of the year (2026-10-30 re-audit:
+  // off-grid sized on the annual). Audit 2026-11-26: the fallback used
+  // avgSunHours, hours of SUNSHINE, as kWh/m²/day: 8.8 for Mandera (table
+  // irradiance 7.8), so energy was overstated and arrays undersized, and
+  // Lodwar's 9.2 was refused by the sizing core (no system at all).
+  const pshAnnual = sun && sun.annual > 0 ? sun.annual : climate.irradiance;
+  const pshWorst = sun && sun.worstMonth > 0 ? sun.worstMonth : climate.irradiance * 0.8;
   const systemType: SystemType = !gridConnected ? 'off-grid' : backupHours > 0 ? 'hybrid' : 'grid-tied';
   let s: SizingResult;
   try {
@@ -794,7 +802,10 @@ export function findOptimalSystem(
         totalWattage: panel.wattage * panelCount,
         totalBatteryKwh: listedBatKwh,
         dailyProduction: s.annualEnergyKwh / 365,
-        autonomyDays: (listedBatKwh * 0.9) / Math.max(dailyConsumption, 0.1), // usable share of the listed battery
+        // AC energy the listed battery delivers (DoD × discharge-path efficiency, the
+        // sizing core's rule) ÷ daily use. Audit 2026-11-26: × 0.9 alone left out
+        // the inverter and overstated autonomy by 11 %.
+        autonomyDays: (listedBatKwh * BATTERY_DOD * DISCHARGE_PATH_EFFICIENCY) / Math.max(dailyConsumption, 0.1),
         systemVoltage: battery ? 48 : 0,
       },
       roi: {

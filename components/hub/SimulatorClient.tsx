@@ -39,7 +39,7 @@ type InverterKind = 'off-grid' | 'hybrid' | 'grid-tied';
 type BatteryChemistry = 'LFP' | 'NMC' | 'AGM' | 'Flooded';
 type PanelArrangement = 'series' | 'parallel' | 'mixed';
 
-interface Inputs {
+export interface Inputs {
   baseLoadKw: number;
   peakLoadKw: number;
   startingKva: number;
@@ -71,7 +71,7 @@ interface Inputs {
   hasCombiner: boolean;
 }
 
-const DEFAULTS: Inputs = {
+export const DEFAULTS: Inputs = {
   baseLoadKw: 80,
   peakLoadKw: 160,
   startingKva: 90,
@@ -103,36 +103,87 @@ const DEFAULTS: Inputs = {
 
 /* ────────── sizing model (transparent + conservative) ────────── */
 
-function deratePercent(altitudeM: number, ambientC: number) {
+export function deratePercent(altitudeM: number, ambientC: number) {
   const altDerate = Math.max(0, (altitudeM - 1000) / 300) * 3;
   const tempDerate = Math.max(0, (ambientC - 25) / 5) * 2;
   return Math.min(35, altDerate + tempDerate);
 }
 
-function sizeGenerator(i: Inputs) {
+/** Generator sets are rated in kVA at 0.8 power factor (ISO 8528-1): kW rating = kVA × 0.8. */
+export const GEN_RATED_PF = 0.8;
+/** The overload alarm trips above 90 % of the site kW capacity. */
+export const GEN_OVERLOAD_FRACTION = 0.9;
+
+export function sizeGenerator(i: Inputs) {
   const derate = deratePercent(i.altitudeM, i.ambientC);
   const chargeDrawKw = i.batteryBankKwh * Math.max(0, Math.min(0.5, i.chargeCRate));
   const effectivePeakKw = (i.peakLoadKw + chargeDrawKw) * (1 + i.supportMarginPct / 100);
   const peakKva = effectivePeakKw / Math.max(0.6, Math.min(1, i.powerFactor));
   const startingKva = i.startingKva;
-  const requiredKva = Math.max(peakKva * 1.25, startingKva * 1.6);
+  // Both limits of the set: kVA (current) and kW (engine), the kW one being
+  // kVA × 0.8. Audit 2026-11-26 follow-up: only kVA was checked, so a load at
+  // PF above 0.8 could get a set loaded to 100 % of its kW rating (160 kW at
+  // PF 1.0 got 200 kVA = 160 kW).
+  const requiredKva = Math.max(Math.max(peakKva, effectivePeakKw / GEN_RATED_PF) * 1.25, startingKva * 1.6);
   const ratedKva = requiredKva / (1 - derate / 100);
   const standards = [40, 60, 80, 100, 125, 150, 200, 250, 300, 400, 500, 625, 800, 1000];
   const rated = standards.find((s) => s >= ratedKva) ?? Math.ceil(ratedKva / 50) * 50;
   return { derate, peakKva, requiredKva, ratedKva: rated, chargeDrawKw, effectivePeakKw };
 }
 
-function sizeFuel(i: Inputs, ratedKva: number) {
-  const kwAt75 = ratedKva * 0.8 * 0.75;
-  const lph = kwAt75 * 0.27;
-  const runtimeH = i.fuelTankL / Math.max(lph, 0.1);
-  return { lph, runtimeH };
+/**
+ * Peak kW (load + battery charging) against the set's kW capacity AT THIS
+ * SITE: kVA × 0.8 × (1 − derate). Audit 2026-11-26 follow-up: the alarm
+ * compared kW with 0.9 × kVA (unlike units, ignoring derate).
+ */
+export function generatorOverloaded(peakKw: number, ratedKva: number, deratePct: number) {
+  const siteKw = ratedKva * GEN_RATED_PF * (1 - deratePct / 100);
+  return { siteKw, overloaded: peakKw > siteKw * GEN_OVERLOAD_FRACTION };
 }
 
-function sizeUps(i: Inputs) {
-  const kva = (i.baseLoadKw * 0.4) / Math.max(0.7, Math.min(1, i.powerFactor));
-  const loadW = kva * 1000 * 0.7;
-  const wh = (loadW * (i.upsAutonomyMin / 60)) / 0.9;
+/**
+ * ASSUMED specific fuel consumption of a diesel set at 75 % load, L per kWh
+ * generated. No datasheet is cited, so it is shown on screen as an
+ * assumption (review 2026-11-26, R7). It is lower than the solar
+ * calculator's DIESEL_L_PER_KWH (0.35, lib/solar/sizing.ts) on purpose: that
+ * figure is for a SMALL set at PART load, where consumption per kWh is
+ * higher; this one is for a set sized for the site at 75 % load. Replace
+ * with the chosen set's datasheet curve.
+ */
+export const GEN_SFC_L_PER_KWH_AT_75 = 0.27;
+
+/**
+ * Fuel at 75 % load (GEN_SFC_L_PER_KWH_AT_75, an assumption) and, from
+ * the "Runtime/day" input, litres per day and days per tank. Audit
+ * 2026-11-26 follow-up: Runtime/day was an input nothing read.
+ */
+export function sizeFuel(i: Pick<Inputs, 'fuelTankL' | 'hoursPerDay'>, ratedKva: number) {
+  const kwAt75 = ratedKva * GEN_RATED_PF * 0.75;
+  const lph = kwAt75 * GEN_SFC_L_PER_KWH_AT_75;
+  const runtimeH = i.fuelTankL / Math.max(lph, 0.1);
+  const hours = Math.max(0, Math.min(24, i.hoursPerDay));
+  const litresPerDay = lph * hours;
+  const tankDays = hours > 0 ? runtimeH / hours : Infinity;
+  return { lph, runtimeH, litresPerDay, tankDays };
+}
+
+/** UPS loaded to at most 80 % of its rating (common sizing practice; the UPS Lab warns above 85 %). */
+export const UPS_MAX_LOADING = 0.8;
+/** Battery-to-load (discharge + inverter) efficiency assumed for the UPS battery. */
+export const UPS_DISCHARGE_EFFICIENCY = 0.9;
+
+/**
+ * UPS for the CRITICAL (0 ms) load the user enters (audit 2026-11-26: it was
+ * sized on 40 % of the base load, so the "Critical" input changed nothing,
+ * and its battery converted kVA back to W with 0.7 instead of the power factor).
+ *   kVA = critical kW ÷ PF ÷ 0.8 loading
+ *   battery Wh = critical W × autonomy h ÷ (discharge efficiency × usable DoD)
+ */
+export function sizeUps(i: Pick<Inputs, 'criticalLoadKw' | 'powerFactor' | 'upsAutonomyMin' | 'batteryChemistry'>) {
+  const pf = Math.max(0.7, Math.min(1, i.powerFactor));
+  const loadKw = Math.max(0, i.criticalLoadKw);
+  const kva = loadKw / pf / UPS_MAX_LOADING;
+  const wh = (loadKw * 1000 * (Math.max(0, i.upsAutonomyMin) / 60)) / (UPS_DISCHARGE_EFFICIENCY * CHEM_DOD[i.batteryChemistry]);
   return { kva, wh };
 }
 
@@ -151,7 +202,7 @@ function syntheticSolarKwPeak(c: TopologyComposition, panelWattageW = DEFAULT_KW
 
 /* ────────── battery chemistry → usable depth-of-discharge ────────── */
 
-const CHEM_DOD: Record<BatteryChemistry, number> = {
+export const CHEM_DOD: Record<BatteryChemistry, number> = {
   LFP:     0.9,
   NMC:     0.85,
   AGM:     0.5,
@@ -165,11 +216,48 @@ const CHEM_DOD: Record<BatteryChemistry, number> = {
  * MPPT can harvest ~25 % more than PWM at the same array, so PWM users
  * with a high-V array hit the warn threshold sooner.
  */
-function controllerUndersized(arrayKw: number, ratingA: number, kind: ControllerKind): boolean {
+export function controllerUndersized(arrayKw: number, ratingA: number, kind: ControllerKind): boolean {
   if (arrayKw <= 0 || ratingA <= 0) return false;
   const sysV = 48;
-  const requiredA = (arrayKw * 1000) / sysV / (kind === 'MPPT' ? 1.25 : 1.0);
+  // An MPPT controller delivers the array's power at battery voltage, so its
+  // output current is array W ÷ 48 V (Victron / Morningstar sizing). Audit
+  // 2026-11-26: this was divided by 1.25 for MPPT, so a controller 20 % too
+  // small passed. A PWM controller passes the array's own current, which on a
+  // matched 48 V array is about the same figure, so one rule serves both.
+  void kind;
+  const requiredA = (arrayKw * 1000) / sysV;
   return ratingA < requiredA * 0.9;
+}
+
+/**
+ * Battery runtime at the live load: only the charge above the chemistry's
+ * cut-off (SoC − (1 − DoD)) is usable, delivered through the inverter at
+ * UPS_DISCHARGE_EFFICIENCY. Audit 2026-11-26: the whole state of charge was
+ * counted and the "Usable DoD" shown beside it was never used, so an AGM
+ * bank (50 % usable) showed about 2.8x its runtime.
+ */
+export function bankRuntimeMin(bankKwh: number, socPct: number, dod: number, loadKw: number): number {
+  if (!(bankKwh > 0)) return 0;
+  const usableKwh = bankKwh * Math.max(0, socPct / 100 - (1 - dod)) * UPS_DISCHARGE_EFFICIENCY;
+  return (usableKwh / Math.max(loadKw, 0.001)) * 60;
+}
+
+/**
+ * Headroom of the generator at THIS site: its rating derated for altitude and
+ * ambient, as a share of the derated capacity, on whichever limit binds,
+ * kVA or kW (kVA × 0.8). Audit 2026-11-26: the margin used the nameplate kVA,
+ * overstating headroom at altitude. Review 2026-11-26: it compared kVA only
+ * and the caller left out the battery-charging draw, so at PF 1.0 160 kW on
+ * 250 kVA showed 36 % while the kW headroom is 20 %. Pass the peak INCLUDING
+ * charging.
+ */
+export function supportMarginPct(ratedKva: number, deratePct: number, peakLoadKw: number, powerFactor: number): number {
+  const availableKva = ratedKva * (1 - deratePct / 100);
+  const availableKw = availableKva * GEN_RATED_PF;
+  const peakKva = peakLoadKw / Math.max(0.6, Math.min(1, powerFactor));
+  const kvaMargin = (availableKva - peakKva) / Math.max(availableKva, 1);
+  const kwMargin = (availableKw - peakLoadKw) / Math.max(availableKw, 1);
+  return Math.min(kvaMargin, kwMargin) * 100;
 }
 
 /* ────────── component ────────── */
@@ -221,7 +309,8 @@ export default function SimulatorClient() {
     : comp.generators > 0
     ? 'generator'
     : 'battery';
-  const overload = effectiveInputs.peakLoadKw > gen.ratedKva * 0.9;
+  const genLoad = generatorOverloaded(effectiveInputs.peakLoadKw + gen.chargeDrawKw, gen.ratedKva, gen.derate);
+  const overload = genLoad.overloaded;
   const lowBattery = comp.batteries === 0 || syntheticBankKwh(comp) < ups.wh / 1000;
   const inverterMissing = comp.inverters === 0 && (comp.solarPanels > 0 || comp.batteries > 0);
   const upsMissing = comp.ups === 0 && inputs.criticalLoadKw > 0;
@@ -235,14 +324,8 @@ export default function SimulatorClient() {
   const lineV = 415;
   const lineI = (loadKva * 1000) / (Math.sqrt(3) * lineV);
   const socPct = comp.batteries === 0 ? 0 : Math.max(20, 78 - (lowBattery ? 35 : 0));
-  const runtimeMin =
-    comp.batteries === 0
-      ? 0
-      : ((syntheticBankKwh(comp) * (socPct / 100) * 1000) / Math.max(liveLoadKw * 1000, 1)) * 60;
-  const supportMargin =
-    ((gen.ratedKva - effectiveInputs.peakLoadKw / Math.max(0.6, Math.min(1, inputs.powerFactor))) /
-      Math.max(gen.ratedKva, 1)) *
-    100;
+  const runtimeMin = bankRuntimeMin(syntheticBankKwh(comp), socPct, CHEM_DOD[inputs.batteryChemistry], liveLoadKw);
+  const supportMargin = supportMarginPct(gen.ratedKva, gen.derate, effectiveInputs.peakLoadKw + gen.chargeDrawKw, inputs.powerFactor);
 
   const pq: PowerQuality = {
     thdPct: Math.min(
@@ -262,7 +345,7 @@ export default function SimulatorClient() {
       id: 'overload',
       severity: 'fault',
       label: 'Generator overload',
-      detail: `Peak load > 90 % of ${gen.ratedKva} kVA`,
+      detail: `Peak ${formatValue(effectiveInputs.peakLoadKw + gen.chargeDrawKw, { unit: 'kW', decimals: 0 })} > 90 % of ${formatValue(genLoad.siteKw, { unit: 'kW', decimals: 0 })} (${gen.ratedKva} kVA × 0.8 PF, site-derated)`,
     });
   if (lowBattery && comp.batteries > 0)
     alarms.push({
@@ -404,7 +487,7 @@ export default function SimulatorClient() {
                 <NumberField label="Altitude" value={inputs.altitudeM} unit="m" step={50} onChange={set('altitudeM')} />
                 <NumberField label="Ambient" value={inputs.ambientC} unit="°C" step={1} onChange={set('ambientC')} />
                 <NumberField label="Power factor" value={inputs.powerFactor} unit="" step={0.05} min={0.6} max={1} onChange={set('powerFactor')} />
-                <NumberField label="Runtime/day" value={inputs.hoursPerDay} unit="h" step={1} onChange={set('hoursPerDay')} />
+                <NumberField label="Generator runtime/day" value={inputs.hoursPerDay} unit="h" step={1} min={0} max={24} onChange={set('hoursPerDay')} />
               </FieldGroup>
               <FieldGroup title="Loads">
                 <NumberField label="Base load" value={inputs.baseLoadKw} unit="kW" step={5} onChange={set('baseLoadKw')} />
@@ -512,11 +595,13 @@ export default function SimulatorClient() {
             </div>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <DigitalReadout label="Required (pre-derate)" value={gen.requiredKva} unit="kVA" decimals={0} status="info" />
-              <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info" />
-              <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'} />
-              <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" />
-              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" />
-              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} />
+              <DigitalReadout label="Fuel burn @ 75 %" value={fuel.lph} unit="L/h" decimals={1} status="info"
+                caption={`Assumed ${GEN_SFC_L_PER_KWH_AT_75} L/kWh at 75 % of the ${formatValue(gen.ratedKva * GEN_RATED_PF, { unit: 'kW', decimals: 0 })} rating (no datasheet cited; use the set's fuel curve)`} />
+              <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'}
+                caption={Number.isFinite(fuel.tankDays) ? `${formatValue(fuel.litresPerDay, { unit: 'L/day', decimals: 0 })} at ${inputs.hoursPerDay} h/day · ≈ ${fuel.tankDays.toFixed(1)} days per tank` : 'Set Runtime/day for litres per day'} />
+              <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" caption={`Critical load ÷ PF at ${Math.round(UPS_MAX_LOADING * 100)} % loading`} />
+              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} % usable, ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
+              <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating, kVA or kW (× 0.8), whichever is tighter; peak includes battery charging" />
             </div>
           </CockpitPanel>
 

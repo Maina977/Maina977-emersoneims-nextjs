@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { trustedSelfOrigin } from '@/lib/security/selfOrigin';
 
 interface InitializeRequest {
   provider: 'mpesa' | 'flutterwave' | 'paystack';
@@ -33,12 +34,6 @@ interface NormalizedResponse {
   configRequired?: boolean;
 }
 
-function siteOrigin(req: NextRequest): string {
-  const proto = req.headers.get('x-forwarded-proto') ?? 'https';
-  const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000';
-  return `${proto}://${host}`;
-}
-
 export async function POST(request: NextRequest) {
   let body: InitializeRequest;
   try {
@@ -57,7 +52,12 @@ export async function POST(request: NextRequest) {
   }
 
   const reference = report_id || analysis_id || `pay_${Date.now()}`;
-  const origin = siteOrigin(request);
+  // Self-call origin from an exact host allowlist, never from raw request
+  // headers (security hotfix 2026-11-26; see lib/security/selfOrigin.ts).
+  const origin = trustedSelfOrigin(request);
+  if (!origin) {
+    return NextResponse.json({ success: false, error: 'Unrecognised host' }, { status: 400 });
+  }
 
   try {
     if (provider === 'mpesa') {

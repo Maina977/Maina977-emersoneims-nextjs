@@ -1,48 +1,21 @@
-// src/app/api/proxy/[...path]/route.ts
-import { NextRequest } from 'next/server';
-import { createProxyResponse } from '@/lib/proxy/proxy';
+/**
+ * Generic proxy (/api/src/app/api/proxy/...): RETIRED (security hotfix 2026-11-26).
+ * See lib/security/retiredRoute.ts.
+ *
+ * It forwarded GET/POST/PUT/DELETE to any ?target= that *started with* an
+ * allowed origin, so https://api.nasa.gov.attacker.example passed the check
+ * and the site acted as an open proxy with CORS enabled. Nothing in the site
+ * called it (template code added 2025-12-27, commit 3728661d). The previous
+ * code is in git history; every method now answers 410 Gone and fetches nothing.
+ */
+import { retired } from '@/lib/security/retiredRoute';
 
-// Allowlist of permitted origins (for SSRF prevention + auditability)
-const ALLOWED_TARGETS = [
-  'https://api.nasa.gov',
-  'https://jsonplaceholder.typicode.com',
-  // Add your backends here
-  // process.env.PROXY_TARGET!, // via env (recommended)
-].filter(Boolean);
-
-export async function GET(request: NextRequest) {
-  return handleProxy(request);
-}
-export async function POST(request: NextRequest) {
-  return handleProxy(request);
-}
-export async function PUT(request: NextRequest) {
-  return handleProxy(request);
-}
-export async function DELETE(request: NextRequest) {
-  return handleProxy(request);
-}
-
-async function handleProxy(request: NextRequest) {
-  const url = new URL(request.url);
-  const target = url.searchParams.get('target');
-
-  if (!target) {
-    return new Response('Missing ?target=URL', { status: 400 });
-  }
-
-  // Validate against allowlist (security!)
-  if (!ALLOWED_TARGETS.some(allowed => target.startsWith(allowed))) {
-    return new Response('Target not allowed', { status: 403 });
-  }
-
-  return createProxyResponse(request, {
-    target,
-    timeout: 15_000,
-    cors: true, // enable CORS for frontend consumption
-    headers: {
-      // Example: inject auth for backend
-      // 'Authorization': `Bearer ${process.env.BACKEND_TOKEN}`,
-    },
-  });
-}
+const gone = () => retired('This proxy API');
+// All 7 methods answer 410 (OPTIONS too, so no automatic CORS preflight answer).
+export const GET = gone;
+export const HEAD = gone;
+export const POST = gone;
+export const PUT = gone;
+export const PATCH = gone;
+export const DELETE = gone;
+export const OPTIONS = gone;

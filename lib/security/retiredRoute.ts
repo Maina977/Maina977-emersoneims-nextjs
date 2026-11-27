@@ -11,6 +11,12 @@
  * connecting a database would have exposed everything. They now answer 410 Gone.
  * Projects are kept in the browser by the Building suite; organisation-scoped
  * project storage with accounts is being built separately (Report B).
+ *
+ * Security hotfix 2026-11-26, retired the same way:
+ *   - /api/src/app/api/proxy/...: an open proxy (prefix-matched ?target=), no caller;
+ *   - /api/orders/[orderId] and /api/customers/[customerId]/orders: order and
+ *     customer PII by guessable id with no sign-in. No order was ever stored
+ *     (/api/orders/create does not persist), so both always answered empty.
  */
 import { NextResponse } from 'next/server';
 
