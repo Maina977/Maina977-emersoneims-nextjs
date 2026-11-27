@@ -13,7 +13,7 @@
  * SMM7 general approach; East African BOQ practice). Each catalogue entry
  * below says which measurement it takes and which dimensions multiply it.
  */
-import type { Quantity } from './takeoff';
+import { ruleQuantity, type Quantity } from './takeoff';
 import { TradeError, type Param, type TradeLine } from './trades';
 
 export const WORKS_ENGINE_VERSION = 'qs-works 1.0.0 (2026-11-27)';
@@ -33,6 +33,8 @@ export interface CatalogueItem {
   specHint: string;
   /** When the dimensions do not simply multiply: quantity = measurement × combine(d1, d2, d3), with its formula text. */
   combine?: { fn: (d: number[]) => number; text: string };
+  /** A labelled figure recorded beside the quantity, never in it (e.g. the loose volume of disposal). */
+  info?: (measured: number, d: number[]) => string;
 }
 
 const D = (key: string, label: string, min: number, max: number): DimSpec => ({ key, label, unit: 'm', min, max });
@@ -104,8 +106,8 @@ export const PAINTING_WORKS: Record<string, CatalogueItem> = {
  */
 export const CONCRETE_WORKS: Record<string, CatalogueItem> = {
   slab: { takes: 'area', unit: 'm³', label: 'Slab (area × thickness)', dims: [D('thickness', 'slab thickness', 0.05, 1.5)], specHint: 'grade from the structural drawings, e.g. C25/30 suspended slab' },
-  beam: { takes: 'linear', unit: 'm³', label: 'Beam downstand below the slab (length × width × downstand)', dims: [D('width', 'beam width', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. C25/30 beam 230 wide, 450 overall − 150 slab = 300 downstand' },
-  column: { takes: 'count', unit: 'm³', label: 'Columns (number × width × depth × height)', dims: [D('width', 'column width', 0.1, 3), D('depth', 'column depth', 0.1, 3), D('height', 'height to slab soffit', 0.3, 20)], specHint: 'e.g. C30/37 columns 300 × 300, floor to soffit' },
+  beam: { takes: 'linear', unit: 'm³', label: 'Beam downstand below the slab (length BETWEEN COLUMN FACES × width × downstand)', dims: [D('width', 'beam width', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. C25/30 beam 230 wide, 450 overall − 150 slab = 300 downstand; length measured between column faces' },
+  column: { takes: 'count', unit: 'm³', label: 'Columns (number × width × depth × height to slab soffit, through the beam depth)', dims: [D('width', 'column width', 0.1, 3), D('depth', 'column depth', 0.1, 3), D('height', 'height to slab soffit', 0.3, 20)], specHint: 'e.g. C30/37 columns 300 × 300, floor to slab soffit' },
   wall: { takes: 'linear', unit: 'm³', label: 'RC walls (length × thickness × height)', dims: [D('thickness', 'wall thickness', 0.05, 2), D('height', 'wall height', 0.1, 20)], specHint: 'e.g. C30/37 retaining wall, 200 thick' },
   groundBeam: { takes: 'linear', unit: 'm³', label: 'Ground beams (length × width × depth)', dims: [D('width', 'beam width', 0.1, 3), D('depth', 'beam depth', 0.1, 3)], specHint: 'e.g. C25/30 ground beam 230 × 450' },
 };
@@ -121,7 +123,7 @@ export const CONCRETE_WORKS: Record<string, CatalogueItem> = {
 export const FORMWORK_WORKS: Record<string, CatalogueItem> = {
   soffit: { takes: 'area', unit: 'm²', label: 'Soffit of suspended slab (contact area = soffit area)', dims: [], specHint: 'e.g. plywood to soffit of 150 mm suspended slab, propping ≤ 3.5 m' },
   slabEdge: { takes: 'linear', unit: 'm²', label: 'Slab edges (edge length × edge height)', dims: [D('height', 'edge height', 0.05, 1.5)], specHint: 'e.g. edge of 150 mm slab' },
-  beam: { takes: 'linear', unit: 'm²', label: 'Beam sides and soffit (length × (width + 2 × downstand))', dims: [D('width', 'beam width (soffit)', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. 230 × 450 beam under 150 slab',
+  beam: { takes: 'linear', unit: 'm²', label: 'Beam sides and soffit (length BETWEEN COLUMN FACES × (width + 2 × downstand))', dims: [D('width', 'beam width (soffit)', 0.1, 2), D('downstand', 'downstand below slab soffit', 0.05, 3)], specHint: 'e.g. 230 × 450 beam under 150 slab; length between column faces',
     combine: { fn: ([w, h]) => w + 2 * h, text: '(beam width + 2 × downstand)' } },
   column: { takes: 'count', unit: 'm²', label: 'Column sides (number × 2 × (width + depth) × height)', dims: [D('width', 'column width', 0.1, 3), D('depth', 'column depth', 0.1, 3), D('height', 'height to slab soffit', 0.3, 20)], specHint: 'e.g. 300 × 300 columns, floor to soffit',
     combine: { fn: ([b, d, h]) => 2 * (b + d) * h, text: '2 × (column width + column depth) × height' } },
@@ -139,22 +141,27 @@ export const FORMWORK_WORKS: Record<string, CatalogueItem> = {
  * applies a bulking factor only when one is entered with its source.
  */
 const LEVEL = (key: string, label: string): DimSpec => ({ key, label, unit: 'm', min: -500, max: 9000 });
-const cutDepth = ([eg, fl]: number[]) => {
-  if (!(eg > fl)) throw new TradeError(`mean existing ground level (${eg} m) must be above the formation level (${fl} m) for excavation: use "Filling to levels"`);
-  return eg - fl;
+// Levels: the mean existing ground level is the surveyed level BEFORE the topsoil strip; the strip depth
+// is deducted from the cut and added to the fill, so the strip is never measured twice (review MF-1).
+const cutDepth = ([eg, st, fl]: number[]) => {
+  const after = eg - st;
+  if (!(after > fl)) throw new TradeError(`the level after the topsoil strip (${eg} − ${st} = ${Math.round(after * 1000) / 1000} m) must be above the formation level (${fl} m) for excavation: use "Filling to levels"`);
+  return after - fl;
 };
-const fillDepth = ([eg, fl]: number[]) => {
-  if (!(fl > eg)) throw new TradeError(`the formation level (${fl} m) must be above the mean existing ground level (${eg} m) for filling: use "Bulk excavation to levels"`);
-  return fl - eg;
+const fillDepth = ([eg, st, fl]: number[]) => {
+  const after = eg - st;
+  if (!(fl > after)) throw new TradeError(`the formation level (${fl} m) must be above the level after the topsoil strip (${eg} − ${st} = ${Math.round(after * 1000) / 1000} m) for filling: use "Bulk excavation to levels"`);
+  return fl - after;
 };
 export const EARTHWORKS: Record<string, CatalogueItem> = {
   topsoil: { takes: 'area', unit: 'm³', label: 'Site strip / remove topsoil (area × depth)', dims: [D('depth', 'strip depth', 0.02, 1)], specHint: 'e.g. remove 150 mm topsoil and stockpile for reuse' },
-  bulkExcavation: { takes: 'area', unit: 'm³', label: 'Bulk excavation to levels (area × (mean existing ground level − formation level))', dims: [LEVEL('eg', 'mean existing ground level'), LEVEL('fl', 'formation level')], specHint: 'e.g. reduce level excavation in soft material',
-    combine: { fn: cutDepth, text: '(mean existing ground level − formation level)' } },
-  fill: { takes: 'area', unit: 'm³', label: 'Filling to levels (area × (formation level − mean existing ground level))', dims: [LEVEL('eg', 'mean existing ground level'), LEVEL('fl', 'formation level')], specHint: 'e.g. approved murram fill in 150 mm compacted layers',
-    combine: { fn: fillDepth, text: '(formation level − mean existing ground level)' } },
-  disposal: { takes: 'area', unit: 'm³', label: 'Disposal off site (area × depth × bulking factor)', dims: [D('depth', 'excavated depth', 0.02, 30), { key: 'bulking', label: 'bulking factor (1.00 = none)', unit: 'No', min: 1, max: 1.6 }], specHint: 'e.g. surplus excavated material to a licensed tip',
-    combine: { fn: ([d, b]) => d * b, text: 'excavated depth × bulking factor' } },
+  bulkExcavation: { takes: 'area', unit: 'm³', label: 'Bulk excavation to levels (area × (mean existing ground level − strip depth − formation level))', dims: [LEVEL('eg', 'mean existing ground level (before the strip)'), D('strip', 'topsoil strip depth (0 if none)', 0, 1), LEVEL('fl', 'formation level')], specHint: 'e.g. reduce level excavation in soft material',
+    combine: { fn: cutDepth, text: '(mean existing ground level − strip depth − formation level)' } },
+  fill: { takes: 'area', unit: 'm³', label: 'Filling to levels (area × (formation level − (mean existing ground level − strip depth)))', dims: [LEVEL('eg', 'mean existing ground level (before the strip)'), D('strip', 'topsoil strip depth (0 if none)', 0, 1), LEVEL('fl', 'formation level')], specHint: 'e.g. approved murram fill in 150 mm compacted layers',
+    combine: { fn: fillDepth, text: '(formation level − (mean existing ground level − strip depth))' } },
+  disposal: { takes: 'area', unit: 'm³', label: 'Disposal off site (bank volume: area × excavated depth)', dims: [D('depth', 'excavated depth', 0.02, 30), { key: 'bulking', label: 'bulking factor for the loose volume (1.00 = none; information only)', unit: 'No', min: 1, max: 1.6 }], specHint: 'e.g. surplus excavated material to a licensed tip',
+    combine: { fn: ([d]) => d, text: 'excavated depth (bank volume; bulking belongs in the rate)' },
+    info: (a, [d, b]) => `loose volume for haulage, information only: ${Math.round(a * d * b * 1000) / 1000} m³ at bulking ${b} (not in the BOQ quantity, which is bank m³)` },
   basementExcavation: { takes: 'volume', unit: 'm³', label: 'Excavation measured as a volume (area × depth in the take-off)', dims: [], specHint: 'e.g. basement excavation, depth band 1.5–3 m' },
 };
 
@@ -172,7 +179,7 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
   drainage: {
     trade: 'Below-ground drainage', items: DRAINAGE_WORKS,
     note: 'Pipe diameters, gradients, invert levels and septic tank / soakaway sizes come from the drainage design approved by the county (and a percolation test on site): enter them from that design. Trench depth is the average of the measured run.',
-    notMeasured: ['Backfilling and disposal of surplus (use Earthworks)', 'Connections to the public sewer (utility works)', 'Testing (air / water test) and CCTV survey', 'Pumping stations'],
+    notMeasured: ['Backfilling of drain trenches (trench volume less bed and pipe: add as your own item) and disposal of surplus (Earthworks: Disposal off site)', 'Connections to the public sewer (utility works)', 'Testing (air / water test) and CCTV survey', 'Pumping stations'],
   },
   painting: {
     trade: 'Painting & decoration', items: PAINTING_WORKS,
@@ -181,23 +188,30 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
   },
   concrete: {
     trade: 'Concrete', items: CONCRETE_WORKS,
-    note: 'Net volumes as designed: sizes and grades from the structural drawings. Beams are measured as the downstand below the slab, so the slab-beam overlap is not counted twice. Openings in slabs: measure the slab as an area with its openings. Strip footings: Strip foundation trade.',
+    note: 'Net volumes as designed: sizes and grades from the structural drawings. One convention for intersections: beams are measured as the downstand below the slab (the slab is measured through) and BETWEEN COLUMN FACES; columns are measured to the slab soffit, through the beam depth. So no slab–beam or beam–column volume is counted twice. Openings in slabs: measure the slab as an area with its openings (the voids rule applies). Strip footings: Strip foundation trade.',
     notMeasured: ['Reinforcement (needs the bar bending schedule; enter it as a scheduled quantity)', 'Wastage (state it in the rate build-up)', 'Formwork (Formwork trade)', 'Precast elements'],
   },
   formwork: {
     trade: 'Formwork', items: FORMWORK_WORKS,
-    note: 'Measured from contact areas only: the area of concrete face the formwork touches, from the measured elements and the drawn sizes. Use the same measurements and sizes as the Concrete trade, but in a separate formwork take-off (one measurement feeds one item). No soffit formwork for a ground-bearing slab.',
+    note: 'Measured from contact areas only: the area of concrete face the formwork touches, from the measured elements and the drawn sizes, on the Concrete trade\'s convention (beams between column faces, so no beam soffit is measured over a column head; columns to the slab soffit). Where a beam frames into a column, that part of the column face is included in the column sides (not deducted: state it if your rule deducts it). Use the same measurements and sizes as the Concrete trade, but in a separate formwork take-off (one measurement feeds one item). No soffit formwork for a ground-bearing slab.',
     notMeasured: ['Propping and back-propping design (temporary works designer)', 'Formwork to openings and boxes ≤ the contract’s small-void rule (add as your own items)', 'Permanent formwork, profiled or special finishes'],
   },
   earthworks: {
     trade: 'Earthworks', items: EARTHWORKS,
-    note: 'Levels come from the level survey (mean existing ground level of the measured area) and the sections (formation level). Volumes are bank volumes; disposal is bulked only by a factor you enter with its source (1.00 = none). Strip-foundation trenches: Strip foundation trade.',
+    note: 'Levels come from the level survey (mean existing ground level of the measured area, BEFORE the topsoil strip) and the sections (formation level). The strip depth is deducted from bulk excavation and added to filling (the level after the strip = existing level less the strip depth), so the strip is not measured twice. Quantities are bank volumes (in situ), disposal included; a bulking factor only records the loose volume beside the quantity (bulking belongs in the rate, SMM7 / NRM2 approach). Strip-foundation trenches: Strip foundation trade.',
     notMeasured: ['Working space and earthwork support (state per the contract rules)', 'Dewatering', 'Excavation in rock (needs the site investigation)', 'Compaction testing'],
   },
 };
 
 export interface WorksRow { item: string; spec: string; measurement: Quantity | undefined; /** In the catalogue's order (at most three). */ dims: Array<Param | undefined> }
-export interface WorksInput { code: string; description: string; trade: WorksTrade; rows: WorksRow[] }
+export interface WorksInput {
+  code: string; description: string; trade: WorksTrade; rows: WorksRow[];
+  /**
+   * Voids not deducted up to (each, m², ≤) with the rule as source: the same small-void convention as masonry,
+   * plaster and ruleQuantity (review MF-4). Required when an area or volume measurement has openings.
+   */
+  voidRule?: Param;
+}
 
 function need(name: string, p: Param | undefined, min: number, max: number, unit: string): number {
   if (!p || !Number.isFinite(p.value)) throw new TradeError(`${name} is required (${unit})`);
@@ -225,6 +239,16 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
     if (prev) throw new TradeError(`${name}: measurement ${q.id} is already used by ${prev} (double counting)`);
     used.set(q.id, name);
     let v = q.net; const xs: number[] = [];
+    const extra: string[] = [];
+    if ((q.kind === 'area' || q.kind === 'volume') && q.holes.length) {
+      // The small-void rule, as everywhere else: voids ≤ the threshold are not deducted.
+      const t = need('Voids not deducted up to', i.voidRule, 0, 2, 'm²');
+      const holeArea = q.holes.reduce((a, h) => a + h.areaM2, 0);
+      const depth = q.kind === 'volume' ? (holeArea > 0 ? q.deductions / holeArea : NaN) : undefined;
+      const rq = ruleQuantity(q, { name: i.voidRule!.source.trim(), edition: '', voidNotDeductedUpToM2: t }, depth);
+      v = rq.ruleQuantity;
+      extra.push(`voids rule: openings ≤ ${t} m² each not deducted (${i.voidRule!.source.trim()}): ${rq.voidsNotDeducted} of ${q.holes.length} opening(s) not deducted; geometric net ${r3(q.net)} ${q.unit}, rule quantity ${r3(v)} ${q.unit}`);
+    }
     const inputs = [`${q.kind === 'count' ? 'count' : q.kind === 'linear' ? 'length' : q.kind === 'volume' ? 'volume' : 'area'} ${r3(q.net)} ${q.unit} (take-off ${q.id})`];
     for (const [k, d] of c.dims.entries()) {
       const x = need(`${name} (${c.label}) ${d.label}`, row.dims[k], d.min, d.max, d.unit);
@@ -232,13 +256,14 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
       xs.push(x);
       inputs.push(`${d.label} ${x} ${d.unit} (${row.dims[k]!.source.trim()})`);
     }
+    const measuredBase = v;
     try { v *= c.combine ? c.combine.fn(xs) : xs.reduce((a, b) => a * b, 1); }
     catch (e) { throw new TradeError(`${name} (${c.label}): ${(e as Error).message}`); }
     return {
       code: `${i.code}.${n + 1}`, trade: cat.trade, unit: c.unit, quantity: c.unit === 'No' ? q.net : r3(v),
       description: `${i.description}: ${c.label}, ${spec}`,
       formula: c.combine ? `measured ${q.kind} × ${c.combine.text}` : c.dims.length ? `measured ${q.kind} × ${c.dims.map((d) => d.label).join(' × ')}` : `measured ${q.kind === 'count' ? 'count' : q.kind}`,
-      inputs,
+      inputs: [...inputs, ...extra, ...(c.info ? [c.info(measuredBase, xs)] : [])],
     };
   });
 }

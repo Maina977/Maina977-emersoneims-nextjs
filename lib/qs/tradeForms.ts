@@ -85,7 +85,7 @@ export interface PlumbingForm { trade: 'plumbing'; code: string; description: st
 /** Measured-item trades (lib/qs/works): one row per item; d1, d2, d3 are the catalogue's dimensions in order. */
 export interface WorksRowForm { item: string; spec: string; measurementId: string; d1: ParamForm; d2: ParamForm; d3: ParamForm }
 export const emptyWorksRow = (): WorksRowForm => ({ item: '', spec: '', measurementId: '', d1: P(), d2: P(), d3: P() });
-export interface WorksForm { trade: WorksTrade; code: string; description: string; works: WorksRowForm[] }
+export interface WorksForm { trade: WorksTrade; code: string; description: string; works: WorksRowForm[]; /** Voids not deducted up to (each, m²), with the rule as source. */ voidRule: ParamForm }
 export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm | ElectricalForm | PlumbingForm | WorksForm;
 
 function P(): ParamForm { return { value: '', source: '' }; }
@@ -119,7 +119,7 @@ export function emptyForm(trade: TradeKind): TradeForm {
     case 'openings': return { trade, code: '', openings: [emptyOpening()] };
     case 'electrical': return { trade, code: '', description: '', points: [], runs: [], enumerated: [] };
     case 'plumbing': return { trade, code: '', description: '', fixtures: [], pipes: [] };
-    default: return { trade, code: '', description: '', works: [] };
+    default: return { trade, code: '', description: '', works: [], voidRule: P() };
   }
 }
 
@@ -262,7 +262,7 @@ export function calculateTrade(f: TradeForm, quantities: Map<string, Quantity>):
       const description = text('Description', f.description);
       const cat = WORKS_CATALOGUES[f.trade];
       return measuredWorks({
-        code, description, trade: f.trade,
+        code, description, trade: f.trade, voidRule: optional('Voids not deducted up to', f.voidRule),
         rows: f.works.map((w, i) => {
           const c = Object.prototype.hasOwnProperty.call(cat.items, w.item) ? cat.items[w.item] : undefined;
           return {

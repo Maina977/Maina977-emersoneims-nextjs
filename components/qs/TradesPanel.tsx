@@ -177,6 +177,7 @@ function WorksFields({ f, edit, pick }: { f: WorksForm; edit: (f: WorksForm) => 
   const options = Object.fromEntries(Object.entries(cat.items).map(([k, c]) => [k, `${c.label} (${c.unit})`]));
   return (
     <>
+      <ParamField label="Voids not deducted up to (each, ≤; needed when an area has openings)" unit="m²" value={f.voidRule} onChange={(v) => edit({ ...f, voidRule: v })} />
       <RowList title="Items" rows={f.works} add={emptyWorksRow} onChange={(works) => edit({ ...f, works })} row={(r, i, up) => {
         const c = Object.prototype.hasOwnProperty.call(cat.items, r.item) ? cat.items[r.item] : undefined;
         return (

@@ -15,7 +15,8 @@ describe('R-15 painting and decoration', () => {
     const m: Measurement = { id: 'E1', kind: 'area', sheetId: SHEET, label: 'TEST elevation', points: [{ x: 0, y: 0 }, { x: 40, y: 0 }, { x: 40, y: 30 }, { x: 0, y: 30 }], holes: [[{ x: 5, y: 0.5 }, { x: 14, y: 0.5 }, { x: 14, y: 21.5 }, { x: 5, y: 21.5 }]], metresPerUnit: cal.metresPerUnit, user: 'TEST', at: '2026-11-27T00:00:00Z', revision: 'A' };
     const area = quantify(m);
     expect(area.net).toBe(10.11);
-    const out = measuredWorks({ code: 'PD', description: 'TEST', trade: 'painting', rows: [{ item: 'wallArea', spec: 'TEST 1 mist + 2 coats emulsion', measurement: area, dims: [] }] });
+    // MF-4: the door (1.89 m² > 0.5) is deducted under the small-void rule, as in masonry and plaster.
+    const out = measuredWorks({ code: 'PD', description: 'TEST', trade: 'painting', voidRule: { value: 0.5, source: 'TEST rule: NRM2 voids ≤ 0.50 m²' }, rows: [{ item: 'wallArea', spec: 'TEST 1 mist + 2 coats emulsion', measurement: area, dims: [] }] });
     expect([out[0].unit, out[0].quantity]).toEqual(['m²', 10.11]);
   });
   it('hand-worked: 24 m of wall × 2.7 m = 64.8 m²; ceiling 36 m²; 24 m skirting; 3 doors — coats are described, not multiplied', () => {
