@@ -48,11 +48,32 @@ export const EXTERNAL_WORKS: Record<string, CatalogueItem> = {
   other: { takes: 'linear', unit: 'm', label: 'Other linear item', dims: [], specHint: 'describe fully' },
 };
 
-export type WorksTrade = 'external';
+/**
+ * R-20 HVAC (P1-D §4, RS20): QUANTITIES ONLY. Loads, airflows, duct and pipe
+ * sizes and equipment selection are a design by a qualified mechanical
+ * engineer; the sizes are entered from that design, never computed here.
+ */
+export const HVAC_WORKS: Record<string, CatalogueItem> = {
+  duct: { takes: 'linear', unit: 'm', label: 'Ductwork (length, by size)', dims: [], specHint: 'size from the mechanical design, e.g. 400 × 250 mm galvanised rectangular duct' },
+  ductInsulation: { takes: 'linear', unit: 'm²', label: 'Duct insulation (length × duct girth)', dims: [D('girth', 'duct girth (outside perimeter)', 0.1, 10)], specHint: 'e.g. 25 mm foil-faced mineral wool' },
+  refrigerant: { takes: 'linear', unit: 'm', label: 'Refrigerant pipework (pair, length)', dims: [], specHint: 'sizes from the equipment data, e.g. 6.35 + 12.7 mm insulated copper pair' },
+  condensate: { takes: 'linear', unit: 'm', label: 'Condensate drain pipe', dims: [], specHint: 'e.g. 20 mm uPVC to falls' },
+  grille: { takes: 'count', unit: 'No', label: 'Diffusers / grilles', dims: [], specHint: 'type and size from the design, e.g. 600 × 600 mm 4-way ceiling diffuser' },
+  indoorUnit: { takes: 'count', unit: 'No', label: 'Indoor units', dims: [], specHint: 'model and capacity from the design, e.g. wall split unit (capacity per schedule M-01)' },
+  outdoorUnit: { takes: 'count', unit: 'No', label: 'Outdoor / condensing units', dims: [], specHint: 'model and capacity from the design' },
+  fan: { takes: 'count', unit: 'No', label: 'Extract / supply fans', dims: [], specHint: 'duty from the design, e.g. in-line extract fan (duty per schedule M-02)' },
+};
+
+export type WorksTrade = 'external' | 'hvac';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
     notMeasured: ['Site clearance and demolition', 'Below-ground drainage (manholes, pipes, soakaways)', 'Utility connections (water, power, sewer) by the utility', 'Retaining walls and structures (need a structural design)'],
+  },
+  hvac: {
+    trade: 'HVAC', items: HVAC_WORKS,
+    note: 'Quantities only. Cooling and heating loads, airflows, duct and pipe sizes and equipment selection require a design by a qualified mechanical engineer: enter the sizes from that design. This tool does not size HVAC.',
+    notMeasured: ['Testing, balancing and commissioning', 'Controls and their wiring', 'Power supply to the units (electrical trade)', 'Builder’s work (holes, sleeves, supports, plinths)', 'Fittings (bends, tees, dampers) counted from the design'],
   },
 };
 

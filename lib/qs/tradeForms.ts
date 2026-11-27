@@ -35,6 +35,7 @@ export const TRADE_LABELS: Record<TradeKind, string> = {
   electrical: 'Electrical installation',
   plumbing: 'Plumbing & sanitary',
   external: 'External works',
+  hvac: 'HVAC (quantities only)',
 };
 
 // ---- MEP rows (lib/qs/mep). Measurement ids are take-off ids; '' = none chosen.
