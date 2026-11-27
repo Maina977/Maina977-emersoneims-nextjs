@@ -1243,7 +1243,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const a = extras.acoustics;
             const rt = a.T60_s ?? a.T60_seconds ?? a.RT60_s ?? a.rt60 ?? a.reverberation_time_s;
             arch += card('6.3 Room Acoustics (Sabine, BS EN 12354-6)',
-                `Reverberation Time RT<sub>60</sub>: <strong>${fmt(rt)} s</strong> (volume ${fmt(p.area*3)} m³)<br>Living-room target: 0.4–0.6 s (BS 8233:2014). Bedroom target: 0.5–0.8 s.<br>If above target: add absorptive ceiling tiles or carpet to reduce flutter echo.`);
+                `<em>Illustrative, with ASSUMED room geometry and finishes (2026-11-27), not this building's measured reverberation time:</em> volume = floor area × 3 m (${fmt(p.area*3)} m³), walls = floor area × 2, glazing = floor area × 0.15, soft furnishings = floor area × 0.5.<br>RT<sub>60</sub> of that assumed room: <strong>${fmt(rt)} s</strong>.<br>For a real room, enter its own dimensions and finishes in Physics → Acoustics and compare with the target in the project specification.`);
         }
         // 6.4 Egress
         if(ok(extras.egress)){
@@ -1348,7 +1348,7 @@ function repRender(report, quote, drawings, render, p, extras){
            <tbody>` + rows.map(([l,v])=>`<tr><td style=\"padding:6px 8px;border-bottom:1px solid #eee\">${l}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right\">${fmt(v)}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right\">${sym} ${fmt(v*usdToLocal)}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right;color:#666\">${rcs.total_project_cost_usd?((v||0)/rcs.total_project_cost_usd*100).toFixed(1):'-'}%</td></tr>`).join('') +
         `<tr style=\"background:#0d47a1;color:#fff;font-weight:bold\"><td style=\"padding:10px 8px\">TOTAL PROJECT COST</td><td style=\"padding:10px 8px;text-align:right\">USD ${fmt(rcs.total_project_cost_usd)}</td><td style=\"padding:10px 8px;text-align:right\">${sym} ${fmt(rcs.total_project_cost_local)}</td><td style=\"padding:10px 8px;text-align:right\">100%</td></tr>
          </tbody></table>
-         <div style=\"font-size:10px;color:#666;margin-top:6px\">Kenya residential benchmark (KQS 2025): KES 35,000\u201355,000 / m\u00b2 for standard finish bungalow; KES 55,000\u201380,000 / m\u00b2 for high-spec maisonette. Compare against this report's <strong>${sym} ${fmt(rcs.cost_per_sqm_local)}/m\u00b2</strong> for sanity-check.</div>`,
+         <div style=\"font-size:10px;color:#666;margin-top:6px\">No cost-per-m\u00b2 benchmark is given (2026-11-27: the range shown here had no real source). A cost needs measured quantities and sourced, dated rates: request a quotation (WhatsApp 0768 860 665).</div>`,
         '#0d47a1');
 
     // ---------- 9. QS Quotation ----------
@@ -2017,7 +2017,7 @@ async function repSaveOverrides(){
 }
 
 async function repResetOverrides(){
-    if(!confirm('Reset all rate overrides back to auto-calculated KQS-2025 values?')) return;
+    if(!confirm('Remove all your rate overrides? The rates they replaced come from the server, which is not available online.')) return;
     window._repOverrides = {};
     localStorage.removeItem('eims_quote_overrides');
     try {
@@ -2432,7 +2432,8 @@ function showBIM(){
 async function loadDraw(type,params){
     let vp=document.getElementById('drawVP');if(!vp)return;
     vp.innerHTML='<div style="padding:30px"><div class="spinner"></div></div>';
-    let body=Object.assign({units:+gv('p4_units')||3,bedrooms:+gv('p4_beds')||3,area:+gv('p1_area')||450,stories:+gv('p2_stories')||2,style:gv('p4_style')||'modern',location:gv('p1_location')||'',foundation_type:'strip'},params||{});
+    let body=Object.assign({units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern',location:gv('p1_location')||'',foundation_type:null},params||{});
+    if(wizStop(body)){vp.innerHTML='<div style="padding:30px;color:#ffb74d">Enter the project inputs in the wizard first. Nothing is assumed.</div>';return;}
     let url=API+'/drawings/'+type;
     try{
         let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -2459,7 +2460,8 @@ function downloadSVG(){if(!currentSVG)return alert('Generate first');let b=new B
 
 async function generateAllDrawings(){
     try{
-        let body={units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,area:+gv('p1_area')||450,style:gv('p4_style')||'modern',location:gv('p1_location')||''};
+        let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern',location:gv('p1_location')||''};
+        if(wizStop(body))return;
         let r=await fetch(API+'/drawings/all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
         if(d.success){drawings=d.drawings;alert(d.total_drawings+' drawings generated!');}
@@ -2478,8 +2480,8 @@ async function genFull3D(){
     const useBIM = !!pid;
     const url = useBIM ? API+'/bim/3d-model' : API+'/drawings/3d-model';
     const body = useBIM ? {project_id: pid}
-        : {units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,
-           area:+gv('p1_area')||450,style:gv('p4_style')||'modern'};
+        : {units:wizNum('p4_units'),stories:wizNum('p2_stories'),
+           area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
@@ -2524,7 +2526,8 @@ function bimTab(){
 async function generateIFC(){
     let out=document.getElementById('bimOut');if(out)out.innerHTML='<div class="spinner"></div>';
     try{
-        let body={name:gv('p13_name')||'EIMS Project',location:gv('p1_location')||'',gps_lat:+gv('p1_lat')||0,gps_lng:+gv('p1_lng')||0,stories:+gv('p2_stories')||2,area:+gv('p1_area')||450,units:+gv('p4_units')||3};
+        let body={name:gv('p13_name')||'EIMS Project',location:gv('p1_location')||'',gps_lat:wizNum('p1_lat'),gps_lng:wizNum('p1_lng'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),units:wizNum('p4_units')};
+        if(wizStop(body)){if(out)out.innerHTML='';return;}
         let r=await fetch(API+'/bim/generate-ifc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
         if(!d.success){
@@ -2699,15 +2702,15 @@ async function runPhase(n){
     try{
         let proj={
             name:gv('p13_name')||'Project',location:gv('p1_location')||'',
-            gps_lat:+gv('p1_lat')||0,gps_lng:+gv('p1_lng')||0,
+            gps_lat:wizNum('p1_lat'),gps_lng:wizNum('p1_lng'),
             building_type:gv('p3_type')||'Residential',
-            units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,
-            area:+gv('p1_area')||450,bedrooms:+gv('p4_beds')||3,
+            units:wizNum('p4_units'),stories:wizNum('p2_stories'),
+            area:wizNum('p1_area'),bedrooms:wizNum('p4_beds'),
             // Phase 1 inputs
-            site_area:+gv('p1_area')||500,plots:+gv('p1_plots')||1,
+            site_area:wizNum('p1_area'),plots:wizNum('p1_plots'),
             land_status:gv('p1_status')||'',description:gv('p1_desc')||'',constraints:gv('p1_constraints')||'',
             // Phase 2 inputs
-            soil_type:gv('p2_soil')||'clay_loam',water_table:+gv('p2_water')||5.2,
+            soil_type:gv('p2_soil')||'clay_loam',water_table:wizNum('p2_water'),
             seismic_design:document.getElementById('p2_seismic')?.checked??true,
             flood_risk:document.getElementById('p2_flood')?.checked??true,
             landslide_risk:document.getElementById('p2_landslide')?.checked??false,
@@ -2744,11 +2747,11 @@ async function runPhase(n){
             country:gv('p10_county')||'',title_type:gv('p10_title')||'Freehold',
             zoning:gv('p10_zoning')||'Residential (Low)',
             // Phase 12 inputs
-            budget:+gv('p12_budget')||100000,currency:gv('p12_currency')||'USD',
+            budget:wizNum('p12_budget'),currency:gv('p12_currency')||'USD',
             financing:gv('p12_financing')||'Cash (5% Discount)',
             purpose:gv('p12_purpose')||'Owner Occupier',
-            rent_per_unit:+gv('p12_rent')||500,occupancy_pct:+gv('p12_occupancy')||90,
-            interest_rate:+gv('p12_interest')||8,
+            rent_per_unit:wizNum('p12_rent'),occupancy_pct:wizNum('p12_occupancy'),
+            interest_rate:wizNum('p12_interest'),
             // Phase 13 inputs
             client_name:gv('p13_client')||'',client_email:gv('p13_email')||'',
             client_phone:gv('p13_phone')||'',start_date:gv('p13_start')||'',
@@ -2807,10 +2810,10 @@ function showResults(n,data){
 }
 
 /* ============ GLOBAL ACTIONS ============ */
-async function saveAllData(){saveInputs();try{await fetch(API+'/wizard/save-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project_name:D.p13_name||'Project',location:D.p1_location||'',total_area:+D.p1_area||450,units:+D.p4_units||3,bedrooms_per_unit:+D.p4_beds||3,budget:+D.p12_budget||100000,building_style:D.p4_style||'modern',all_inputs:D})});alert('Saved!');}catch(e){localStorage.setItem('eims',JSON.stringify(D));alert('Saved locally');}}
+async function saveAllData(){saveInputs();try{await fetch(API+'/wizard/save-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project_name:D.p13_name||'Project',location:D.p1_location||'',total_area:wizNumOf(D.p1_area),units:wizNumOf(D.p4_units),bedrooms_per_unit:wizNumOf(D.p4_beds),budget:wizNumOf(D.p12_budget),building_style:D.p4_style||'modern',all_inputs:D})});alert('Saved!');}catch(e){localStorage.setItem('eims',JSON.stringify(D));alert('Saved locally');}}
 async function generateReport(){try{await runQuiet();window.open(API+'/export/pdf','_blank');}catch(e){alert('Run analysis first');}}
 async function exportExcel(){try{await runQuiet();window.open(API+'/export/excel','_blank');}catch(e){alert('Run analysis first');}}
-async function runQuiet(){await fetch(API+'/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:D.p13_name||'P',location:D.p1_location||'',gps_lat:+D.p1_lat||0,gps_lng:+D.p1_lng||0,building_type:D.p3_type||'Residential',units:+D.p4_units||3,stories:+D.p2_stories||2,area:+D.p1_area||450,bedrooms:+D.p4_beds||3,style:D.p4_style||'modern',soil_type:D.p2_soil||'clay_loam',water_table:+D.p2_water||5.2,foundation_type:D.p3_ftype||'auto',structure_type:D.p3_struct||'auto',material_quality:D.p7_quality||'standard',budget:+D.p12_budget||100000,currency:D.p12_currency||'USD',country:D.p10_county||'',all_inputs:D})});await fetch(API+'/execute-all-phases',{method:'POST'});}
+async function runQuiet(){await fetch(API+'/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:D.p13_name||'P',location:D.p1_location||'',gps_lat:wizNumOf(D.p1_lat),gps_lng:wizNumOf(D.p1_lng),building_type:D.p3_type||'Residential',units:wizNumOf(D.p4_units),stories:wizNumOf(D.p2_stories),area:wizNumOf(D.p1_area),bedrooms:wizNumOf(D.p4_beds),style:D.p4_style||'modern',soil_type:D.p2_soil||'clay_loam',water_table:wizNumOf(D.p2_water),foundation_type:D.p3_ftype||'auto',structure_type:D.p3_struct||'auto',material_quality:D.p7_quality||'standard',budget:wizNumOf(D.p12_budget),currency:D.p12_currency||'USD',country:D.p10_county||'',all_inputs:D})});await fetch(API+'/execute-all-phases',{method:'POST'});}
 function export3DOBJ(){if(!meshes3d.length)return alert('Generate 3D first');let lines=['# EIMS 3D Model'];let voff=1;meshes3d.forEach(m=>{lines.push('o '+(m.userData.name||'obj'));let pos=m.geometry.attributes.position;for(let i=0;i<pos.count;i++){let v=new THREE.Vector3().fromBufferAttribute(pos,i);v.applyMatrix4(m.matrixWorld);lines.push('v '+v.x.toFixed(4)+' '+v.y.toFixed(4)+' '+v.z.toFixed(4));}let idx=m.geometry.index;if(idx)for(let i=0;i<idx.count;i+=3)lines.push('f '+(idx.getX(i)+voff)+' '+(idx.getX(i+1)+voff)+' '+(idx.getX(i+2)+voff));voff+=pos.count;});let b=new Blob([lines.join('\n')],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.obj';a.click();}
 
 /* ============ DESCRIBE & GENERATE (NL → drawings + AI render) ============
@@ -2954,10 +2957,10 @@ async function dgRun(){
 
     const params = {
         name: 'DescribeMode_'+Date.now().toString(36),
-        building_type: ext.building_type || 'BUNGALOW',
-        location: (ext.location && ext.location.city) ? (ext.location.city + (ext.location.country ? (', ' + ext.location.country) : '')) : 'Nairobi, Kenya',
-        area:     num('dgArea', ext.area_m2 || 180),
-        bedrooms: num('dgBeds', ext.bedrooms || 3),
+        building_type: ext.building_type || null,
+        location: (ext.location && ext.location.city) ? (ext.location.city + (ext.location.country ? (', ' + ext.location.country) : '')) : '',
+        area:     num('dgArea', ext.area_m2 ?? NaN),
+        bedrooms: num('dgBeds', ext.bedrooms ?? NaN),
         stories:  num('dgStories', ext.stories || 1),
         units:    num('dgUnits', ext.units || 1),
         style:    sel('dgStyle', (ext.styles && ext.styles[0]) || 'modern'),
@@ -4216,9 +4219,9 @@ async function bimQuickBuild(){
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
                 name: 'BIM Quick',
-                area_m2:  +document.getElementById('bimQArea').value || 180,
-                bedrooms: +document.getElementById('bimQBeds').value || 3,
-                stories:  +document.getElementById('bimQStories').value || 1,
+                area_m2:  wizNum('bimQArea'),
+                bedrooms: wizNum('bimQBeds'),
+                stories:  wizNum('bimQStories'),
                 style:    document.getElementById('bimQStyle').value || 'modern',
                 building_type: 'BUNGALOW',
             }),
@@ -4645,7 +4648,7 @@ function showFloorEditor(){
 
     // Floor tabs
     h+='<div class="fpe-floor-tabs" id="fpeFloorTabs">';
-    for(let f=0;f<Math.max(fpe.floors,+(gv('p2_stories'))||2);f++){
+    for(let f=0;f<Math.max(fpe.floors,+(gv('p2_stories'))||2);f++){ // editor tabs only (online Floor Plan editor), not an engineering input
         h+='<div class="fpe-floor-tab'+(f===fpe.floor?' on':'')+'" onclick="fpeSetFloor('+f+')">F'+f+'</div>';
     }
     h+='<div class="fpe-floor-tab" onclick="fpeAddFloor()" title="Add floor">+</div>';
@@ -5443,7 +5446,7 @@ async function fpeAutoSolve(){
 }
 
 async function fpeExportDXF(){
-    let body={units:+(gv('p4_units'))||3,bedrooms:+(gv('p4_beds'))||3,area:+(gv('p1_area'))||450,stories:+(gv('p2_stories'))||2,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/dxf/floor-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_FloorPlan.dxf';a.click();}
@@ -5452,7 +5455,7 @@ async function fpeExportDXF(){
 
 // ---- EXPORT FUNCTIONS (DXF/FBX/NWD top bar) ----
 async function exportDXF(){
-    let body={units:+(gv('p4_units'))||3,bedrooms:+(gv('p4_beds'))||3,area:+(gv('p1_area'))||450,stories:+(gv('p2_stories'))||2,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/dxf/floor-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_FloorPlan.dxf';a.click();}
@@ -5461,7 +5464,7 @@ async function exportDXF(){
 }
 
 async function exportFBX(){
-    let body={units:+(gv('p4_units'))||3,stories:+(gv('p2_stories'))||2,area:+(gv('p1_area'))||450,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/fbx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.fbx';a.click();}
@@ -5470,7 +5473,7 @@ async function exportFBX(){
 }
 
 async function exportNWD(){
-    let body={units:+(gv('p4_units'))||3,stories:+(gv('p2_stories'))||2,area:+(gv('p1_area'))||450,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/nwd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.nwd';a.click();}
@@ -5487,13 +5490,19 @@ function setCadTool(t){let c={wall:'#2d3436',room:'#0c2461',door:'#e74c3c',windo
 function drawGrid(){if(!cadCtx)return;cadCtx.strokeStyle='#eee';cadCtx.lineWidth=0.5;for(let x=0;x<=900;x+=20){cadCtx.beginPath();cadCtx.moveTo(x,0);cadCtx.lineTo(x,450);cadCtx.stroke();}for(let y=0;y<=450;y+=20){cadCtx.beginPath();cadCtx.moveTo(0,y);cadCtx.lineTo(900,y);cadCtx.stroke();}}
 function clearCad(){if(cadCtx){cadCtx.clearRect(0,0,900,450);drawGrid();}cadHistory=[];}
 function undoCad(){if(cadHistory.length){cadHistory.pop();cadCtx.clearRect(0,0,900,450);drawGrid();if(cadHistory.length){let img=new Image();img.onload=()=>cadCtx.drawImage(img,0,0);img.src=cadHistory[cadHistory.length-1];}}}
-async function saveCadSketch(){try{let r=await fetch(API+'/wizard/sketch-to-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sketch_data:document.getElementById('cadCanvas').toDataURL(),building_type:gv('p3_type')||'Residential',stories:+gv('p2_stories')||2,bedrooms:+gv('p4_beds')||3})});let d=await r.json();if(d.result){let det=d.result.detected_dimensions;alert('Analyzed! Rooms: '+det.rooms_detected+', Area: '+det.estimated_area+'m\u00B2, Stories: '+det.stories_detected);}else{alert('Analysis returned no results');}}catch(e){alert('Server unreachable - sketch saved locally only');}}
+async function saveCadSketch(){try{let r=await fetch(API+'/wizard/sketch-to-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sketch_data:document.getElementById('cadCanvas').toDataURL(),building_type:gv('p3_type')||'Residential',stories:wizNum('p2_stories'),bedrooms:wizNum('p4_beds')})});let d=await r.json();if(d.result){let det=d.result.detected_dimensions;alert('Analyzed! Rooms: '+det.rooms_detected+', Area: '+det.estimated_area+'m\u00B2, Stories: '+det.stories_detected);}else{alert('Analysis returned no results');}}catch(e){alert('Server unreachable - sketch saved locally only');}}
 
 /* ============ FILE UPLOADS ============ */
 function setupUploads(){document.querySelectorAll('input[type=file]').forEach(inp=>{inp.onchange=function(){let f=this.files[0];if(!f)return;let pid=this.id.replace('_img','_preview');let prev=document.getElementById(pid);if(prev&&f.type.startsWith('image/')){let rdr=new FileReader();rdr.onload=e=>{prev.innerHTML='<img src="'+e.target.result+'" class="img-preview">';};rdr.readAsDataURL(f);}let fd=new FormData();fd.append('file',f);fd.append('type',this.id);fetch(API+'/wizard/upload-image',{method:'POST',body:fd}).catch(()=>{});};});}
 
 /* ============ HELPERS ============ */
 function gv(id){let e=document.getElementById(id);return e?e.value:D[id]||'';}
+/* No silent defaults (review of 63d3c0bc, 2026-11-27): a blank or invalid wizard number is NaN
+   (sent as null), never 450 m², 3 units, 3 bedrooms, 2 storeys, lat/lon 0 or a 5.2 m water table. */
+function wizNumOf(v){const t=String(v??'').trim();if(t==='')return NaN;const x=Number(t);return Number.isFinite(x)?x:NaN;}
+function wizNum(id){return wizNumOf(gv(id));}
+/* Names the wizard fields left blank in a request and stops it: nothing is assumed. */
+function wizStop(obj){const m=Object.keys(obj||{}).filter(k=>typeof obj[k]==='number'&&Number.isNaN(obj[k]));if(!m.length)return false;alert('Enter '+m.join(', ')+' in the wizard first. Nothing is assumed.');return true;}
 function rb(l,v){return '<div class="rb"><div class="rl">'+l+'</div><div class="rv">'+v+'</div></div>';}
 function fCUR(v){let cur=gv('p12_currency')||'USD';let sym={'USD':'$','EUR':'\u20AC','GBP':'\u00A3','KES':'KES','ZAR':'R','NGN':'\u20A6','GHS':'GH\u20B5','AED':'AED','SAR':'SAR','INR':'\u20B9','AUD':'A$','CAD':'C$','BRL':'R$','CNY':'\u00A5','JPY':'\u00A5','SGD':'S$','MXN':'MX$','TRY':'\u20BA','TZS':'TSh','UGX':'USh','EGP':'E\u00A3','MAD':'MAD','ETB':'ETB','RWF':'RWF','COP':'COP','XAF':'XAF','XOF':'XOF','BWP':'BWP'};return (sym[cur]||cur)+' '+Number(v).toLocaleString();}
 function fKES(v){return fCUR(v);}
@@ -8479,8 +8488,8 @@ function proBuildExteriorPrompt(p){
   return [
     'architectural photography',
     base,
-    (p.bedrooms||4)+' bedroom, '+(p.levels||2)+' storey',
-    'setting: ' + (p.setting||'Mediterranean coast'),
+    (p.bedrooms ? p.bedrooms+' bedroom' : '')+(p.bedrooms && p.levels ? ', ' : '')+(p.levels ? p.levels+' storey' : ''),
+    p.setting ? 'setting: ' + p.setting : '',
     p.features ? 'featuring '+p.features : '',
     'lit by '+(p.time_of_day||'golden hour'),
     'professional architectural photograph, wide angle, ultra realistic, award winning, 8k, dramatic atmosphere, no people'
