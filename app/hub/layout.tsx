@@ -75,6 +75,11 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
   // Suppress global nav/footer, enforce locked shell
   return (
     <>
+      {/* Server-rendered marker read by app/hub/hub.css (html:has(...)) so the
+          marketing nav/footer are hidden from the FIRST paint, not after
+          hydration (HUB-03 layout shift, 2026-11-27). Empty: it hides no
+          content. HubChromeIsolator stays as the fallback without :has(). */}
+      <span data-hub-route-marker="" hidden />
       <HubChromeIsolator />
       <FlagshipProductSchema
         name="Solar & UPS Intelligence Hub"

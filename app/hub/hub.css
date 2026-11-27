@@ -18,13 +18,27 @@
    hidden for the duration so the cockpit owns the viewport. DOM stays in the
    tree for SEO / structured data — only display is suppressed.
    ------------------------------------------------------------------------- */
+/* HUB-03 layout shift (2026-11-27). The client effect above only runs after
+   hydration (1.7-3.1 s on production), so the marketing nav was painted first
+   and then removed: the B2B strip jumped from y 64-72 to y 0 and the whole
+   Hub moved up with it (CLS 0.105-0.152). app/hub/layout.tsx now renders an
+   empty marker, [data-hub-route-marker], in the SERVER HTML, and the :has()
+   selectors below apply the same hiding from the first paint. The B2B strip
+   is not touched: it shows on the Hub exactly as before, just never moves.
+   The data-hub-route selectors stay as the fallback for browsers without
+   :has(). The marker unmounts with the Hub layout, so leaving the Hub by
+   client navigation restores the nav and footer as before. */
 html[data-hub-route="true"] #main-navigation,
-html[data-hub-route="true"] #contact-section {
+html[data-hub-route="true"] #contact-section,
+html:has([data-hub-route-marker]) #main-navigation,
+html:has([data-hub-route-marker]) #contact-section {
   display: none !important;
 }
-html[data-hub-route="true"] body {
+html[data-hub-route="true"] body,
+html:has([data-hub-route-marker]) body {
   padding-top: 0 !important;
 }
-html[data-hub-route="true"] main#main-content {
+html[data-hub-route="true"] main#main-content,
+html:has([data-hub-route-marker]) main#main-content {
   padding-top: 0 !important;
 }
