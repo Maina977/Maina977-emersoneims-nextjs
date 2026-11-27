@@ -70,8 +70,11 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
 
   if (p.finance) {
     const cf = wb.addWorksheet('Cash flow');
-    cf.addRow(['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Net (KES)', 'Cumulative (KES)']);
-    p.finance.cashflows.forEach((c) => cf.addRow([c.year, c.energyKwh, c.savingsKes, c.omKes, c.netKes, c.cumulativeKes]));
+    cf.addRow(['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Net (KES)', 'Cumulative (KES)', 'Replacements (KES, quoted)']);
+    p.finance.cashflows.forEach((c) => cf.addRow([c.year, c.energyKwh, c.savingsKes, c.omKes, c.netKes, c.cumulativeKes, c.replacementKes]));
+    const se = wb.addWorksheet('Sensitivity');
+    se.addRows([[p.finance.sensitivity.note], [], ['Variable', 'Change (%)', 'NPV (KES)', 'IRR (%)', 'Simple payback (years)']]);
+    p.finance.sensitivity.rows.forEach((r) => se.addRow([r.variable, r.changePct, r.npvKes, r.irrPct ?? 'no unique IRR', r.simplePaybackYears ?? 'not within the lifetime']));
   }
   const sld = wb.addWorksheet('Single-line diagram');
   sld.addRows([[p.sld.title], [p.sld.legend], [`The drawing is in the PDF (last page) and on screen; it shows exactly these items.${p.sld.designValid ? '' : ' DESIGN CHECKS REFUSE THIS DESIGN: for review only.'}`], [], ['Component', 'Values (from the design) and items ' + TBS]]);
@@ -112,6 +115,9 @@ export function proposalToPdf(p: Proposal): Uint8Array {
   if (p.shading) {
     autoTable(doc, { head: [['Horizon shading', '']], body: safeRows([['Horizon source', p.shading.horizon.source], ['Method', p.shading.method], ['Diffuse', p.shading.diffuseTreatment], ['Sky-view factor (horizontal)', String(p.shading.skyViewFactorHorizontal)], ['Indicative diffuse loss (NOT applied)', p.shading.indicativeDiffuseLossPct === null ? '—' : `${p.shading.indicativeDiffuseLossPct} %`], ['Annual energy unshaded / shaded', `${p.shading.annual.unshadedAnnualKwh.toLocaleString('en-KE')} / ${p.shading.annual.shadedAnnualKwh.toLocaleString('en-KE')} kWh`]]), styles: { fontSize: 8 } });
     autoTable(doc, { head: safeRows([SHADING_HEAD]), body: safeRows(shadingRows(p.shading)), styles: { fontSize: 8 } });
+  }
+  if (p.finance) {
+    autoTable(doc, { head: [['Sensitivity', 'Change', 'NPV', 'IRR', 'Payback']], body: safeRows(p.finance.sensitivity.rows.map((r) => [r.variable, `${r.changePct > 0 ? '+' : ''}${r.changePct} %`, kes(r.npvKes), r.irrPct === null ? 'no unique IRR' : `${r.irrPct} %`, r.simplePaybackYears === null ? 'not within the lifetime' : `${r.simplePaybackYears} years`])), foot: safeRows([[p.finance.sensitivity.note, '', '', '', '']]), styles: { fontSize: 8 } });
   }
   if (p.statusReasons.length) autoTable(doc, { head: [['Why this is not for issue']], body: safeRows(p.statusReasons.map((r) => [r])), styles: { fontSize: 8 } });
   autoTable(doc, { head: [['Disclosures']], body: safeRows(p.disclosures.map((d) => [d])), styles: { fontSize: 8 } });

@@ -129,6 +129,27 @@ export function horizonFromForm(f: ProposalForm): { profile: HorizonProfile | nu
   return parseHorizonText(f['sh.sectors'] ?? '', f['sh.obstacles'] ?? '', f['sh.source'] ?? '');
 }
 
+/**
+ * Quoted component replacements typed as "item; year; cost KES; source; date",
+ * several separated by "|" (REQ-06). Each part is required; a bad entry is
+ * reported, never guessed.
+ */
+export function parseReplacements(text: string, errors: string[]): Array<{ item: string; year: number; costKes: number; source: string; date: string }> {
+  const out: Array<{ item: string; year: number; costKes: number; source: string; date: string }> = [];
+  if (!text.trim()) return out;
+  text.split('|').map((x) => x.trim()).filter(Boolean).forEach((entry, n) => {
+    const parts = entry.split(';').map((x) => x.trim());
+    const [item, year, cost, source, date] = parts;
+    const y = Number(year), c = Number(String(cost ?? '').replace(/,/g, ''));
+    if (parts.length !== 5 || !item || !source || !date) { errors.push(`Replacement ${n + 1}: give item; year; cost KES; source; date`); return; }
+    if (!Number.isInteger(y) || y < 1) { errors.push(`Replacement ${n + 1} (${item}): year must be a whole number ≥ 1`); return; }
+    if (!Number.isFinite(c) || c < 0) { errors.push(`Replacement ${n + 1} (${item}): cost must be a number of KES`); return; }
+    if (Number.isNaN(Date.parse(date))) { errors.push(`Replacement ${n + 1} (${item}): the quote date must be a date (YYYY-MM-DD)`); return; }
+    out.push({ item, year: y, costKes: c, source, date });
+  });
+  return out;
+}
+
 /** Grid / generator connection for the single-line diagram: yes/no answers; unanswered = null (not stated). */
 export function connectionsFromForm(f: ProposalForm): SldConnections | undefined {
   const tri = (k: string) => (str(f, k) === 'yes' ? true : str(f, k) === 'no' ? false : null);
@@ -257,6 +278,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const disc = sourced('Discount rate (%)', 'f.discount', 'f.discountSource');
   const deg = sourced('Degradation (%/yr)', 'f.degradation', 'f.degradationSource');
   const om = sourced('O&M (KES/yr)', 'f.om', 'f.omSource');
+  const replacements = parseReplacements(str(f, 'f.replacements'), errors);
 
   let cables: CableRun[] = [];
   if (anyFilled(f, 'k.')) {
@@ -286,6 +308,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
     finance: {
       tariffKesPerKwh: tariff, ...(exportTariff ? { exportTariffKesPerKwh: exportTariff } : {}), ...(selfConsumed ? { selfConsumedFraction: selfConsumed } : {}),
       tariffEscalationPct: esc, discountRatePct: disc, degradationPctPerYear: deg, omKesPerYear: om, lifetimeYears: num(f, 'f.lifetime'),
+      ...(replacements.length ? { replacements } : {}),
     },
   };
   return { input, errors, warnings };

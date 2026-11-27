@@ -53,7 +53,8 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if (!Array.isArray(i.bom) || !(i.bom as unknown[]).every((l) => isObj(l) && isStr(l.item) && isStr(l.model) && isNum(l.quantity) && isStr(l.unit) && (l.rate === null || isObj(l.rate)))) e.push('bom must be an array of { item, model, quantity, unit, rate | null }');
   const f = i.finance;
   if (!isObj(f) || !isNum(f.lifetimeYears)) e.push('finance { …, lifetimeYears } is required');
-  else for (const k of ['tariffKesPerKwh', 'tariffEscalationPct', 'discountRatePct', 'degradationPctPerYear', 'omKesPerYear', 'exportTariffKesPerKwh', 'selfConsumedFraction']) {
+  else if (f.replacements !== undefined && (!Array.isArray(f.replacements) || !(f.replacements as unknown[]).every((r) => isObj(r) && isStr(r.item) && isNum(r.year) && isNum(r.costKes) && isStr(r.source) && isStr(r.date)))) e.push('finance.replacements must be a list of { item, year, costKes, source, date }');
+  if (isObj(f)) for (const k of ['tariffKesPerKwh', 'tariffEscalationPct', 'discountRatePct', 'degradationPctPerYear', 'omKesPerYear', 'exportTariffKesPerKwh', 'selfConsumedFraction']) {
     const s = f[k];
     if (s === undefined && (k === 'exportTariffKesPerKwh' || k === 'selfConsumedFraction')) continue;
     if (!isObj(s) || !isNum(s.value) || !isStr(s.source)) e.push(`finance.${k} must be { value, source }`);

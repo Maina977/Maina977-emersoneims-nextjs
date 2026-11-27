@@ -55,12 +55,23 @@ export interface ProposalInput {
     degradationPctPerYear: Sourced;      // module datasheet warranty
     omKesPerYear: Sourced;
     lifetimeYears: number;
+    /**
+     * Component replacements over the project life (P1-B §2 Finance, REQ-06):
+     * QUOTED costs only, each with its source and date, charged in the year
+     * given at the quoted price (not escalated). Nothing is assumed: with no
+     * entry, no replacement is costed and the proposal says so.
+     */
+    replacements?: Array<{ item: string; year: number; costKes: number; source: string; date: string }>;
   };
   /** Server-produced only (see proposalApproval.ts); never taken from a client request. */
   verifiedApproval?: VerifiedApproval;
 }
 
-export interface CashflowYear { year: number; energyKwh: number; savingsKes: number; omKes: number; netKes: number; cumulativeKes: number }
+export interface CashflowYear { year: number; energyKwh: number; savingsKes: number; omKes: number; replacementKes: number; netKes: number; cumulativeKes: number }
+/** One-at-a-time sensitivity of the financial result (REQ-17). */
+export interface SensitivityRow { variable: 'tariff' | 'installed cost' | 'energy yield'; changePct: number; npvKes: number; irrPct: number | null; simplePaybackYears: number | null }
+/** The step used for the sensitivity: a chosen ± step, stated on every output; not a forecast. */
+export const SENSITIVITY_STEP_PCT = 10;
 export interface Proposal {
   reference: string; status: 'REFUSED' | 'DRAFT' | 'FOR ISSUE'; statusReasons: string[];
   /** SHA-256 of the canonical input (approval excluded): the revision an approval is locked to. */
@@ -73,7 +84,7 @@ export interface Proposal {
   schedule: Array<{ item: string; model: string; quantity: number; unit: string; datasheet?: string; verified?: boolean }>;
   costing: { lines: Array<PricedLine & { amountKes: number | null }>; capexKes: number | null; unpriced: string[] };
   energy: { year1Kwh: number; usefulYear1Kwh: number | null; exportYear1Kwh: number; clippedKwh: number; specificYield: number; performanceRatio: number; source: string };
-  finance: null | { npvKes: number; irrPct: number | null; simplePaybackYears: number | null; lcoeKesPerKwh: number; cashflows: CashflowYear[] };
+  finance: null | { npvKes: number; irrPct: number | null; simplePaybackYears: number | null; lcoeKesPerKwh: number; cashflows: CashflowYear[]; sensitivity: { stepPct: number; rows: SensitivityRow[]; note: string } };
   /** Single-line diagram model (sld.ts): the screen SVG and the PDF/Excel exports are all drawn from it. */
   sld: SldModel;
   /** Horizon shading from the production simulation (shading.ts), or null when no horizon was entered. */
@@ -154,6 +165,15 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (Math.abs(shading.annual.shadedAnnualKwh - i.production.annualKwh) > 1) throw new Error('Horizon shading: the shaded annual energy does not match the production result (they must come from the same simulation)');
   }
   const exportTariff = f.exportTariffKesPerKwh ? need('Export tariff (KES/kWh)', f.exportTariffKesPerKwh, 0, 200) : 0;
+  const replacements = f.replacements ?? [];
+  if (!Array.isArray(replacements)) throw new Error('finance.replacements must be a list');
+  for (const r of replacements) {
+    if (!r || typeof r !== 'object' || !String(r.item ?? '').trim()) throw new Error('Each replacement needs an item name');
+    if (!(Number.isInteger(r.year) && r.year >= 1 && r.year <= f.lifetimeYears)) throw new Error(`Replacement "${r.item}": year must be a whole year 1–${f.lifetimeYears}`);
+    if (!(Number.isFinite(r.costKes) && r.costKes >= 0)) throw new Error(`Replacement "${r.item}": cost must be a number of KES ≥ 0`);
+    if (!String(r.source ?? '').trim() || Number.isNaN(Date.parse(String(r.date)))) throw new Error(`Replacement "${r.item}": a quoted cost needs its source and date`);
+  }
+  const replacementInYear = (y: number) => replacements.filter((r) => r.year === y).reduce((a, r) => a + r.costKes, 0);
 
   // 1. Design checks
   const str = validateStrings(i.module.data, i.inverter.data, i.design, i.temps);
@@ -211,24 +231,41 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   // 4. Finance (only with a complete price and known self-consumption)
   let finance: Proposal['finance'] = null;
   if (capex !== null && useful !== null) {
-    const flows = [-capex];
-    const cf: CashflowYear[] = [];
-    let cum = -capex;
-    for (let y = 1; y <= f.lifetimeYears; y++) {
-      const k = (1 - deg / 100) ** (y - 1), t = (1 + esc / 100) ** (y - 1);
-      const savings = useful * k * tariff * t + exported * k * exportTariff;
-      const net = savings - om;
-      flows.push(net); cum += net;
-      cf.push({ year: y, energyKwh: Math.round(y1 * k), savingsKes: Math.round(savings), omKes: Math.round(om), netKes: Math.round(net), cumulativeKes: Math.round(cum) });
+    const usefulKwh = useful;
+    // One cash-flow model, run for the base case and for each sensitivity case.
+    const run = (capexX: number, tariffX: number, yieldX: number) => {
+      const cap = capex * capexX;
+      const flows = [-cap];
+      const cf: CashflowYear[] = [];
+      let cum = -cap;
+      for (let y = 1; y <= f.lifetimeYears; y++) {
+        const k = (1 - deg / 100) ** (y - 1) * yieldX, t = (1 + esc / 100) ** (y - 1);
+        const savings = usefulKwh * k * tariff * tariffX * t + exported * k * exportTariff * tariffX;
+        const repl = replacementInYear(y);
+        const net = savings - om - repl;
+        flows.push(net); cum += net;
+        cf.push({ year: y, energyKwh: Math.round(y1 * k), savingsKes: Math.round(savings), omKes: Math.round(om), replacementKes: Math.round(repl), netKes: Math.round(net), cumulativeKes: Math.round(cum) });
+      }
+      const ir = irr(flows);
+      return { cap, flows, cf, npvKes: Math.round(npv(disc, flows)), irrPct: ir === null ? null : Math.round(ir * 100) / 100, simplePaybackYears: simplePayback(flows) };
+    };
+    const b = run(1, 1, 1);
+    const pv = (x: number, year: number) => x / (1 + disc / 100) ** year;
+    const pvEnergy = b.cf.reduce((s, c) => s + pv(c.energyKwh, c.year), 0);
+    const pvOm = b.cf.reduce((s, c) => s + pv(c.omKes, c.year), 0);
+    const pvRepl = b.cf.reduce((s, c) => s + pv(c.replacementKes, c.year), 0);
+    const st = SENSITIVITY_STEP_PCT / 100;
+    const rows: SensitivityRow[] = [];
+    for (const [variable, mk] of [['tariff', (d: number) => run(1, 1 + d, 1)], ['installed cost', (d: number) => run(1 + d, 1, 1)], ['energy yield', (d: number) => run(1, 1, 1 + d)]] as const) {
+      for (const d of [-st, st]) { const r = mk(d); rows.push({ variable, changePct: Math.round(d * 100), npvKes: r.npvKes, irrPct: r.irrPct, simplePaybackYears: r.simplePaybackYears }); }
     }
-    const pvEnergy = cf.reduce((s, c) => s + c.energyKwh / (1 + disc / 100) ** c.year, 0);
-    const pvOm = cf.reduce((s, c) => s + c.omKes / (1 + disc / 100) ** c.year, 0);
-    const ir = irr(flows);
     finance = {
-      npvKes: Math.round(npv(disc, flows)), irrPct: ir === null ? null : Math.round(ir * 100) / 100,
-      simplePaybackYears: simplePayback(flows), lcoeKesPerKwh: Math.round(((capex + pvOm) / pvEnergy) * 100) / 100, cashflows: cf,
+      npvKes: b.npvKes, irrPct: b.irrPct,
+      simplePaybackYears: b.simplePaybackYears, lcoeKesPerKwh: Math.round(((capex + pvOm + pvRepl) / pvEnergy) * 100) / 100, cashflows: b.cf,
+      sensitivity: { stepPct: SENSITIVITY_STEP_PCT, rows, note: `Each variable moved ±${SENSITIVITY_STEP_PCT} % on its own with everything else held: a chosen step to show how the result depends on it, not a forecast.` },
     };
   }
+
 
   // 5. Status
   const revisionHash = proposalRevisionHash(i);
@@ -262,6 +299,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'The simulation agrees with pvlib on identical inputs; it has not yet been compared with measured output of installed EmersonEIMS systems.',
       'Shading, soiling and the roof\'s real temperature are only as good as the losses entered; a site survey confirms them.',
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
+      replacements.length
+        ? `Component replacements in the cash flow (quoted, not escalated): ${replacements.map((r) => `${r.item} in year ${r.year}, KES ${r.costKes.toLocaleString('en-KE')} (${r.source}, ${r.date})`).join('; ')}.`
+        : 'No component replacement costs were entered, so none are in the cash flow. Inverters and batteries are often replaced within the project life: enter quoted costs to include them.',
       'Financial results use the tariff, escalation, discount rate and degradation shown, as given by the customer or datasheet; other assumptions give other results.',
       'Electrical design must be checked and signed by a qualified engineer before installation; this proposal is not a certificate.',
       'The single-line diagram shows only what the design determines; every item marked "to be specified by the engineer" must be completed before construction.',

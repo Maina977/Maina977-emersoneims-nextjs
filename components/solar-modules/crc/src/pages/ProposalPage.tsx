@@ -63,6 +63,7 @@ const FINANCE: Group = { id: 'finance', title: 'Finance (each value with its sou
   ...sourcedRow('escalation', 'Tariff escalation', '%/yr'), ...sourcedRow('discount', 'Discount rate', '%'), ...sourcedRow('degradation', 'Degradation', '%/yr'),
   ...sourcedRow('om', 'O&M', 'KES/yr'), ...sourcedRow('selfConsumed', 'Self-consumed fraction (0–1; used when there is no hybrid balance)', ''),
   ['f.lifetime', 'Lifetime', 'years'],
+  ['f.replacements', 'Component replacements (quoted): item; year; cost KES; source; date — several separated by |, e.g. Inverter; 12; 320000; Supplier quote Q-7; 2026-11-01', ''],
 ] };
 
 const colour: Record<Check['verdict'], string> = { PASS: '#22c55e', WARN: '#f59e0b', REFUSE: '#ef4444' };
@@ -515,11 +516,19 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
         <>
           <div style={{ fontSize: 12 }}>NPV {kes(p.finance.npvKes)} · IRR {p.finance.irrPct === null ? 'no unique IRR' : `${p.finance.irrPct} %`} · simple payback {p.finance.simplePaybackYears === null ? 'not within the lifetime' : `${p.finance.simplePaybackYears} years`} · LCOE KES {p.finance.lcoeKesPerKwh}/kWh</div>
           <div style={{ overflowX: 'auto', maxHeight: 320, overflowY: 'auto' }}><table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', marginTop: 6 }}>
-            <thead><tr>{['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Net (KES)', 'Cumulative (KES)'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
+            <thead><tr>{['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Replacements (KES)', 'Net (KES)', 'Cumulative (KES)'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
             <tbody>{p.finance.cashflows.map((c) => (
-              <tr key={c.year}>{[c.year, c.energyKwh, c.savingsKes, c.omKes, c.netKes, c.cumulativeKes].map((v, i) => <td key={i} style={{ ...td, textAlign: 'right', color: i === 5 && v < 0 ? '#fca5a5' : undefined }}>{v.toLocaleString('en-KE')}</td>)}</tr>
+              <tr key={c.year}>{[c.year, c.energyKwh, c.savingsKes, c.omKes, c.replacementKes, c.netKes, c.cumulativeKes].map((v, i) => <td key={i} style={{ ...td, textAlign: 'right', color: i === 6 && v < 0 ? '#fca5a5' : undefined }}>{v.toLocaleString('en-KE')}</td>)}</tr>
             ))}</tbody>
           </table></div>
+          <h4 style={{ fontSize: 13, margin: '10px 0 4px' }}>Sensitivity</h4>
+          <div style={{ fontSize: 11, color: '#94a3b8' }}>{p.finance.sensitivity.note}</div>
+          <table aria-label="Finance sensitivity" style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', marginTop: 4 }}>
+            <thead><tr>{['Variable', 'Change', 'NPV (KES)', 'IRR', 'Payback'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
+            <tbody>{p.finance.sensitivity.rows.map((r) => (
+              <tr key={`${r.variable}${r.changePct}`}><td style={td}>{r.variable}</td><td style={td}>{r.changePct > 0 ? '+' : ''}{r.changePct} %</td><td style={{ ...td, textAlign: 'right' }}>{r.npvKes.toLocaleString('en-KE')}</td><td style={td}>{r.irrPct === null ? 'no unique IRR' : `${r.irrPct} %`}</td><td style={td}>{r.simplePaybackYears === null ? 'not within the lifetime' : `${r.simplePaybackYears} years`}</td></tr>
+            ))}</tbody>
+          </table>
         </>
       ) : <p style={{ fontSize: 12, color: '#94a3b8' }}>No financial result: it needs every item priced and a known self-consumption (see the reasons above).</p>}
 
