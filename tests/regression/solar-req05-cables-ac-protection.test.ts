@@ -51,7 +51,8 @@ const s = (value: number) => ({ value, source: 'TEST source' });
 const AC1: CableRun = { name: 'AC 1', from: 'Inverter AC terminals', to: 'Main DB', kind: 'ac', lengthM: 25, method: 'C', conductor: 'copper', csaMm2: 6, designCurrentA: 24, systemV: 400, tabulatedAmpacityA: 41, ambientFactor: 0.94, groupingFactor: 1, maxDropPct: 3 };
 const PV1: CableRun = { name: 'PV 1', from: 'Array MPPT 1', to: 'Inverter MPPT 1', kind: 'dc-pv', mppt: 1, lengthM: 30, method: 'C', conductor: 'copper', csaMm2: 4, designCurrentA: 17.4, systemV: 664, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 1.5 };
 const PV2: CableRun = { ...PV1, name: 'PV 2', from: 'Array MPPT 2', to: 'Inverter MPPT 2', mppt: 2, designCurrentA: 15 };
-const AP: AcProtection = { breakerA: 32, device: 'MCB, C curve, 4-pole', cable: 'AC 1', rcdType: 'B' };
+// Review A1: a PASS on I_n ≤ I_z needs the device stated as a circuit-breaker.
+const AP: AcProtection = { breakerA: 32, device: 'MCB, C curve, 4-pole', deviceType: 'circuit-breaker', cable: 'AC 1', rcdType: 'B' };
 
 type Over = Record<string, unknown> & { inv?: Partial<Inverter> };
 const design = (o: Over = {}): ProposalInput => {
@@ -99,7 +100,7 @@ describe('H1: AC circuit coordinated (hand-worked)', () => {
     expect(p.checks.filter((c) => c.verdict === 'REFUSE')).toEqual([]);
     expect(p.sld.designValid).toBe(true);
     const ac = sldRows(p.sld).find(([t]) => t.startsWith('AC protection'))![1];
-    expect(ac).toContain('AC circuit breaker: 32 A, MCB, C curve, 4-pole; inverter maximum AC output 24 A (check ac-breaker-current: PASS)');
+    expect(ac).toContain('AC circuit breaker: 32 A, MCB, C curve, 4-pole (circuit-breaker); inverter maximum AC output 24 A (check ac-breaker-current: PASS)');
     expect(ac).toContain('Protects cable: AC 1 (check ac-breaker-cable: PASS)');
     expect(ac).toContain('RCD: type B; inverter requirement: type A (check ac-rcd-type: PASS)');
     const notes = sldRows(p.sld).find(([t]) => t === 'Notes')![1];
@@ -274,7 +275,7 @@ const RUN = (p: string, r: CableRun): ProposalForm => Object.fromEntries(Object.
 const FORM: ProposalForm = {
   ...WORKED_EXAMPLE_FORM, 'i.maxAcOutputA': '24', 'i.rcdTypeRequired': 'A',
   ...RUN('k.', PV1), ...RUN('k2.', PV2), ...RUN('k3.', AC1),
-  'ap.breakerA': '32', 'ap.device': 'MCB, C curve, 4-pole', 'ap.cable': 'AC 1', 'ap.rcdType': 'B',
+  'ap.breakerA': '32', 'ap.device': 'MCB, C curve, 4-pole', 'ap.deviceType': 'circuit-breaker', 'ap.cable': 'AC 1', 'ap.rcdType': 'B',
 };
 
 describe('form: several cable runs and AC protection', () => {

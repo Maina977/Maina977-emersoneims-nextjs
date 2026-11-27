@@ -230,7 +230,7 @@ export default function DashboardPage() {
     setErr(null);
     setInfo(null);
     setLoadingSite(true);
-    updateSite({ lat: h.lat, lon: h.lon, displayName: h.displayName, elevationM: null, elevationSource: undefined });
+    updateSite({ lat: h.lat, lon: h.lon, displayName: h.displayName, elevationM: null, elevationSource: undefined, elevationRetrievedAt: undefined });
     setIncludeElevation(false);
 
     try {
@@ -257,7 +257,8 @@ export default function DashboardPage() {
         roofPitchDeg: null,
         roofProvenance,
         elevationM: elev ? elev.elevationM : null,
-        elevationSource: elev ? elev.source : undefined
+        elevationSource: elev ? elev.source : undefined,
+        elevationRetrievedAt: elev ? new Date().toISOString() : undefined
       });
       saveProject();
       setInfo(
@@ -332,7 +333,7 @@ export default function DashboardPage() {
                 {site.elevationM != null && site.elevationSource ? (
                   <label style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
                     <input type="checkbox" checked={includeElevation} onChange={(e) => setIncludeElevation(e.target.checked)} />
-                    Include the elevation: {site.elevationM} m ({site.elevationSource}); tick only if it matches the site
+                    Include the elevation: {site.elevationM} m (automatically obtained: {site.elevationSource}{site.elevationRetrievedAt ? `, retrieved ${site.elevationRetrievedAt.slice(0, 10)}` : ''}); tick only if it matches the site
                   </label>
                 ) : 'Elevation: not available (the lookup gave no value), so none is carried'}
               </li>

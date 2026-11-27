@@ -37,10 +37,17 @@ export interface SiteHandoff {
   /** Only when the user ticked "include the elevation". */
   elevationM?: number;
   elevationSource?: string;
+  /** When the elevation lookup answered (ISO); required with an elevation (provenance category (a)). */
+  elevationRetrievedAt?: string;
 }
 
-/** A pre-filled form value and the source it is labelled with. */
-export interface Prefill { key: string; label: string; value: string; source: string }
+/**
+ * A pre-filled form value and the source it is labelled with. `category`
+ * 'automatic' (with `retrievedOn`) marks a looked-up value: provenance (a).
+ */
+export interface Prefill { key: string; label: string; value: string; source: string; category?: 'automatic'; retrievedOn?: string }
+type PrefillRec = { value: string; source: string; category?: 'automatic'; retrievedOn?: string };
+const rec = (p: Prefill): PrefillRec => ({ value: p.value, source: p.source, ...(p.category ? { category: p.category } : {}), ...(p.retrievedOn ? { retrievedOn: p.retrievedOn } : {}) });
 
 const fin = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const text = (x: unknown): x is string => typeof x === 'string' && x.trim() !== '';
@@ -51,15 +58,15 @@ const text = (x: unknown): x is string => typeof x === 'string' && x.trim() !== 
  * lookup gave a value with its source.
  */
 export function buildSiteHandoff(
-  site: { lat: number | null; lon: number | null; displayName: string; elevationM?: number | null; elevationSource?: string },
+  site: { lat: number | null; lon: number | null; displayName: string; elevationM?: number | null; elevationSource?: string; elevationRetrievedAt?: string },
   includeElevation: boolean, now: Date = new Date(),
 ): { handoff: SiteHandoff; error: null } | { handoff: null; error: string } {
   if (!fin(site.lat) || !fin(site.lon) || !(site.lat >= -90 && site.lat <= 90 && site.lon >= -180 && site.lon <= 180)) return { handoff: null, error: 'Choose a place-search result first: the site has no coordinates.' };
   if (!text(site.displayName)) return { handoff: null, error: 'The chosen site has no address text.' };
   const h: SiteHandoff = { v: 1, confirmedAt: now.toISOString(), address: site.displayName.trim(), lat: site.lat, lon: site.lon, coordinatesSource: PLACE_SEARCH_SOURCE };
   if (includeElevation) {
-    if (!fin(site.elevationM) || !(site.elevationM >= -500 && site.elevationM <= 6000) || !text(site.elevationSource)) return { handoff: null, error: 'No elevation with its source is available to include: untick it, or look it up again.' };
-    h.elevationM = site.elevationM; h.elevationSource = site.elevationSource.trim();
+    if (!fin(site.elevationM) || !(site.elevationM >= -500 && site.elevationM <= 6000) || !text(site.elevationSource) || !text(site.elevationRetrievedAt) || Number.isNaN(Date.parse(site.elevationRetrievedAt))) return { handoff: null, error: 'No elevation with its source and retrieval time is available to include: untick it, or look it up again.' };
+    h.elevationM = site.elevationM; h.elevationSource = site.elevationSource.trim(); h.elevationRetrievedAt = site.elevationRetrievedAt;
   }
   return { handoff: h, error: null };
 }
@@ -73,9 +80,9 @@ export function readSiteHandoff(raw: string | null): SiteHandoff | null {
   const x = d as Record<string, unknown>;
   if (x.v !== 1 || !text(x.confirmedAt) || Number.isNaN(Date.parse(x.confirmedAt)) || !text(x.address) || !text(x.coordinatesSource)) return null;
   if (!fin(x.lat) || !fin(x.lon) || !(x.lat >= -90 && x.lat <= 90 && x.lon >= -180 && x.lon <= 180)) return null;
-  const hasEl = x.elevationM !== undefined || x.elevationSource !== undefined;
-  if (hasEl && !(fin(x.elevationM) && x.elevationM >= -500 && x.elevationM <= 6000 && text(x.elevationSource))) return null;
-  return { v: 1, confirmedAt: x.confirmedAt, address: x.address.trim(), lat: x.lat, lon: x.lon, coordinatesSource: x.coordinatesSource.trim(), ...(hasEl ? { elevationM: x.elevationM as number, elevationSource: (x.elevationSource as string).trim() } : {}) };
+  const hasEl = x.elevationM !== undefined || x.elevationSource !== undefined || x.elevationRetrievedAt !== undefined;
+  if (hasEl && !(fin(x.elevationM) && x.elevationM >= -500 && x.elevationM <= 6000 && text(x.elevationSource) && text(x.elevationRetrievedAt) && !Number.isNaN(Date.parse(x.elevationRetrievedAt)))) return null;
+  return { v: 1, confirmedAt: x.confirmedAt, address: x.address.trim(), lat: x.lat, lon: x.lon, coordinatesSource: x.coordinatesSource.trim(), ...(hasEl ? { elevationM: x.elevationM as number, elevationSource: (x.elevationSource as string).trim(), elevationRetrievedAt: x.elevationRetrievedAt as string } : {}) };
 }
 
 /** The form values the hand-off carries, each with its source label. */
@@ -86,9 +93,11 @@ export function siteHandoffPrefill(h: SiteHandoff): Prefill[] {
     { key: 'c.lat', label: 'Latitude', value: String(h.lat), source: `${h.coordinatesSource}, confirmed ${when}` },
     { key: 'c.lon', label: 'Longitude', value: String(h.lon), source: `${h.coordinatesSource}, confirmed ${when}` },
   ];
-  if (h.elevationM !== undefined && h.elevationSource) {
-    out.push({ key: 's.elevationM', label: 'Site elevation', value: String(h.elevationM), source: `${h.elevationSource}, confirmed on the Dashboard ${when}` });
-    out.push({ key: 's.source', label: 'Source of these site details', value: `Elevation: ${h.elevationSource} (Dashboard, ${when}); confirm on site`, source: `Dashboard hand-off ${when}` });
+  // Review M2: only the elevation itself is pre-filled, with its own source (category (a)).
+  // The general site-details source (s.source) is never pre-filled: it would make a
+  // mounting or usable area typed later appear sourced by the elevation lookup.
+  if (h.elevationM !== undefined && h.elevationSource && h.elevationRetrievedAt) {
+    out.push({ key: 's.elevationM', label: 'Site elevation', value: String(h.elevationM), source: h.elevationSource, category: 'automatic', retrievedOn: h.elevationRetrievedAt.slice(0, 10) });
   }
   return out;
 }
@@ -104,7 +113,7 @@ export function applySiteHandoff(f: ProposalForm, h: SiteHandoff): { form: Propo
   const record = prefillRecord(f);
   for (const p of siteHandoffPrefill(h)) {
     const cur = (f[p.key] ?? '').trim();
-    if (cur === '') { form[p.key] = p.value; applied.push(p); record[p.key] = { value: p.value, source: p.source }; }
+    if (cur === '') { form[p.key] = p.value; applied.push(p); record[p.key] = rec(p); }
     else if (cur !== p.value) differences.push({ ...p, current: cur });
   }
   if (applied.length) form[HANDOFF_FORM_KEY] = JSON.stringify(record);
@@ -115,29 +124,38 @@ export function applySiteHandoff(f: ProposalForm, h: SiteHandoff): { form: Propo
 export function replaceWithHandoff(f: ProposalForm, items: Prefill[]): ProposalForm {
   const form: ProposalForm = { ...f };
   const record = prefillRecord(f);
-  for (const p of items) { form[p.key] = p.value; record[p.key] = { value: p.value, source: p.source }; }
+  for (const p of items) { form[p.key] = p.value; record[p.key] = rec(p); }
   if (items.length) form[HANDOFF_FORM_KEY] = JSON.stringify(record);
   return form;
 }
 
 /** The pre-fill record in the form (value and source per field); {} when absent or malformed. */
-export function prefillRecord(f: ProposalForm): Record<string, { value: string; source: string }> {
+export function prefillRecord(f: ProposalForm): Record<string, PrefillRec> {
   try {
     const d = JSON.parse(f[HANDOFF_FORM_KEY] ?? '{}');
     if (typeof d !== 'object' || d === null || Array.isArray(d)) return {};
-    const out: Record<string, { value: string; source: string }> = {};
+    const out: Record<string, PrefillRec> = {};
     for (const [k, v] of Object.entries(d as Record<string, unknown>)) {
-      const r = v as { value?: unknown; source?: unknown };
-      if (r && typeof r.value === 'string' && typeof r.source === 'string') out[k] = { value: r.value, source: r.source };
+      const r = v as { value?: unknown; source?: unknown; category?: unknown; retrievedOn?: unknown };
+      if (r && typeof r.value === 'string' && typeof r.source === 'string') {
+        const auto = r.category === 'automatic' && typeof r.retrievedOn === 'string' && !Number.isNaN(Date.parse(r.retrievedOn));
+        out[k] = { value: r.value, source: r.source, ...(auto ? { category: 'automatic' as const, retrievedOn: r.retrievedOn as string } : {}) };
+      }
     }
     return out;
   } catch { return {}; }
 }
 
+/** The pre-fill record of a field while its value is still the pre-filled one; otherwise null. */
+export function prefillEntry(f: ProposalForm, key: string): PrefillRec | null {
+  const r = prefillRecord(f)[key];
+  return r && (f[key] ?? '').trim() === r.value ? r : null;
+}
+
 /** The source label of a field, shown only while its value is still the pre-filled one. */
 export function prefillSource(f: ProposalForm, key: string): string | null {
-  const r = prefillRecord(f)[key];
-  return r && (f[key] ?? '').trim() === r.value ? r.source : null;
+  const r = prefillEntry(f, key);
+  return !r ? null : r.category === 'automatic' ? `automatically obtained: ${r.source}, retrieved ${r.retrievedOn}` : r.source;
 }
 
 type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;

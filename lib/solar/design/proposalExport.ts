@@ -10,7 +10,7 @@ import ExcelJS from 'exceljs';
 import { REQUEST_QUOTATION } from '../sizing';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { Proposal } from './proposal';
+import { siteProvenanceText, type Proposal } from './proposal';
 import { APPROVAL_LOCKED_NOTICE } from './proposalApproval';
 import { SLD_FONT, sldRows, TBS } from './sld';
 import { shadingRows, SHADING_HEAD } from './shading';
@@ -49,7 +49,7 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
   sum.addRows([
     [`Solar proposal ${p.reference}`], [banner(p)], ['Revision (SHA-256 of the inputs)', p.revisionHash], ['Approval', approvalText(p)], [],
     ['Client', p.client.name], ['Site', p.client.siteAddress], ['Coordinates', `${p.client.lat}, ${p.client.lon}`],
-    ['Mounting', p.site?.mounting ?? 'not entered'], ['Elevation (m)', p.site?.elevationM ?? 'not entered'], ['Usable area (m²)', p.site?.usableAreaM2 ?? 'not entered'], ['Site details source', p.site?.source ?? '—'], [],
+    ['Mounting', p.site?.mounting ?? 'not entered'], ['Elevation (m)', p.site?.elevationM ?? 'not entered'], ['Usable area (m²)', p.site?.usableAreaM2 ?? 'not entered'], ['Site details source', p.site?.source || '—'], ['Site details provenance', p.site ? siteProvenanceText(p.site) : '—'], [],
     ['DC capacity (kWp)', p.system.dcKwp], ['AC capacity (kW)', p.system.acKw], ['Modules', p.system.modules], ['Strings', p.system.strings], ['Battery (kWh nominal)', p.system.batteryKwh ?? '—'], [],
     ['Year-1 energy (kWh)', p.energy.year1Kwh], ['Used on site, year 1 (kWh)', p.energy.usefulYear1Kwh ?? 'unknown'], ['Exported, year 1 (kWh)', p.energy.exportYear1Kwh], ['Clipped (kWh)', p.energy.clippedKwh], ['Specific yield (kWh/kWp)', p.energy.specificYield], ['Performance ratio', p.energy.performanceRatio], ['Energy source', p.energy.source], [],
     ['Capital cost', kes(p.costing.capexKes)],
@@ -109,7 +109,7 @@ export function proposalToPdf(p: Proposal): Uint8Array {
   doc.setFontSize(8); doc.text(`Revision (SHA-256 of the inputs): ${p.revisionHash}`, 14, 30);
   doc.text(pdfSafe(approvalText(p)), 14, 34, { maxWidth: 182 });
   autoTable(doc, { startY: 40, head: [['System', '']], body: safeRows([
-    ['Site', `${p.site ? [p.site.mounting ? `${p.site.mounting}-mounted` : 'mounting not entered', p.site.elevationM !== undefined ? `${p.site.elevationM} m elevation` : 'elevation not entered', p.site.usableAreaM2 !== undefined ? `${p.site.usableAreaM2} m² usable` : 'usable area not entered'].join(', ') + ` (${p.site.source})` : 'elevation, mounting and usable area not entered'}`],
+    ['Site', `${p.site ? [p.site.mounting ? `${p.site.mounting}-mounted` : 'mounting not entered', p.site.elevationM !== undefined ? `${p.site.elevationM} m elevation` : 'elevation not entered', p.site.usableAreaM2 !== undefined ? `${p.site.usableAreaM2} m² usable` : 'usable area not entered'].join(', ') + `. ${siteProvenanceText(p.site)}` : 'elevation, mounting and usable area not entered'}`],
     ['DC capacity', `${p.system.dcKwp} kWp (${p.system.modules} modules, ${p.system.strings} strings)`], ['AC capacity', `${p.system.acKw} kW`], ['Battery', p.system.batteryKwh === null ? 'none' : `${p.system.batteryKwh} kWh nominal`],
     ['Year-1 energy', `${p.energy.year1Kwh.toLocaleString('en-KE')} kWh (specific yield ${p.energy.specificYield} kWh/kWp, PR ${p.energy.performanceRatio})`], ['Used on site, year 1', p.energy.usefulYear1Kwh === null ? 'unknown' : `${p.energy.usefulYear1Kwh.toLocaleString('en-KE')} kWh`],
     ['Capital cost', kes(p.costing.capexKes)], ['NPV / IRR', p.finance ? `${kes(p.finance.npvKes)} / ${p.finance.irrPct ?? '—'} %` : '—'], ['Simple payback', p.finance?.simplePaybackYears != null ? `${p.finance.simplePaybackYears} years` : '—'], ['LCOE', p.finance ? `KES ${p.finance.lcoeKesPerKwh}/kWh` : '—'],
