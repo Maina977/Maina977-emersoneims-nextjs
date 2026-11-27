@@ -406,6 +406,41 @@ export function daylightAdf(b: Body) {
 }
 
 /** Reverberation time: Sabine T = 0.161 V / ΣSα; Eyring T = 0.161 V / (−S·ln(1 − ᾱ)). */
+/**
+ * Airborne sound insulation of a single homogeneous wall or floor
+ * (register R-39, 2026-11-27): the empirical mass law of EN 12354-1:2000
+ * Annex B, Rw = 37.5·lg(m′/m′0) − 42 dB, m′0 = 1 kg/m², valid for
+ * m′ ≥ 150 kg/m² (heavier, monolithic constructions). m′ = Σ thickness ×
+ * density of the layers (plaster included). A laboratory-type single-leaf
+ * estimate: in-situ R′w is lower by flanking transmission, which is not
+ * computed, nor are cavity, lightweight or multi-leaf constructions.
+ */
+export function soundInsulation(b: Body) {
+  const layers = parseArray(b.layers);
+  if (!layers || !layers.length) return bad('layers must be a list of {description, thickness_m, density_kg_m3}');
+  let m = 0;
+  const rows: Array<{ description: string; thickness_m: number; density_kg_m3: number; mass_kg_m2: number }> = [];
+  for (const [i, l] of layers.entries()) {
+    const t = n(l.thickness_m), rho = n(l.density_kg_m3);
+    if (t === undefined || rho === undefined) return bad(`layers[${i}] needs thickness_m and density_kg_m3`);
+    if (!(t > 0 && t <= 1)) return bad(`layers[${i}] thickness_m must be between 0 and 1 m`);
+    if (!(rho >= 100 && rho <= 3000)) return bad(`layers[${i}] density_kg_m3 must be between 100 and 3,000 kg/m³ (homogeneous building materials)`);
+    m += t * rho;
+    rows.push({ description: String(l.description ?? `Layer ${i + 1}`), thickness_m: t, density_kg_m3: rho, mass_kg_m2: r(t * rho, 1) });
+  }
+  if (m < 150) return bad(`The mass per unit area is ${r(m, 1)} kg/m²: the EN 12354-1 Annex B mass law used here is valid from 150 kg/m². Lighter, cavity or multi-leaf constructions need tested values or a specialist.`);
+  if (m > 1500) return bad(`The mass per unit area is ${r(m, 1)} kg/m², beyond the range this empirical law is used for (up to 1,500 kg/m²): check the layers.`);
+  const Rw = 37.5 * Math.log10(m) - 42;
+  const target = optN(b, 'target_Rw_dB');
+  return {
+    mass_kg_m2: r(m, 1), Rw_dB: r(Rw, 1), layers: rows,
+    ...(target !== undefined ? { checks: [{ check: 'Rw ≥ target Rw (laboratory-type estimate)', value: `${r(Rw, 1)} ≥ ${target} dB`, pass: Rw >= target }] } : {}),
+    not_checked: ['flanking transmission: the in-situ R′w (and DnT,w) is lower and needs EN 12354-1 with the junctions, or a site test', 'impact sound of floors'],
+    assumptions: ['Single homogeneous leaf (layers bonded, no cavity)', 'Mass law of EN 12354-1:2000 Annex B, valid for m′ ≥ 150 kg/m²'],
+    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB',
+  };
+}
+
 export function reverberation(b: Body) {
   const V = pick(b, 'volume_m3');
   const method = String(b.method ?? 'sabine').toLowerCase();

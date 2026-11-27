@@ -331,6 +331,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   if (path.endsWith('/arch/uvalue')) return calc(calcs.uValue, body);
   if (path.endsWith('/arch/daylight/adf')) return calc(calcs.daylightAdf, body);
   if (path.endsWith('/arch/acoustics/reverberation')) return calc(calcs.reverberation, body);
+  if (path.endsWith('/arch/acoustics/airborne')) return calc(calcs.soundInsulation, body); // R-39, 2026-11-27
   if (path.endsWith('/arch/shadow/position')) return calc(calcs.sunPosition, body);
   if (path.endsWith('/arch/shadow/hourly') || path.endsWith('/arch/shadow/solstice'))
     return stub(path, { hours: [] });
