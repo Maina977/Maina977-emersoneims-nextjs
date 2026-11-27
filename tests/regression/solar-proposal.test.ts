@@ -28,7 +28,7 @@ describe('proposal exports', () => {
     const ExcelJS = (await import('exceljs')).default;
     const p = buildProposal(base());
     const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await proposalToXlsx(p) as unknown as ArrayBuffer);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Single-line diagram']); // 2026-11-25: SLD sheet added
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Sensitivity', 'Single-line diagram']); // 2026-11-25: SLD sheet added; 2026-11-27: Sensitivity sheet (REQ-17)
     const sum = wb.getWorksheet('Summary')!;
     expect(String(sum.getCell('A2').value)).toMatch(/DRAFT: NOT FOR ISSUE/);
     expect(sum.getCell('B3').value).toBe(p.revisionHash);
@@ -108,7 +108,7 @@ describe('design-to-proposal', () => {
     const p = buildProposal(i);
     expect(p.costing.capexKes).toBeNull();
     expect(p.finance).toBeNull();
-    expect(p.statusReasons.join(' ')).toMatch(/Rate required: Mounting structure/);
+    expect(p.statusReasons.join(' ')).toMatch(/Request a quotation for: Mounting structure/); // REQ-19 wording (was "Rate required")
   });
   it('an unverified datasheet keeps it DRAFT', () => {
     const p = buildProposal({ ...base(), module: entry(MOD, 'module', false) });

@@ -15,7 +15,7 @@
  * One layout model feeds every output: sldToSvg (screen) and the PDF and
  * Excel exports (proposalExport.ts), so they cannot disagree.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, generatorConnectionChecks, cableStringCurrentCheck } from './validate';
 
 export const SLD_ENGINE_VERSION = 'solar-sld 1.0.0 (2026-11-25)';
 export const TBS = 'to be specified by the engineer';
@@ -26,6 +26,12 @@ export interface SldConnections {
   generator: boolean | null;
   /** Rated kW from the hybrid generator data, when entered. */
   generatorRatedKw?: number;
+  /** Lowest site load while the generator runs, kW (generator checks, CA-32). */
+  generatorMinSiteLoadKw?: number;
+  /** Generator OEM minimum load, %. */
+  generatorOemMinLoadPct?: number;
+  /** Whether PV can back-feed the running generator; null = not stated (refused). */
+  pvCanBackfeedGenerator?: boolean | null;
 }
 export interface SldInput {
   reference: string;
@@ -75,10 +81,24 @@ export function buildSld(i: SldInput): SldModel {
   const str = validateStrings(i.module, i.inverter, i.design, i.temps);
   const checks = [...str.checks];
   const cableResults = i.cables.map((c) => ({ c, r: checkCable(c) }));
-  cableResults.forEach(({ r }) => checks.push(...r.checks));
-  const bat = i.battery && i.battery.requiredUsableAcKwh !== undefined ? checkBattery(i.battery.data, i.inverter, i.battery.requiredUsableAcKwh, i.battery.units) : null;
-  if (bat) checks.push(...bat.checks);
-  const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length);
+  cableResults.forEach(({ c, r }) => { checks.push(...r.checks); const sc = cableStringCurrentCheck(c, i.module, i.design); if (sc) checks.push(sc); });
+  // Review of 39fa8535, M4: with the energy need blank, checkBattery (and so
+  // the C-rate checks) was skipped and the preview showed valid. The C-rate
+  // checks do not depend on the need, so they run on a token need; the energy
+  // check itself is REFUSED as not checkable.
+  const needGiven = !!i.battery && typeof i.battery.requiredUsableAcKwh === 'number' && Number.isFinite(i.battery.requiredUsableAcKwh);
+  const bat = i.battery ? checkBattery(i.battery.data, i.inverter, needGiven ? (i.battery.requiredUsableAcKwh as number) : 1e-9, i.battery.units) : null;
+  if (bat) {
+    if (needGiven) checks.push(...bat.checks);
+    else {
+      checks.push(...bat.checks.filter((c) => c.id !== 'battery-energy'));
+      checks.push({ id: 'battery-energy', title: 'Installed battery energy', verdict: 'REFUSE', value: NaN, limit: NaN, unit: 'kWh', marginPct: -100, formula: 'energy needed from the battery per cycle not entered', reference: 'Design input', note: 'Enter the energy needed from the battery per cycle: the battery cannot be checked without it' });
+    }
+  }
+  // A connected generator is checked as the proposal checks it (CA-32).
+  if (i.connections?.generator === true) checks.push(...generatorConnectionChecks(i.inverter, i.connections));
+  const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length)
+    && Number.isInteger(i.inverterCount) && i.inverterCount >= 1; // M2
   const m = i.module, inv = i.inverter, N = i.design.modulesPerString;
   const cold = find(checks, 'cold-voc');
   const coldTxt = cold ? `${cold.value} V` : `not available (design check refused the input) — ${TBS}`;
@@ -173,12 +193,16 @@ export function buildSld(i: SldInput): SldModel {
   let bottom = Math.max(arrayBottom, top + invBox.h, rightBottom);
   if (i.battery) {
     const b = i.battery.data, by = top + invBox.h + 40;
-    const bv = bat ? find(bat.checks, 'battery-energy') : undefined;
+    // Re-review S3: read the energy check that was actually recorded (the
+    // token-need run in bat.checks always PASSes when the need is blank).
+    const bv = find(checks, 'battery-energy');
     const bb = box('battery', 'Battery', [
       `${i.battery.units} × ${b.model} (datasheet ${b.datasheet})`,
       `${b.nominalKwh} kWh nominal each = ${r2(b.nominalKwh * i.battery.units)} kWh nominal`,
       `Usable DoD ${b.usableDoD}; max discharge ${b.maxDischargeC} C, max charge ${b.maxChargeC} C`,
-      bv ? `Energy check: ${bv.verdict} (${bv.value} kWh installed vs ${bv.limit} kWh required)` : 'Energy check: not run (energy needed per cycle not given)',
+      !bv ? 'Energy check: not run (energy needed per cycle not given)'
+        : Number.isFinite(bv.limit) ? `Energy check: ${bv.verdict} (${bv.value} kWh installed vs ${bv.limit} kWh required)`
+        : 'Energy check: NOT CHECKED (energy needed per cycle not given): refused',
       `Battery DC voltage, DC breaker / fuse and cable: ${TBS}`,
     ], X.inv, by, W.inv);
     boxes.push(bb);

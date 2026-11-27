@@ -12,7 +12,7 @@ import { importModule, importInverter, importBattery, verify, type LibraryEntry 
 import type { Module, Inverter, Battery, CableRun } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
-import type { ProposalInput, PricedLine, Sourced } from './proposal';
+import type { ProposalInput, PricedLine, Sourced, SiteDetails, LoadDetails } from './proposal';
 import { PVWATTS_DEFAULT_LOSSES, type Losses } from './production';
 import { parseHorizonText, type HorizonProfile } from './shading';
 import { buildSld, type SldConnections, type SldModel } from './sld';
@@ -56,9 +56,9 @@ export function parseLoadCsv(text: string, expectedHours?: number): { values: nu
 }
 
 const PROV = ['manufacturer', 'datasheetUrl', 'datasheetRevision', 'datasheetDate', 'enteredBy', 'enteredOn'];
-const MODULE_KEYS = ['model', 'pmaxW', 'vocV', 'iscA', 'vmpV', 'impA', 'betaVocPct', 'betaVmpPct', 'alphaIscPct', 'gammaPmaxPct', 'noctC', 'maxSystemV', 'maxSeriesFuseA'];
-const INVERTER_KEYS = ['model', 'acKw', 'maxDcV', 'mpptMinV', 'mpptMaxV', 'mpptCount', 'maxInputA', 'maxIscA', 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility'];
-const BATTERY_KEYS = ['model', 'nominalKwh', 'usableDoD', 'dischargeEfficiency', 'maxDischargeC', 'maxChargeC'];
+const MODULE_KEYS = ['model', 'pmaxW', 'vocV', 'iscA', 'vmpV', 'impA', 'betaVocPct', 'betaVmpPct', 'alphaIscPct', 'gammaPmaxPct', 'noctC', 'maxSystemV', 'maxSeriesFuseA', 'lengthMm', 'widthMm'];
+const INVERTER_KEYS = ['model', 'acKw', 'maxDcV', 'mpptMinV', 'mpptMaxV', 'mpptCount', 'maxInputA', 'maxIscA', 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding'];
+const BATTERY_KEYS = ['model', 'nominalKwh', 'usableDoD', 'dischargeEfficiency', 'maxDischargeC', 'maxChargeC', 'chemistry', 'nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'];
 
 function record(f: ProposalForm, prefix: string, keys: string[]): Record<string, string> {
   return Object.fromEntries([...PROV, ...keys].map((k) => [k, str(f, `${prefix}.${k}`)]));
@@ -90,6 +90,13 @@ export function buildEntries(f: ProposalForm): { module: LibraryEntry<Module> | 
   m.entry?.warnings.forEach((w) => warnings.push(`Module: ${w}`));
   inv.entry?.warnings.forEach((w) => warnings.push(`Inverter: ${w}`));
   return { module: moduleEntry, inverter, battery, errors, warnings };
+}
+
+/** Review of 39fa8535, M2: the form only checked that the inverter count was not blank; −1, 0 and 1.5 went through. */
+export function inverterCountError(f: ProposalForm, errors: string[]): void {
+  if (blank(f, 'd.inverterCount')) return;
+  const n = num(f, 'd.inverterCount');
+  if (!(Number.isInteger(n) && n >= 1)) errors.push('Inverter count must be a whole number of inverters, 1 or more');
 }
 
 export function parseStrings(s: string): number[] { return s.split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number); }
@@ -129,13 +136,80 @@ export function horizonFromForm(f: ProposalForm): { profile: HorizonProfile | nu
   return parseHorizonText(f['sh.sectors'] ?? '', f['sh.obstacles'] ?? '', f['sh.source'] ?? '');
 }
 
+/**
+ * Quoted component replacements typed as "item; year; cost KES; source; date",
+ * several separated by "|" (REQ-06). Each part is required; a bad entry is
+ * reported, never guessed.
+ */
+export function parseReplacements(text: string, errors: string[]): Array<{ item: string; year: number; costKes: number; source: string; date: string }> {
+  const out: Array<{ item: string; year: number; costKes: number; source: string; date: string }> = [];
+  if (!text.trim()) return out;
+  text.split('|').map((x) => x.trim()).filter(Boolean).forEach((entry, n) => {
+    const parts = entry.split(';').map((x) => x.trim());
+    const [item, year, cost, source, date] = parts;
+    const y = Number(year), c = Number(String(cost ?? '').replace(/,/g, ''));
+    if (parts.length !== 5 || !item || !source || !date) { errors.push(`Replacement ${n + 1}: give item; year; cost KES; source; date`); return; }
+    if (!Number.isInteger(y) || y < 1) { errors.push(`Replacement ${n + 1} (${item}): year must be a whole number ≥ 1`); return; }
+    if (!Number.isFinite(c) || c < 0) { errors.push(`Replacement ${n + 1} (${item}): cost must be a number of KES`); return; }
+    if (Number.isNaN(Date.parse(date))) { errors.push(`Replacement ${n + 1} (${item}): the quote date must be a date (YYYY-MM-DD)`); return; }
+    out.push({ item, year: y, costKes: c, source, date });
+  });
+  return out;
+}
+
+/** REQ-03 load facts from the form; undefined when none is entered. */
+export function loadFromForm(f: ProposalForm, errors: string[]): LoadDetails | undefined {
+  const keys = ['l.monthlyKwh', 'l.peakKw', 'l.motorStartingKva', 'l.criticalLoadKw', 'l.outageHoursPerDay', 'l.diesel'];
+  if (keys.every((k) => !str(f, k))) return undefined;
+  const out: LoadDetails = { source: str(f, 'l.source') };
+  if (!out.source) errors.push('Load details need their source (bills, logger, survey)');
+  const m = str(f, 'l.monthlyKwh');
+  if (m) {
+    const v = m.split(/[,;\s]+/).filter(Boolean).map(Number);
+    if (v.length === 12 && v.every((x) => Number.isFinite(x) && x >= 0)) out.monthlyKwh = v; else errors.push('Monthly kWh: give 12 numbers, January to December, from the bills');
+  }
+  for (const [k, field, label] of [['l.peakKw', 'peakKw', 'Peak load'], ['l.motorStartingKva', 'motorStartingKva', 'Motor starting kVA'], ['l.criticalLoadKw', 'criticalLoadKw', 'Critical load'], ['l.outageHoursPerDay', 'outageHoursPerDay', 'Outage hours per day']] as const) {
+    if (!str(f, k)) continue;
+    const v = num(f, k);
+    if (Number.isFinite(v) && v >= 0) out[field] = v; else errors.push(`${label} must be a number ≥ 0`);
+  }
+  if (str(f, 'l.diesel')) {
+    const v = num(f, 'l.diesel');
+    if (Number.isFinite(v) && v > 0 && str(f, 'l.dieselSource')) out.dieselKesPerLitre = { value: v, source: str(f, 'l.dieselSource') };
+    else errors.push('Diesel price needs a number of KES/L and its source (the customer\'s receipt or pump price)');
+  }
+  return out;
+}
+
+/** REQ-01 site details from the form; undefined when none is entered. Bad entries are reported. */
+export function siteFromForm(f: ProposalForm, errors: string[]): SiteDetails | undefined {
+  const el = str(f, 's.elevationM'), mount = str(f, 's.mounting').toLowerCase(), area = str(f, 's.usableAreaM2');
+  if (!el && !mount && !area) return undefined;
+  const out: SiteDetails = { source: str(f, 's.source') };
+  if (el) { const v = Number(el); if (Number.isFinite(v)) out.elevationM = v; else errors.push('Site elevation must be a number of metres'); }
+  if (mount) { if (mount === 'roof' || mount === 'ground') out.mounting = mount; else errors.push('Mounting must be "roof" or "ground"'); }
+  if (area) { const v = Number(area); if (Number.isFinite(v) && v > 0) out.usableAreaM2 = v; else errors.push('Usable area must be a positive number of m²'); }
+  if (!out.source) errors.push('Site details need their source (survey, drawing, map)');
+  return out;
+}
+
 /** Grid / generator connection for the single-line diagram: yes/no answers; unanswered = null (not stated). */
 export function connectionsFromForm(f: ProposalForm): SldConnections | undefined {
   const tri = (k: string) => (str(f, k) === 'yes' ? true : str(f, k) === 'no' ? false : null);
   const grid = tri('sld.grid'), generator = tri('sld.generator');
   const rated = num(f, 'hgen.ratedKw');
   if (grid === null && generator === null) return undefined;
-  return { grid, generator, ...(generator === true && Number.isFinite(rated) && rated > 0 ? { generatorRatedKw: rated } : {}) };
+  const minLoad = num(f, 'sld.genMinSiteLoadKw'), oemMin = num(f, 'sld.genOemMinLoadPct');
+  return {
+    grid, generator,
+    ...(generator === true && Number.isFinite(rated) && rated > 0 ? { generatorRatedKw: rated } : {}),
+    // Generator checks (CA-32): only with a generator; unanswered back-feed stays null (refused).
+    ...(generator === true ? {
+      pvCanBackfeedGenerator: tri('sld.pvBackfeed'),
+      ...(Number.isFinite(minLoad) && minLoad >= 0 ? { generatorMinSiteLoadKw: minLoad } : {}),
+      ...(Number.isFinite(oemMin) && oemMin >= 0 ? { generatorOemMinLoadPct: oemMin } : {}),
+    } : {}),
+  };
 }
 
 /**
@@ -147,14 +221,17 @@ export function connectionsFromForm(f: ProposalForm): SldConnections | undefined
 export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; errors: string[] } {
   const errors: string[] = [];
   for (const [k, l] of [['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature']] as const) if (blank(f, k)) errors.push(`${l} is required`);
+  inverterCountError(f, errors);
   const { module, inverter, battery, errors: eErr } = buildEntries(f);
   errors.push(...eErr);
   if (errors.length || !module || !inverter) return { model: null, errors };
   const cables: CableRun[] = anyFilled(f, 'k.') && CABLE_KEYS.every((k) => !blank(f, `k.${k}`))
-    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct') }]
+    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }]
     : [];
   const conn = connectionsFromForm(f);
   const units = num(f, 'b.units'), need = num(f, 'b.requiredUsableAcKwh');
+  // Re-review S4: a battery with blank units vanished from the preview, which then showed valid.
+  if (battery && !Number.isFinite(units)) return { model: null, errors: [...errors, 'Battery units is required'] };
   return {
     model: buildSld({
       reference: str(f, 'ref') || '(no reference yet)', module: module.data, inverter: inverter.data,
@@ -197,6 +274,14 @@ export function buildHybridInput(f: ProposalForm, pvAcKwh: number[], loadKwh: nu
   };
 }
 
+/** Review G3: what the cable carries and which MPPT; blank = treated as a PV cable on the largest MPPT. */
+export function cableKindFromForm(f: ProposalForm): Pick<CableRun, 'kind' | 'mppt' | 'stringFuseA'> {
+  const k = str(f, 'k.kind').toLowerCase();
+  const kind = k === 'ac' || k === 'dc-battery' || k === 'dc-pv' || k === 'dc-string' ? k : undefined;
+  const m = num(f, 'k.mppt');
+  const fuse = num(f, 'k.stringFuseA');
+  return { ...(kind ? { kind } : {}), ...(Number.isInteger(m) && m >= 1 ? { mppt: m } : {}), ...(kind === 'dc-string' && Number.isFinite(fuse) ? { stringFuseA: fuse } : {}) };
+}
 const CABLE_KEYS = ['name', 'lengthM', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
 
 /** Bill of materials rows: an empty rate means "rate required" (null); a given rate needs its source and date. */
@@ -226,6 +311,7 @@ export function buildBom(rows: BomRow[], errors: string[]): PricedLine[] {
 /** Map the whole form to a ProposalInput. Engine rules (ranges, refusals) stay in buildProposal on the server. */
 export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], production: HourlyResult | null, hybrid: HybridResult | null): { input: ProposalInput | null; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
+  inverterCountError(f, errors);
   for (const [k, l] of [['ref', 'Proposal reference'], ['c.name', 'Client name'], ['c.address', 'Site address'], ['c.lat', 'Latitude'], ['c.lon', 'Longitude'], ['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature'], ['t.source', 'Source of the site temperatures'], ['f.lifetime', 'Lifetime']] as const) {
     if (blank(f, k)) errors.push(`${l} is required`);
   }
@@ -247,11 +333,16 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const disc = sourced('Discount rate (%)', 'f.discount', 'f.discountSource');
   const deg = sourced('Degradation (%/yr)', 'f.degradation', 'f.degradationSource');
   const om = sourced('O&M (KES/yr)', 'f.om', 'f.omSource');
+  const replacements = parseReplacements(str(f, 'f.replacements'), errors);
+  const site = siteFromForm(f, errors);
+  // Review Q4: units in series of 2.5 or 0 was silently replaced by 1.
+  if (!blank(f, 'b.seriesPerString') && !(Number.isInteger(num(f, 'b.seriesPerString')) && num(f, 'b.seriesPerString') >= 1)) errors.push('Battery units in series per string must be a whole number, 1 or more (or blank for 1)');
+  const load = loadFromForm(f, errors);
 
   let cables: CableRun[] = [];
   if (anyFilled(f, 'k.')) {
     for (const k of CABLE_KEYS) if (blank(f, `k.${k}`)) errors.push(`Cable run: ${k} is required (or clear the cable section)`);
-    cables = [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct') }];
+    cables = [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }];
   }
   const bom = buildBom(bomRows, errors);
 
@@ -262,8 +353,10 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   const input: ProposalInput = {
     reference: str(f, 'ref'),
     client: { name: str(f, 'c.name'), siteAddress: str(f, 'c.address'), lat: num(f, 'c.lat'), lon: num(f, 'c.lon') },
+    ...(site ? { site } : {}),
+    ...(load ? { load } : {}),
     module: moduleEntry, inverter,
-    ...(battery ? { battery: { entry: battery, units: num(f, 'b.units'), requiredUsableAcKwh: num(f, 'b.requiredUsableAcKwh') } } : {}),
+    ...(battery ? { battery: { entry: battery, units: num(f, 'b.units'), requiredUsableAcKwh: num(f, 'b.requiredUsableAcKwh'), ...(Number.isInteger(num(f, 'b.seriesPerString')) && num(f, 'b.seriesPerString') >= 1 ? { seriesPerString: num(f, 'b.seriesPerString') } : {}) } } : {}),
     design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },
     inverterCount: num(f, 'd.inverterCount'),
     temps: { recordLowC: num(f, 't.recordLowC'), maxAmbientC: num(f, 't.maxAmbientC'), source: str(f, 't.source') },
@@ -276,6 +369,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
     finance: {
       tariffKesPerKwh: tariff, ...(exportTariff ? { exportTariffKesPerKwh: exportTariff } : {}), ...(selfConsumed ? { selfConsumedFraction: selfConsumed } : {}),
       tariffEscalationPct: esc, discountRatePct: disc, degradationPctPerYear: deg, omKesPerYear: om, lifetimeYears: num(f, 'f.lifetime'),
+      ...(replacements.length ? { replacements } : {}),
     },
   };
   return { input, errors, warnings };

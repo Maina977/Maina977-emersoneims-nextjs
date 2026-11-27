@@ -5,14 +5,18 @@ const ea = require('../server/engineering-approval');
 
 describe('engineering-approval — Tier-6 PE sign-off pack', () => {
   // -------------------------------------------------------------------
-  test('iec62446CommissioningReport — passes with within-spec measurements', () => {
+  // 2026-11-27 (final review): on-site visual items and the continuity, polarity and
+  // functional tests are no longer a hard-coded pass, so within-spec measurements give
+  // NOT COMPLETE (engineer on site), never PASS, and no failed items.
+  test('iec62446CommissioningReport — within-spec measurements: NOT COMPLETE, no failures', () => {
     const out = ea.iec62446CommissioningReport({
       projectId: 'TEST-1', vocMeasuredV: 480, vocExpectedV: 492,
       iscMeasuredA: 9.6, iscExpectedA: 9.8,
       insulationResistanceMOhm: 50, earthResistanceOhm: 5,
     });
-    expect(out.overallVerdict).toMatch(/PASS/);
-    expect(out.testing.allPass).toBe(true);
+    expect(out.overallVerdict).toMatch(/^NOT COMPLETE/);
+    expect(out.failedItems).toEqual([]);
+    expect(out.testing.allPass).toBe(false);
     expect(out.signatureBlock.reportHash).toMatch(/^[a-f0-9]{16}$/);
     expect(out.provenance.method).toMatch(/IEC 62446-1/);
   });

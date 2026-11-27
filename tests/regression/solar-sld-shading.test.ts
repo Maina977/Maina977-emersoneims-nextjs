@@ -247,7 +247,7 @@ describe('exports show the same SLD and shading numbers', () => {
     const p = buildProposal(input({ production: pr }));
     const ExcelJS = (await import('exceljs')).default;
     const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await proposalToXlsx(p) as unknown as ArrayBuffer);
-    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Single-line diagram', 'Horizon shading']);
+    expect(wb.worksheets.map((w) => w.name)).toEqual(['Summary', 'Design checks', 'Equipment & costs', 'Cash flow', 'Sensitivity', 'Single-line diagram', 'Horizon shading']); // 2026-11-27: Sensitivity sheet (REQ-17)
     const cells: string[] = [];
     wb.getWorksheet('Single-line diagram')!.eachRow((r) => r.eachCell((c) => { cells.push(String(c.value)); }));
     expect(cells.join(' ')).toContain('824.08 V');

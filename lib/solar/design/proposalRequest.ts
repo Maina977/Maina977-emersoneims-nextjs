@@ -5,6 +5,7 @@
  */
 import type { ProposalInput } from './proposal';
 import { CLIENT_APPROVAL_REJECTED } from './proposalApproval';
+import { moduleDataErrors, inverterDataErrors, batteryDataErrors, provenanceErrors } from './datasheet';
 
 export type ProposalFormat = 'json' | 'xlsx' | 'pdf';
 
@@ -26,9 +27,31 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     const en = i[k];
     if (!isObj(en) || !isObj(en.data) || !isObj(en.provenance) || (en.status !== 'verified' && en.status !== 'unverified')) e.push(`${k} must be a datasheet library entry { data, provenance, status }`);
   }
+  // Review of 39fa8535, R2: a non-string generator statement gave "…trim is not a function".
+  { const inv = i.inverter; const g = isObj(inv) && isObj(inv.data) ? inv.data.generatorCompatibility : undefined;
+    if (g !== undefined && g !== null && !isStr(g)) e.push('inverter.data.generatorCompatibility must be text (the manufacturer statement) or null'); }
   if (i.battery !== undefined) {
     const b = i.battery;
-    if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh)) e.push('battery must be { entry, units, requiredUsableAcKwh }');
+    if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh) || (b.seriesPerString !== undefined && !isNum(b.seriesPerString))) e.push('battery must be { entry, units, requiredUsableAcKwh, seriesPerString? }');
+  }
+  // Re-review Q6: the datasheet rules the import applies are applied to the
+  // entries an API request sends directly (it never runs the import).
+  // Final review: provenance as the import requires it (source fields, https link, ISO dates).
+  if (isObj(i.module) && isObj(i.module.provenance)) e.push(...provenanceErrors(i.module.provenance, 'module.provenance.'));
+  if (isObj(i.inverter) && isObj(i.inverter.provenance)) e.push(...provenanceErrors(i.inverter.provenance, 'inverter.provenance.'));
+  if (isObj(i.battery) && isObj(i.battery.entry) && isObj((i.battery.entry as Record<string, unknown>).provenance)) e.push(...provenanceErrors((i.battery.entry as Record<string, unknown>).provenance as Record<string, unknown>, 'battery.provenance.'));
+  if (isObj(i.module) && isObj(i.module.data)) e.push(...moduleDataErrors(i.module.data));
+  if (isObj(i.inverter) && isObj(i.inverter.data)) e.push(...inverterDataErrors(i.inverter.data));
+  if (isObj(i.battery) && isObj(i.battery.entry) && isObj((i.battery.entry as Record<string, unknown>).data)) e.push(...batteryDataErrors((i.battery.entry as Record<string, unknown>).data as Record<string, unknown>));
+  if (i.site !== undefined) {
+    const st = i.site;
+    if (!isObj(st) || !isStr(st.source) || (st.elevationM !== undefined && !isNum(st.elevationM)) || (st.usableAreaM2 !== undefined && !isNum(st.usableAreaM2)) || (st.mounting !== undefined && st.mounting !== 'roof' && st.mounting !== 'ground')) e.push('site must be { elevationM?, mounting?: roof | ground, usableAreaM2?, source }');
+  }
+  if (i.load !== undefined) {
+    const l = i.load;
+    if (!isObj(l) || !isStr(l.source) || (l.monthlyKwh !== undefined && !(Array.isArray(l.monthlyKwh) && (l.monthlyKwh as unknown[]).every(isNum)))
+      || ['peakKw', 'motorStartingKva', 'criticalLoadKw', 'outageHoursPerDay'].some((k) => l[k] !== undefined && !isNum(l[k]))
+      || (l.dieselKesPerLitre !== undefined && !(isObj(l.dieselKesPerLitre) && isNum(l.dieselKesPerLitre.value) && isStr(l.dieselKesPerLitre.source)))) e.push('load must be { monthlyKwh?[12], peakKw?, motorStartingKva?, criticalLoadKw?, outageHoursPerDay?, dieselKesPerLitre?: { value, source }, source }');
   }
   const d = i.design;
   if (!isObj(d) || !isNum(d.modulesPerString) || !Array.isArray(d.stringsPerMppt) || !(d.stringsPerMppt as unknown[]).every(isNum)) e.push('design { modulesPerString, stringsPerMppt[] } is required');
@@ -36,6 +59,7 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   const t = i.temps;
   if (!isObj(t) || !isNum(t.recordLowC) || !isNum(t.maxAmbientC) || !isStr(t.source)) e.push('temps { recordLowC, maxAmbientC, source } is required');
   if (!Array.isArray(i.cables) || !(i.cables as unknown[]).every(isObj)) e.push('cables must be an array (may be empty)');
+  else if (!(i.cables as Record<string, unknown>[]).every((k) => (k.kind === undefined || k.kind === 'dc-pv' || k.kind === 'dc-string' || k.kind === 'dc-battery' || k.kind === 'ac') && (k.mppt === undefined || (isNum(k.mppt) && Number.isInteger(k.mppt) && (k.mppt as number) >= 1)) && (k.stringFuseA === undefined || isNum(k.stringFuseA)))) e.push('cable kind must be dc-pv, dc-string, dc-battery or ac, and mppt a whole number ≥ 1');
   const p = i.production;
   if (!isObj(p) || !isNum(p.annualKwh) || !isNum(p.clippedKwh) || !isNum(p.specificYieldKwhPerKwp) || !isNum(p.performanceRatio) || !Array.isArray(p.assumptions) || !isStr(p.engineVersion)) e.push('production (hourly simulation result) is required');
   if (isObj(p) && p.shading !== undefined) {
@@ -45,13 +69,16 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if (i.connections !== undefined) {
     const c = i.connections;
     const tri = (x: unknown) => x === true || x === false || x === null;
-    if (!isObj(c) || !tri(c.grid) || !tri(c.generator) || (c.generatorRatedKw !== undefined && !isNum(c.generatorRatedKw))) e.push('connections must be { grid, generator } with true, false or null');
+    if (!isObj(c) || !tri(c.grid) || !tri(c.generator) || (c.generatorRatedKw !== undefined && !isNum(c.generatorRatedKw))
+      || (c.generatorMinSiteLoadKw !== undefined && !isNum(c.generatorMinSiteLoadKw)) || (c.generatorOemMinLoadPct !== undefined && !isNum(c.generatorOemMinLoadPct))
+      || (c.pvCanBackfeedGenerator !== undefined && !tri(c.pvCanBackfeedGenerator))) e.push('connections must be { grid, generator } with true, false or null');
   }
   if (i.hybrid !== undefined &&(!isObj(i.hybrid) || !isObj(i.hybrid.totals) || !isStr(i.hybrid.engineVersion))) e.push('hybrid must be a hybrid simulation result');
   if (!Array.isArray(i.bom) || !(i.bom as unknown[]).every((l) => isObj(l) && isStr(l.item) && isStr(l.model) && isNum(l.quantity) && isStr(l.unit) && (l.rate === null || isObj(l.rate)))) e.push('bom must be an array of { item, model, quantity, unit, rate | null }');
   const f = i.finance;
   if (!isObj(f) || !isNum(f.lifetimeYears)) e.push('finance { …, lifetimeYears } is required');
-  else for (const k of ['tariffKesPerKwh', 'tariffEscalationPct', 'discountRatePct', 'degradationPctPerYear', 'omKesPerYear', 'exportTariffKesPerKwh', 'selfConsumedFraction']) {
+  else if (f.replacements !== undefined && (!Array.isArray(f.replacements) || !(f.replacements as unknown[]).every((r) => isObj(r) && isStr(r.item) && isNum(r.year) && isNum(r.costKes) && isStr(r.source) && isStr(r.date)))) e.push('finance.replacements must be a list of { item, year, costKes, source, date }');
+  if (isObj(f)) for (const k of ['tariffKesPerKwh', 'tariffEscalationPct', 'discountRatePct', 'degradationPctPerYear', 'omKesPerYear', 'exportTariffKesPerKwh', 'selfConsumedFraction']) {
     const s = f[k];
     if (s === undefined && (k === 'exportTariffKesPerKwh' || k === 'selfConsumedFraction')) continue;
     if (!isObj(s) || !isNum(s.value) || !isStr(s.source)) e.push(`finance.${k} must be { value, source }`);

@@ -23,22 +23,37 @@
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, componentChecks, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
 import { proposalRevisionHash, verifyApproval, TYPED_APPROVAL_IGNORED_REASON, type ApprovalVerifier, type VerifiedApproval } from './proposalApproval';
 import { buildSld, type SldConnections, type SldModel } from './sld';
+import { REQUEST_QUOTATION } from '../sizing';
 import { horizonErrors, type ShadingSummary } from './shading';
 
 export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.2.0 (2026-11-25, single-line diagram and horizon shading)';
 
 export interface Sourced { value: number; source: string }
+/**
+ * Load facts (P1-B §2 Load, REQ-03), as measured or surveyed, with their
+ * source: monthly kWh from the bills, peak kW, largest motor starting kVA,
+ * critical load, outage hours per day, and the customer's diesel price.
+ */
+export interface LoadDetails {
+  monthlyKwh?: number[]; peakKw?: number; motorStartingKva?: number; criticalLoadKw?: number; outageHoursPerDay?: number;
+  dieselKesPerLitre?: Sourced; source: string;
+}
+export interface SiteDetails { elevationM?: number; mounting?: 'roof' | 'ground'; usableAreaM2?: number; source: string }
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
 export interface ProposalInput {
   reference: string;
   client: { name: string; siteAddress: string; lat: number; lon: number };
-  module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number };
+  /** Site details (P1-B §2 Site, REQ-01), as surveyed or entered by the designer, with their source. */
+  site?: SiteDetails;
+  /** Load details (REQ-03). */
+  load?: LoadDetails;
+  module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number; /** REQ-05: units in series per string (default 1). */ seriesPerString?: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
   /** Grid / generator connection for the single-line diagram; absent = not stated (shown as to be specified by the engineer). */
@@ -55,12 +70,23 @@ export interface ProposalInput {
     degradationPctPerYear: Sourced;      // module datasheet warranty
     omKesPerYear: Sourced;
     lifetimeYears: number;
+    /**
+     * Component replacements over the project life (P1-B §2 Finance, REQ-06):
+     * QUOTED costs only, each with its source and date, charged in the year
+     * given at the quoted price (not escalated). Nothing is assumed: with no
+     * entry, no replacement is costed and the proposal says so.
+     */
+    replacements?: Array<{ item: string; year: number; costKes: number; source: string; date: string }>;
   };
   /** Server-produced only (see proposalApproval.ts); never taken from a client request. */
   verifiedApproval?: VerifiedApproval;
 }
 
-export interface CashflowYear { year: number; energyKwh: number; savingsKes: number; omKes: number; netKes: number; cumulativeKes: number }
+export interface CashflowYear { year: number; energyKwh: number; savingsKes: number; omKes: number; replacementKes: number; netKes: number; cumulativeKes: number }
+/** One-at-a-time sensitivity of the financial result (REQ-17). */
+export interface SensitivityRow { variable: 'tariff' | 'installed cost' | 'energy yield'; changePct: number; npvKes: number; irrPct: number | null; simplePaybackYears: number | null }
+/** The step used for the sensitivity: a chosen ± step, stated on every output; not a forecast. */
+export const SENSITIVITY_STEP_PCT = 10;
 export interface Proposal {
   reference: string; status: 'REFUSED' | 'DRAFT' | 'FOR ISSUE'; statusReasons: string[];
   /** SHA-256 of the canonical input (approval excluded): the revision an approval is locked to. */
@@ -68,12 +94,16 @@ export interface Proposal {
   /** Set only when status is FOR ISSUE through a verified approval. */
   approval: null | { reviewerId: string; reviewerName: string; registration: string; approvedAt: string };
   client: ProposalInput['client'];
+  /** REQ-01: null when none of elevation, mounting or usable area was entered. */
+  site: SiteDetails | null;
+  /** REQ-03: the load facts entered, with the annual consumption from the bills; null when none. */
+  load: (LoadDetails & { annualKwhFromBills: number | null }) | null;
   system: { dcKwp: number; acKw: number; modules: number; strings: number; inverterCount: number; batteryKwh: number | null };
   checks: Check[];
   schedule: Array<{ item: string; model: string; quantity: number; unit: string; datasheet?: string; verified?: boolean }>;
   costing: { lines: Array<PricedLine & { amountKes: number | null }>; capexKes: number | null; unpriced: string[] };
   energy: { year1Kwh: number; usefulYear1Kwh: number | null; exportYear1Kwh: number; clippedKwh: number; specificYield: number; performanceRatio: number; source: string };
-  finance: null | { npvKes: number; irrPct: number | null; simplePaybackYears: number | null; lcoeKesPerKwh: number; cashflows: CashflowYear[] };
+  finance: null | { npvKes: number; irrPct: number | null; simplePaybackYears: number | null; lcoeKesPerKwh: number; cashflows: CashflowYear[]; sensitivity: { stepPct: number; rows: SensitivityRow[]; note: string } };
   /** Single-line diagram model (sld.ts): the screen SVG and the PDF/Excel exports are all drawn from it. */
   sld: SldModel;
   /** Horizon shading from the production simulation (shading.ts), or null when no horizon was entered. */
@@ -138,9 +168,15 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const om = need('O&M (KES/yr)', f.omKesPerYear, 0, 1e9);
   if (!(Number.isInteger(f.lifetimeYears) && f.lifetimeYears >= 5 && f.lifetimeYears <= 30)) throw new Error('Lifetime must be 5–30 whole years');
   if (!i.temps.source?.trim()) throw new Error('Source of the site temperatures is required');
+  // Review of 39fa8535, M2: −1, 0 or 1.5 inverters gave negative or odd
+  // quantities on a DRAFT marked valid.
+  if (!(Number.isInteger(i.inverterCount) && i.inverterCount >= 1)) throw new Error('Inverter count must be a whole number ≥ 1');
   const c = i.connections;
   if (c !== undefined && (typeof c !== 'object' || c === null || ![true, false, null].includes(c.grid) || ![true, false, null].includes(c.generator)
-    || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0)))) throw new Error('connections must be { grid: true | false | null, generator: true | false | null, generatorRatedKw?: positive kW }');
+    || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0))
+    || (c.generatorMinSiteLoadKw !== undefined && !(Number.isFinite(c.generatorMinSiteLoadKw) && c.generatorMinSiteLoadKw >= 0))
+    || (c.generatorOemMinLoadPct !== undefined && !(Number.isFinite(c.generatorOemMinLoadPct) && c.generatorOemMinLoadPct >= 0 && c.generatorOemMinLoadPct <= 100))
+    || (c.pvCanBackfeedGenerator !== undefined && ![true, false, null].includes(c.pvCanBackfeedGenerator)))) throw new Error('connections must be { grid: true | false | null, generator: true | false | null, generatorRatedKw?: positive kW, generatorMinSiteLoadKw?: kW ≥ 0, generatorOemMinLoadPct?: 0–100, pvCanBackfeedGenerator?: true | false | null }');
   const shading = i.production.shading ?? null;
   if (shading) {
     const he = horizonErrors(shading.horizon);
@@ -150,16 +186,95 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (pcts.some((x) => x !== null && !(typeof x === 'number' && x >= 0 && x <= 100))) throw new Error('Horizon shading: loss percentages must be 0–100 %');
     if (Math.abs(shading.annual.shadedAnnualKwh - i.production.annualKwh) > 1) throw new Error('Horizon shading: the shaded annual energy does not match the production result (they must come from the same simulation)');
   }
+  const site = i.site;
+  if (site !== undefined) {
+    if (typeof site !== 'object' || site === null) throw new Error('site must be { elevationM?, mounting?, usableAreaM2?, source }');
+    if (site.elevationM !== undefined && !(Number.isFinite(site.elevationM) && site.elevationM >= -500 && site.elevationM <= 6000)) throw new Error('Site elevation must be −500 to 6,000 m');
+    if (site.mounting !== undefined && site.mounting !== 'roof' && site.mounting !== 'ground') throw new Error('Mounting must be roof or ground');
+    if (site.usableAreaM2 !== undefined && !(Number.isFinite(site.usableAreaM2) && site.usableAreaM2 > 0)) throw new Error('Usable area must be a positive number of m²');
+    if ((site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined) && !String(site.source ?? '').trim()) throw new Error('Site details need their source (survey, drawing, map)');
+  }
+  const load = i.load;
+  if (load !== undefined) {
+    if (typeof load !== 'object' || load === null || !String(load.source ?? '').trim()) throw new Error('Load details need their source (bills, logger, survey)');
+    if (load.monthlyKwh !== undefined && !(Array.isArray(load.monthlyKwh) && load.monthlyKwh.length === 12 && load.monthlyKwh.every((x) => Number.isFinite(x) && x >= 0))) throw new Error('Monthly kWh must be 12 values ≥ 0 (January–December, from the bills)');
+    for (const [k, v, max] of [['Peak load (kW)', load.peakKw, 100000], ['Motor starting (kVA)', load.motorStartingKva, 100000], ['Critical load (kW)', load.criticalLoadKw, 100000], ['Outage hours per day', load.outageHoursPerDay, 24]] as const) {
+      if (v !== undefined && !(Number.isFinite(v) && v >= 0 && v <= max)) throw new Error(`${k} must be 0–${max}`);
+    }
+    if (load.dieselKesPerLitre) need('Diesel price (KES/L)', load.dieselKesPerLitre, 50, 1000);
+  }
+  const siteStated = !!site && (site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined);
   const exportTariff = f.exportTariffKesPerKwh ? need('Export tariff (KES/kWh)', f.exportTariffKesPerKwh, 0, 200) : 0;
+  const replacements = f.replacements ?? [];
+  if (!Array.isArray(replacements)) throw new Error('finance.replacements must be a list');
+  for (const r of replacements) {
+    if (!r || typeof r !== 'object' || !String(r.item ?? '').trim()) throw new Error('Each replacement needs an item name');
+    if (!(Number.isInteger(r.year) && r.year >= 1 && r.year <= f.lifetimeYears)) throw new Error(`Replacement "${r.item}": year must be a whole year 1–${f.lifetimeYears}`);
+    if (!(Number.isFinite(r.costKes) && r.costKes >= 0)) throw new Error(`Replacement "${r.item}": cost must be a number of KES ≥ 0`);
+    if (!String(r.source ?? '').trim() || Number.isNaN(Date.parse(String(r.date)))) throw new Error(`Replacement "${r.item}": a quoted cost needs its source and date`);
+  }
+  const replacementInYear = (y: number) => replacements.filter((r) => r.year === y).reduce((a, r) => a + r.costKes, 0);
 
   // 1. Design checks
   const str = validateStrings(i.module.data, i.inverter.data, i.design, i.temps);
   const checks: Check[] = [...str.checks];
   if (str.errors.length) reasons.push(...str.errors.map((e) => `Design: ${e}`));
-  for (const c of i.cables) { const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`)); }
+  for (const c of i.cables) {
+    const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`));
+    const sc = cableStringCurrentCheck(c, i.module.data, i.design); if (sc) checks.push(sc);
+  }
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
+  // REQ-04 datasheet fields (and REQ-01 usable area, REQ-05 battery arrangement).
+  {
+    const nMod = i.design.stringsPerMppt.reduce((a, b) => a + b, 0) * i.inverterCount * i.design.modulesPerString;
+    checks.push(...componentChecks({ module: i.module.data, inverter: i.inverter.data, modules: nMod, usableAreaM2: i.site?.usableAreaM2, temps: i.temps, grid: i.connections?.grid ?? null,
+      ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, seriesPerString: i.battery.seriesPerString } } : {}) }));
+  }
+  // REQ-03 load checks. A battery-backed or off-grid inverter must carry the
+  // peak (REFUSE); the critical load over the stated outage is compared with
+  // the battery's usable AC energy (WARN: it is a service level, the customer's choice).
+  if (i.load) {
+    const acTotal = i.inverter.data.acKw * i.inverterCount;
+    const backup = !!i.battery || i.connections?.grid === false;
+    if (i.load.peakKw !== undefined && backup) {
+      checks.push({ id: 'inverter-peak', title: 'Inverter carries the peak load (backup / off-grid)', verdict: i.load.peakKw <= acTotal ? 'PASS' : 'REFUSE', value: i.load.peakKw, limit: acTotal, unit: 'kW', marginPct: Math.round(((acTotal - i.load.peakKw) / acTotal) * 10000) / 100,
+        formula: `peak ${i.load.peakKw} kW ≤ inverter AC ${i.inverter.data.acKw} kW × ${i.inverterCount}`, reference: 'Inverter datasheet continuous AC rating' });
+    }
+    if (i.load.motorStartingKva !== undefined && backup) {
+      checks.push({ id: 'motor-start', title: 'Largest motor start on the inverter', verdict: 'WARN', value: i.load.motorStartingKva, limit: NaN, unit: 'kVA', marginPct: NaN, formula: 'not checked', reference: 'Inverter datasheet surge rating required',
+        note: `A ${i.load.motorStartingKva} kVA motor start is not checked: the inverter surge rating is not in the library; confirm it on the datasheet or use a soft starter` });
+    }
+    // Review Q5: the check vanished when outage hours were missing or there was no battery.
+    if (i.load.criticalLoadKw !== undefined && i.load.outageHoursPerDay === undefined) {
+      checks.push({ id: 'critical-backup', title: 'Battery carries the critical load through the stated outage', verdict: 'WARN', value: NaN, limit: NaN, unit: 'kWh', marginPct: NaN, formula: 'not checked', reference: 'Customer outage record', note: 'Critical load given but no outage hours per day: the backup is not checked' });
+    } else if (!i.battery && i.load.criticalLoadKw !== undefined && i.load.criticalLoadKw > 0 && (i.load.outageHoursPerDay ?? 0) > 0) {
+      const needKwh = i.load.criticalLoadKw * (i.load.outageHoursPerDay as number);
+      checks.push({ id: 'critical-backup', title: 'Battery carries the critical load through the stated outage', verdict: 'WARN', value: 0, limit: Math.round(needKwh * 100) / 100, unit: 'kWh', marginPct: -100, formula: `need = ${i.load.criticalLoadKw} kW × ${i.load.outageHoursPerDay} h; no battery in the design`, reference: 'Customer outage record',
+        note: `No battery: the ${Math.round(needKwh * 100) / 100} kWh of critical load during outages is NOT backed up by this design` });
+    }
+    if (i.battery && i.load.criticalLoadKw !== undefined && i.load.outageHoursPerDay !== undefined) {
+      const need = i.load.criticalLoadKw * i.load.outageHoursPerDay;
+      const b = i.battery.entry.data;
+      const usable = b.nominalKwh * i.battery.units * b.usableDoD * b.dischargeEfficiency;
+      checks.push({ id: 'critical-backup', title: 'Battery carries the critical load through the stated outage', verdict: usable >= need * (1 - 1e-9) ? 'PASS' : 'WARN', value: Math.round(usable * 100) / 100, limit: Math.round(need * 100) / 100, unit: 'kWh', marginPct: need > 0 ? Math.round(((usable - need) / need) * 10000) / 100 : 0,
+        formula: `need = ${i.load.criticalLoadKw} kW × ${i.load.outageHoursPerDay} h; usable = ${b.nominalKwh} kWh × ${i.battery.units} × ${b.usableDoD} × ${b.dischargeEfficiency}`, reference: 'Customer outage record; battery datasheet' });
+    }
+  }
+  // Generator (CA-32, 2026-11-26): checkGenerator was never run here, so an
+  // inverter without a generator-compatibility statement, or PV able to
+  // back-feed the generator, gave a valid design. A generator counts as
+  // connected when stated, or when the hybrid balance ran one.
+  const hybridUsedGenerator = !!i.hybrid && ((i.hybrid.totals.generatorKwh ?? 0) > 0 || (i.hybrid.totals.generatorHours ?? 0) > 0);
+  if (c?.generator === true || hybridUsedGenerator) {
+    checks.push(...generatorConnectionChecks(i.inverter.data, { generator: true, ...(c ?? {}) }));
+    if (hybridUsedGenerator && c?.generator !== true) reasons.push('The hybrid balance runs a generator but the connection data does not say a generator is connected: state it (connections.generator) with its rating and back-feed status');
+  }
   const refused = checks.filter((k) => k.verdict === 'REFUSE');
-  refused.forEach((c) => reasons.push(`REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`));
+  // A refusal for missing or unusable data has no measured value: say what is
+  // required instead of printing "NaN A" (CA-32 third review).
+  refused.forEach((c) => reasons.push(Number.isFinite(c.value)
+    ? `REFUSE: ${c.title} (${c.value} ${c.unit} vs limit ${c.limit} ${c.unit})`
+    : `REFUSE: ${c.title}${Number.isFinite(c.limit) ? ` (required ${c.limit} ${c.unit})` : ''}${c.note ? `: ${c.note}` : ''}`));
 
   // 2. Schedule and costing
   const strings = i.design.stringsPerMppt.reduce((a, b) => a + b, 0) * i.inverterCount;
@@ -178,7 +293,8 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     return { ...b, amountKes: b.rate ? Math.round(b.rate.valueKes * b.quantity * 100) / 100 : null };
   });
   const unpriced = lines.filter((l) => l.amountKes === null).map((l) => l.item);
-  if (unpriced.length) reasons.push(`Rate required: ${unpriced.join(', ')}`);
+  // REQ-19: the company wording for an unquoted item (lib/solar/sizing.ts REQUEST_QUOTATION).
+  if (unpriced.length) reasons.push(`${REQUEST_QUOTATION} for: ${unpriced.join(', ')} (no verified price; the proposal has no total until each is quoted)`);
   const capex = unpriced.length ? null : Math.round(lines.reduce((s, l) => s + (l.amountKes as number), 0) * 100) / 100;
 
   // 3. Energy
@@ -199,24 +315,41 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   // 4. Finance (only with a complete price and known self-consumption)
   let finance: Proposal['finance'] = null;
   if (capex !== null && useful !== null) {
-    const flows = [-capex];
-    const cf: CashflowYear[] = [];
-    let cum = -capex;
-    for (let y = 1; y <= f.lifetimeYears; y++) {
-      const k = (1 - deg / 100) ** (y - 1), t = (1 + esc / 100) ** (y - 1);
-      const savings = useful * k * tariff * t + exported * k * exportTariff;
-      const net = savings - om;
-      flows.push(net); cum += net;
-      cf.push({ year: y, energyKwh: Math.round(y1 * k), savingsKes: Math.round(savings), omKes: Math.round(om), netKes: Math.round(net), cumulativeKes: Math.round(cum) });
+    const usefulKwh = useful;
+    // One cash-flow model, run for the base case and for each sensitivity case.
+    const run = (capexX: number, tariffX: number, yieldX: number) => {
+      const cap = capex * capexX;
+      const flows = [-cap];
+      const cf: CashflowYear[] = [];
+      let cum = -cap;
+      for (let y = 1; y <= f.lifetimeYears; y++) {
+        const k = (1 - deg / 100) ** (y - 1) * yieldX, t = (1 + esc / 100) ** (y - 1);
+        const savings = usefulKwh * k * tariff * tariffX * t + exported * k * exportTariff * tariffX;
+        const repl = replacementInYear(y);
+        const net = savings - om - repl;
+        flows.push(net); cum += net;
+        cf.push({ year: y, energyKwh: Math.round(y1 * k), savingsKes: Math.round(savings), omKes: Math.round(om), replacementKes: Math.round(repl), netKes: Math.round(net), cumulativeKes: Math.round(cum) });
+      }
+      const ir = irr(flows);
+      return { cap, flows, cf, npvKes: Math.round(npv(disc, flows)), irrPct: ir === null ? null : Math.round(ir * 100) / 100, simplePaybackYears: simplePayback(flows) };
+    };
+    const b = run(1, 1, 1);
+    const pv = (x: number, year: number) => x / (1 + disc / 100) ** year;
+    const pvEnergy = b.cf.reduce((s, c) => s + pv(c.energyKwh, c.year), 0);
+    const pvOm = b.cf.reduce((s, c) => s + pv(c.omKes, c.year), 0);
+    const pvRepl = b.cf.reduce((s, c) => s + pv(c.replacementKes, c.year), 0);
+    const st = SENSITIVITY_STEP_PCT / 100;
+    const rows: SensitivityRow[] = [];
+    for (const [variable, mk] of [['tariff', (d: number) => run(1, 1 + d, 1)], ['installed cost', (d: number) => run(1 + d, 1, 1)], ['energy yield', (d: number) => run(1, 1, 1 + d)]] as const) {
+      for (const d of [-st, st]) { const r = mk(d); rows.push({ variable, changePct: Math.round(d * 100), npvKes: r.npvKes, irrPct: r.irrPct, simplePaybackYears: r.simplePaybackYears }); }
     }
-    const pvEnergy = cf.reduce((s, c) => s + c.energyKwh / (1 + disc / 100) ** c.year, 0);
-    const pvOm = cf.reduce((s, c) => s + c.omKes / (1 + disc / 100) ** c.year, 0);
-    const ir = irr(flows);
     finance = {
-      npvKes: Math.round(npv(disc, flows)), irrPct: ir === null ? null : Math.round(ir * 100) / 100,
-      simplePaybackYears: simplePayback(flows), lcoeKesPerKwh: Math.round(((capex + pvOm) / pvEnergy) * 100) / 100, cashflows: cf,
+      npvKes: b.npvKes, irrPct: b.irrPct,
+      simplePaybackYears: b.simplePaybackYears, lcoeKesPerKwh: Math.round(((capex + pvOm + pvRepl) / pvEnergy) * 100) / 100, cashflows: b.cf,
+      sensitivity: { stepPct: SENSITIVITY_STEP_PCT, rows, note: `Each variable moved ±${SENSITIVITY_STEP_PCT} % on its own with everything else held: a chosen step to show how the result depends on it, not a forecast.` },
     };
   }
+
 
   // 5. Status
   const revisionHash = proposalRevisionHash(i);
@@ -230,14 +363,20 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     ? { reviewerId: approvalCheck.reviewer.reviewerId, reviewerName: approvalCheck.reviewer.name, registration: approvalCheck.reviewer.registration, approvedAt: approvalCheck.approval.approvedAt }
     : null;
 
-  const sld = buildSld({
+  const sldBuilt = buildSld({
     reference: i.reference, module: i.module.data, inverter: i.inverter.data, design: i.design, inverterCount: i.inverterCount, temps: i.temps,
     ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, requiredUsableAcKwh: i.battery.requiredUsableAcKwh } } : {}),
-    cables: i.cables, ...(i.connections ? { connections: i.connections } : {}),
+    // The diagram shows (and checks) the generator the hybrid balance ran, even
+    // when the connection data did not state one (CA-32).
+    cables: i.cables, ...(i.connections || hybridUsedGenerator ? { connections: hybridUsedGenerator && i.connections?.generator !== true ? { grid: i.connections?.grid ?? null, ...(i.connections ?? {}), generator: true } : i.connections! } : {}),
   });
+  // The diagram never says "valid" for a design the proposal refuses (e.g. the
+  // REQ-04 area, battery voltage or current checks, which need proposal data).
+  const sld = refused.length && sldBuilt.designValid ? { ...sldBuilt, designValid: false } : sldBuilt;
 
   return {
-    reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client,
+    reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client, site: siteStated ? site! : null,
+    load: load ? { ...load, annualKwhFromBills: load.monthlyKwh ? Math.round(load.monthlyKwh.reduce((a, b) => a + b, 0)) : null } : null,
     system: { dcKwp, acKw, modules, strings, inverterCount: i.inverterCount, batteryKwh: i.battery ? i.battery.entry.data.nominalKwh * i.battery.units : null },
     checks, schedule, costing: { lines, capexKes: capex, unpriced },
     energy: { year1Kwh: y1, usefulYear1Kwh: useful === null ? null : Math.round(useful), exportYear1Kwh: Math.round(exported), clippedKwh: i.production.clippedKwh, specificYield: i.production.specificYieldKwhPerKwp, performanceRatio: i.production.performanceRatio, source: i.production.assumptions[0] },
@@ -248,6 +387,16 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'The simulation agrees with pvlib on identical inputs; it has not yet been compared with measured output of installed EmersonEIMS systems.',
       'Shading, soiling and the roof\'s real temperature are only as good as the losses entered; a site survey confirms them.',
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
+      'String currents use 1.25 × Isc at STC, which does not cover bifacial gain: for bifacial modules, use the datasheet\'s bifacial Isc (with the rear-side gain) in the module entry.',
+      ...(i.battery ? [`Battery (datasheet): ${[i.battery.entry.data.chemistry ?? 'chemistry not entered', i.battery.entry.data.nominalV ? `${i.battery.entry.data.nominalV} V per unit` : 'voltage not entered', i.battery.entry.data.cycleLife ? `${i.battery.entry.data.cycleLife} cycles${i.battery.entry.data.cycleLifeDoD ? ` at ${Math.round(i.battery.entry.data.cycleLifeDoD * 100)} % DoD` : ''}` : 'cycle life not entered', i.battery.entry.data.warrantyYears ? `${i.battery.entry.data.warrantyYears}-year warranty` : 'warranty not entered'].join(', ')}; ${i.battery.units} units${i.battery.seriesPerString ? ` as ${i.battery.units / i.battery.seriesPerString} string(s) of ${i.battery.seriesPerString} in series` : ''}.`] : []),
+      ...(load ? [`Load (${load.source}): ${[load.monthlyKwh ? `${Math.round(load.monthlyKwh.reduce((a, b) => a + b, 0)).toLocaleString('en-KE')} kWh a year from 12 monthly bills` : null, load.peakKw !== undefined ? `peak ${load.peakKw} kW` : null, load.motorStartingKva !== undefined ? `largest motor start ${load.motorStartingKva} kVA` : null, load.criticalLoadKw !== undefined ? `critical ${load.criticalLoadKw} kW` : null, load.outageHoursPerDay !== undefined ? `outages ${load.outageHoursPerDay} h/day` : null, load.dieselKesPerLitre ? `diesel KES ${load.dieselKesPerLitre.value}/L (${load.dieselKesPerLitre.source})` : null].filter(Boolean).join(', ')}.`] : []),
+      ...(load?.dieselKesPerLitre && i.hybrid && i.hybrid.totals.generatorFuelL > 0 ? [`Generator fuel in the hybrid balance: ${Math.round(i.hybrid.totals.generatorFuelL).toLocaleString('en-KE')} L × KES ${load.dieselKesPerLitre.value}/L = KES ${Math.round(i.hybrid.totals.generatorFuelL * load.dieselKesPerLitre.value).toLocaleString('en-KE')} a year at the customer's diesel price. This fuel cost is NOT in the cash flow, NPV, IRR or payback (they value the PV energy used on site against the tariff only).`] : []),
+      siteStated
+        ? `Site: ${[site!.mounting ? `${site!.mounting}-mounted` : null, site!.elevationM !== undefined ? `elevation ${site!.elevationM} m` : null, site!.usableAreaM2 !== undefined ? `usable area ${site!.usableAreaM2} m²` : null].filter(Boolean).join(', ')} (${site!.source}).`
+        : 'Site elevation, roof or ground mounting and usable area were not entered: the layout is not checked against the available area.',
+      replacements.length
+        ? `Component replacements in the cash flow (quoted, not escalated): ${replacements.map((r) => `${r.item} in year ${r.year}, KES ${r.costKes.toLocaleString('en-KE')} (${r.source}, ${r.date})`).join('; ')}.`
+        : 'No component replacement costs were entered, so none are in the cash flow. Inverters and batteries are often replaced within the project life: enter quoted costs to include them.',
       'Financial results use the tariff, escalation, discount rate and degradation shown, as given by the customer or datasheet; other assumptions give other results.',
       'Electrical design must be checked and signed by a qualified engineer before installation; this proposal is not a certificate.',
       'The single-line diagram shows only what the design determines; every item marked "to be specified by the engineer" must be completed before construction.',

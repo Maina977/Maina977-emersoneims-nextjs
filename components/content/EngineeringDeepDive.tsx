@@ -180,7 +180,10 @@ export interface SpecTableProps {
 export function SpecTable({ caption, headers, rows, highlightCol, accent = 'amber' }: SpecTableProps) {
   const t = accentOf(accent);
   return (
-    <figure className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02]">
+    // A table wider than a phone scrolls sideways; a keyboard user must be able
+    // to reach and scroll it (WCAG 2.1.1; axe scrollable-region-focusable,
+    // the serious finding left on /solar at 390 px, register HUB-02).
+    <figure tabIndex={0} aria-label={caption ?? headers.join(', ')} className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
       {caption && (
         <figcaption className={`px-5 pt-4 pb-2 text-sm font-semibold ${t.textSoft}`}>{caption}</figcaption>
       )}

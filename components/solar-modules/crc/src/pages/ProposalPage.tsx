@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { REQUEST_QUOTATION } from '@/lib/solar/sizing';
 import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
@@ -43,14 +44,15 @@ const prov = (p: string): Field[] => [
 const verification = (p: string): Field[] => [[`${p}.verified`, 'Verified against the datasheet by a second person', '', 'check'], [`${p}.verifiedBy`, 'Verified by', ''], [`${p}.verifiedOn`, 'Verified on', '', 'date']];
 
 const GROUPS: Group[] = [
-  { id: 'client', title: 'Client and site', items: [['ref', 'Proposal reference', ''], ['c.name', 'Client name', ''], ['c.address', 'Site address', ''], ['c.lat', 'Latitude', '°'], ['c.lon', 'Longitude', '°']] },
-  { id: 'module', title: 'Module (datasheet)', items: [...prov('m'), ['m.model', 'Model', ''], ['m.pmaxW', 'Pmax', 'W'], ['m.vocV', 'Voc', 'V'], ['m.iscA', 'Isc', 'A'], ['m.vmpV', 'Vmp', 'V'], ['m.impA', 'Imp', 'A'], ['m.betaVocPct', 'β Voc', '%/°C'], ['m.betaVmpPct', 'β Vmp', '%/°C'], ['m.alphaIscPct', 'α Isc', '%/°C'], ['m.gammaPmaxPct', 'γ Pmax', '%/°C'], ['m.noctC', 'NOCT', '°C'], ['m.maxSystemV', 'Max system voltage', 'V'], ['m.maxSeriesFuseA', 'Max series fuse', 'A'], ...verification('m')] },
-  { id: 'inverter', title: 'Inverter (datasheet)', items: [...prov('i'), ['i.model', 'Model', ''], ['i.acKw', 'AC power', 'kW'], ['i.nominalEfficiency', 'Nominal efficiency (0–1)', ''], ['i.maxDcV', 'Max DC voltage', 'V'], ['i.mpptMinV', 'MPPT min', 'V'], ['i.mpptMaxV', 'MPPT max', 'V'], ['i.mpptCount', 'MPPTs', 'No'], ['i.maxInputA', 'Max input current per MPPT', 'A'], ['i.maxIscA', 'Max Isc per MPPT', 'A'], ['i.batteryMaxDischargeKw', 'Battery discharge power (optional)', 'kW'], ['i.batteryMaxChargeKw', 'Battery charge power (optional)', 'kW'], ['i.generatorCompatibility', 'Generator compatibility statement (optional)', ''], ...verification('i')] },
-  { id: 'battery', title: 'Battery (optional, datasheet)', note: 'Leave empty for a system without a battery.', items: [...prov('b'), ['b.model', 'Model', ''], ['b.nominalKwh', 'Nominal energy per unit', 'kWh'], ['b.usableDoD', 'Usable DoD (0–1)', ''], ['b.dischargeEfficiency', 'Discharge efficiency (0–1)', ''], ['b.maxDischargeC', 'Max discharge', 'C'], ['b.maxChargeC', 'Max charge', 'C'], ['b.units', 'Units', 'No'], ['b.requiredUsableAcKwh', 'Energy needed from the battery per cycle', 'kWh'], ...verification('b')] },
+  { id: 'client', title: 'Client and site', items: [['ref', 'Proposal reference', ''], ['c.name', 'Client name', ''], ['c.address', 'Site address', ''], ['c.lat', 'Latitude', '°'], ['c.lon', 'Longitude', '°'], ['s.mounting', 'Mounting: roof or ground (optional)', ''], ['s.elevationM', 'Site elevation (optional)', 'm'], ['s.usableAreaM2', 'Usable area for the array (optional)', 'm²'], ['s.source', 'Source of these site details (survey, drawing, map)', '']] },
+  { id: 'module', title: 'Module (datasheet)', items: [...prov('m'), ['m.model', 'Model', ''], ['m.pmaxW', 'Pmax', 'W'], ['m.vocV', 'Voc', 'V'], ['m.iscA', 'Isc', 'A'], ['m.vmpV', 'Vmp', 'V'], ['m.impA', 'Imp', 'A'], ['m.betaVocPct', 'β Voc', '%/°C'], ['m.betaVmpPct', 'β Vmp', '%/°C'], ['m.alphaIscPct', 'α Isc', '%/°C'], ['m.gammaPmaxPct', 'γ Pmax', '%/°C'], ['m.noctC', 'NOCT', '°C'], ['m.maxSystemV', 'Max system voltage', 'V'], ['m.maxSeriesFuseA', 'Max series fuse', 'A'], ['m.lengthMm', 'Length (optional)', 'mm'], ['m.widthMm', 'Width (optional)', 'mm'], ...verification('m')] },
+  { id: 'inverter', title: 'Inverter (datasheet)', items: [...prov('i'), ['i.model', 'Model', ''], ['i.acKw', 'AC power', 'kW'], ['i.nominalEfficiency', 'Nominal efficiency (0–1)', ''], ['i.maxDcV', 'Max DC voltage', 'V'], ['i.mpptMinV', 'MPPT min', 'V'], ['i.mpptMaxV', 'MPPT max', 'V'], ['i.mpptCount', 'MPPTs', 'No'], ['i.maxInputA', 'Max input current per MPPT', 'A'], ['i.maxIscA', 'Max Isc per MPPT', 'A'], ['i.batteryMaxDischargeKw', 'Battery discharge power (required with a battery)', 'kW'], ['i.batteryMaxChargeKw', 'Battery charge power (required with a battery)', 'kW'], ['i.generatorCompatibility', 'Generator compatibility statement (required with a generator)', ''], ['i.batteryMinV', 'Battery voltage window, min (optional)', 'V'], ['i.batteryMaxV', 'Battery voltage window, max (optional)', 'V'], ['i.batteryMaxChargeA', 'Battery max charge current (optional)', 'A'], ['i.batteryMaxDischargeA', 'Battery max discharge current (optional)', 'A'], ['i.antiIslanding', 'Anti-islanding statement, e.g. IEC 62116 certificate (needed with a grid connection)', ''], ...verification('i')] },
+  { id: 'battery', title: 'Battery (optional, datasheet)', note: 'Leave empty for a system without a battery.', items: [...prov('b'), ['b.model', 'Model', ''], ['b.nominalKwh', 'Nominal energy per unit', 'kWh'], ['b.usableDoD', 'Usable DoD (0–1)', ''], ['b.dischargeEfficiency', 'Discharge efficiency (0–1)', ''], ['b.maxDischargeC', 'Max discharge', 'C'], ['b.maxChargeC', 'Max charge', 'C'], ['b.chemistry', 'Chemistry (optional)', ''], ['b.nominalV', 'Nominal voltage per unit (optional)', 'V'], ['b.chargeV', 'Full-charge voltage per unit (optional)', 'V'], ['b.cutoffV', 'Cut-off voltage per unit (optional)', 'V'], ['b.cycleLife', 'Cycle life (optional)', 'cycles'], ['b.cycleLifeDoD', 'at DoD (0–1, optional)', ''], ['b.minTempC', 'Operating temperature min (optional)', '°C'], ['b.maxTempC', 'Operating temperature max (optional)', '°C'], ['b.warrantyYears', 'Warranty (optional)', 'years'], ['b.units', 'Units', 'No'], ['b.seriesPerString', 'Units in series per string (optional; blank = 1)', 'No'], ['b.requiredUsableAcKwh', 'Energy needed from the battery per cycle', 'kWh'], ...verification('b')] },
   { id: 'design', title: 'Array design', items: [['d.modulesPerString', 'Modules per string', 'No'], ['d.stringsPerMppt', 'Strings on each MPPT (e.g. 1,1)', ''], ['d.inverterCount', 'Inverter count', 'No'], ['d.tilt', 'Tilt', '°'], ['d.azimuth', 'Azimuth (0 = N, 180 = S)', '°'], ['d.albedo', 'Ground albedo (optional; blank = 0.2)', '']] },
+  { id: 'load', title: 'Load (optional; from the bills, a logger or a survey)', note: 'Used for the checks it allows (inverter peak, critical backup) and stated in the proposal. Nothing is filled in for you.', items: [['l.monthlyKwh', 'Monthly kWh, January–December (12 numbers)', 'kWh'], ['l.peakKw', 'Peak load', 'kW'], ['l.motorStartingKva', 'Largest motor starting', 'kVA'], ['l.criticalLoadKw', 'Critical load', 'kW'], ['l.outageHoursPerDay', 'Outage hours per day', 'h'], ['l.diesel', 'Diesel price', 'KES/L'], ['l.dieselSource', 'Source of the diesel price', ''], ['l.source', 'Source of the load data', '']] },
   { id: 'temps', title: 'Site temperatures', items: [['t.recordLowC', 'Site record low', '°C'], ['t.maxAmbientC', 'Max ambient while generating', '°C'], ['t.source', 'Source of these temperatures', '']] },
-  { id: 'sld', title: 'Connections (for the single-line diagram)', note: 'Leave unanswered if not yet decided: the diagram then marks it "to be specified by the engineer".', items: [['sld.grid', 'Connected to the utility grid', '', 'yesno'], ['sld.generator', 'Generator connected', '', 'yesno']] },
-  { id: 'cable', title: 'Cable run (optional)', note: 'Values from IEC 60364-5-52 for the installation method. Leave empty to skip.', items: [['k.name', 'Name', ''], ['k.lengthM', 'One-way length', 'm'], ['k.csaMm2', 'Cross-section', 'mm²'], ['k.designCurrentA', 'Design current', 'A'], ['k.systemV', 'System voltage', 'V'], ['k.tabulatedAmpacityA', 'Tabulated ampacity It', 'A'], ['k.ambientFactor', 'Ambient factor Ca', ''], ['k.groupingFactor', 'Grouping factor Cg', ''], ['k.maxDropPct', 'Max voltage drop', '%']] },
+  { id: 'sld', title: 'Connections (for the single-line diagram)', note: 'Leave unanswered if not yet decided: the diagram then marks it "to be specified by the engineer".', items: [['sld.grid', 'Connected to the utility grid', '', 'yesno'], ['sld.generator', 'Generator connected', '', 'yesno'], ['sld.pvBackfeed', 'With a generator: can PV feed power back into the running generator (no export limiting or reverse-power relay)? Unanswered is refused', '', 'yesno'], ['sld.genMinSiteLoadKw', 'With a generator: lowest site load while it runs', 'kW'], ['sld.genOemMinLoadPct', 'With a generator: OEM minimum load (if stated; 30 % assumed otherwise)', '%']] },
+  { id: 'cable', title: 'Cable run (optional)', note: 'Values from IEC 60364-5-52 for the installation method. Leave empty to skip.', items: [['k.name', 'Name', ''], ['k.lengthM', 'One-way length', 'm'], ['k.csaMm2', 'Cross-section', 'mm²'], ['k.designCurrentA', 'Design current', 'A'], ['k.systemV', 'System voltage', 'V'], ['k.tabulatedAmpacityA', 'Tabulated ampacity It', 'A'], ['k.ambientFactor', 'Ambient factor Ca', ''], ['k.groupingFactor', 'Grouping factor Cg', ''], ['k.maxDropPct', 'Max voltage drop', '%'], ['k.kind', 'Carries: dc-pv (all strings of an MPPT), dc-string (one string), dc-battery or ac (blank = dc-pv)', ''], ['k.mppt', 'PV cable: MPPT it serves (blank = the most loaded MPPT)', 'No'], ['k.stringFuseA', 'dc-string: string fuse rating In (blank = unfused)', 'A']] },
 ];
 const HYBRID_GROUPS: Group[] = [
   { id: 'hb', title: 'Hybrid battery (optional)', items: [['hb.usableKwh', 'Usable energy', 'kWh'], ['hb.maxChargeKw', 'Max charge power', 'kW'], ['hb.maxDischargeKw', 'Max discharge power', 'kW'], ['hb.roundTripEfficiency', 'Round-trip efficiency (0.5–1)', ''], ['hb.minSocFrac', 'Minimum SOC (0–1)', ''], ['hb.initialSocFrac', 'Initial SOC (0–1)', ''], ['hb.source', 'Source (datasheet)', '']] },
@@ -63,6 +65,7 @@ const FINANCE: Group = { id: 'finance', title: 'Finance (each value with its sou
   ...sourcedRow('escalation', 'Tariff escalation', '%/yr'), ...sourcedRow('discount', 'Discount rate', '%'), ...sourcedRow('degradation', 'Degradation', '%/yr'),
   ...sourcedRow('om', 'O&M', 'KES/yr'), ...sourcedRow('selfConsumed', 'Self-consumed fraction (0–1; used when there is no hybrid balance)', ''),
   ['f.lifetime', 'Lifetime', 'years'],
+  ['f.replacements', 'Component replacements (quoted): item; year; cost KES; source; date — several separated by |, e.g. Inverter; 12; 320000; Supplier quote Q-7; 2026-11-01', ''],
 ] };
 
 const colour: Record<Check['verdict'], string> = { PASS: '#22c55e', WARN: '#f59e0b', REFUSE: '#ef4444' };
@@ -73,7 +76,7 @@ const btn: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border:
 const primary: React.CSSProperties = { ...btn, background: '#b45309', border: '1px solid #f59e0b', color: '#fff', fontWeight: 600 };
 const th: React.CSSProperties = { textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #334155', color: '#94a3b8', fontWeight: 600 };
 const td: React.CSSProperties = { padding: '4px 6px', borderBottom: '1px solid #1e293b', verticalAlign: 'top' };
-const kes = (x: number | null | undefined) => (x === null || x === undefined ? 'rate required' : `KES ${Math.round(x).toLocaleString('en-KE')}`);
+const kes = (x: number | null | undefined) => (x === null || x === undefined ? REQUEST_QUOTATION : `KES ${Math.round(x).toLocaleString('en-KE')}`);
 
 function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v: string) => void }) {
   return (
@@ -412,7 +415,7 @@ export default function ProposalPage() {
 
         <section style={box} aria-label="Bill of materials">
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Bill of materials</h2>
-          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Leave a rate empty if it is not yet quoted: the item shows as &quot;rate required&quot; and the proposal has no total. A rate needs its source and date.</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Leave a rate empty if it is not yet quoted: the item shows as &quot;{REQUEST_QUOTATION}&quot; and the proposal has no total. A rate needs its source and date.</p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', minWidth: 760 }}>
               <thead><tr>{['Item', 'Model', 'Qty', 'Unit', 'Rate (KES)', 'Rate source', 'Rate date', ''].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
@@ -420,7 +423,7 @@ export default function ProposalPage() {
                 {bom.map((r, i) => (
                   <tr key={i}>
                     {(['item', 'model', 'quantity', 'unit', 'rate', 'rateSource', 'rateDate'] as Array<keyof BomRow>).map((k) => (
-                      <td key={k} style={td}><input aria-label={`${k} row ${i + 1}`} type={k === 'rateDate' ? 'date' : 'text'} value={r[k]} placeholder={k === 'rate' ? 'rate required' : ''} onChange={(e) => setRow(i, k, e.target.value)} style={{ ...inputStyle, marginTop: 0 }} /></td>
+                      <td key={k} style={td}><input aria-label={`${k} row ${i + 1}`} type={k === 'rateDate' ? 'date' : 'text'} value={r[k]} placeholder={k === 'rate' ? REQUEST_QUOTATION : ''} onChange={(e) => setRow(i, k, e.target.value)} style={{ ...inputStyle, marginTop: 0 }} /></td>
                     ))}
                     <td style={td}><button type="button" onClick={() => setBom((rows) => rows.filter((_, j) => j !== i))} style={{ ...btn, padding: '4px 8px' }} aria-label={`Remove row ${i + 1}`}>×</button></td>
                   </tr>
@@ -466,7 +469,7 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
       {stale ? <p style={{ fontSize: 12, color: '#fbbf24' }}>The inputs have changed since this proposal was built. Build it again before using it.</p> : null}
       <div style={{ border: `2px solid ${statusColour[shown]}`, borderRadius: 10, padding: 12 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: statusColour[shown] }}>{shown === 'FOR ISSUE' ? 'FOR ISSUE' : `${shown}: NOT FOR ISSUE`} · {p.reference}</div>
-        <div style={{ fontSize: 12, color: '#cbd5e1' }}>{p.client.name} · {p.client.siteAddress} ({p.client.lat}, {p.client.lon}) · {p.system.dcKwp} kWp DC / {p.system.acKw} kW AC · {p.system.modules} modules in {p.system.strings} strings{p.system.batteryKwh !== null ? ` · battery ${p.system.batteryKwh} kWh nominal` : ''}</div>
+        <div style={{ fontSize: 12, color: '#cbd5e1' }}>{p.client.name} · {p.client.siteAddress} ({p.client.lat}, {p.client.lon}){p.site ? ` · ${[p.site.mounting ? `${p.site.mounting}-mounted` : null, p.site.elevationM !== undefined ? `${p.site.elevationM} m elevation` : null, p.site.usableAreaM2 !== undefined ? `${p.site.usableAreaM2} m² usable` : null].filter(Boolean).join(', ')}` : ''} · {p.system.dcKwp} kWp DC / {p.system.acKw} kW AC · {p.system.modules} modules in {p.system.strings} strings{p.system.batteryKwh !== null ? ` · battery ${p.system.batteryKwh} kWh nominal` : ''}</div>
         <div style={{ fontSize: 12, color: '#cbd5e1', wordBreak: 'break-all' }}>Revision (SHA-256 of the inputs): <code>{p.revisionHash}</code></div>
         <div style={{ fontSize: 12, color: '#fde68a' }}>{p.approval ? `Approved by ${p.approval.reviewerName} (${p.approval.registration}) on ${p.approval.approvedAt} for this revision` : APPROVAL_LOCKED_NOTICE}</div>
         {p.statusReasons.length ? <ul style={{ fontSize: 12, paddingLeft: 16, margin: '6px 0 0' }}>{p.statusReasons.map((r) => <li key={r}>{r}</li>)}</ul> : null}
@@ -493,9 +496,9 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
         <thead><tr>{['Item', 'Model', 'Qty', 'Rate', 'Source / date', 'Amount'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
         <tbody>
           {p.costing.lines.map((l, i) => (
-            <tr key={i}><td style={td}>{l.item}</td><td style={td}>{l.model}</td><td style={td}>{l.quantity} {l.unit}</td><td style={td}>{l.rate ? kes(l.rate.valueKes) : 'rate required'}</td><td style={{ ...td, color: '#94a3b8' }}>{l.rate ? `${l.rate.source}, ${l.rate.date}` : ''}</td><td style={{ ...td, textAlign: 'right' }}>{kes(l.amountKes)}</td></tr>
+            <tr key={i}><td style={td}>{l.item}</td><td style={td}>{l.model}</td><td style={td}>{l.quantity} {l.unit}</td><td style={td}>{l.rate ? kes(l.rate.valueKes) : REQUEST_QUOTATION}</td><td style={{ ...td, color: '#94a3b8' }}>{l.rate ? `${l.rate.source}, ${l.rate.date}` : ''}</td><td style={{ ...td, textAlign: 'right' }}>{kes(l.amountKes)}</td></tr>
           ))}
-          <tr><td style={{ ...td, fontWeight: 700 }} colSpan={5}>Capital cost</td><td style={{ ...td, textAlign: 'right', fontWeight: 700 }}>{p.costing.capexKes === null ? `no total: rate required for ${p.costing.unpriced.join(', ')}` : kes(p.costing.capexKes)}</td></tr>
+          <tr><td style={{ ...td, fontWeight: 700 }} colSpan={5}>Capital cost</td><td style={{ ...td, textAlign: 'right', fontWeight: 700 }}>{p.costing.capexKes === null ? `no total: ${REQUEST_QUOTATION.toLowerCase()} for ${p.costing.unpriced.join(', ')}` : kes(p.costing.capexKes)}</td></tr>
         </tbody>
       </table></div>
 
@@ -515,11 +518,19 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
         <>
           <div style={{ fontSize: 12 }}>NPV {kes(p.finance.npvKes)} · IRR {p.finance.irrPct === null ? 'no unique IRR' : `${p.finance.irrPct} %`} · simple payback {p.finance.simplePaybackYears === null ? 'not within the lifetime' : `${p.finance.simplePaybackYears} years`} · LCOE KES {p.finance.lcoeKesPerKwh}/kWh</div>
           <div style={{ overflowX: 'auto', maxHeight: 320, overflowY: 'auto' }}><table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', marginTop: 6 }}>
-            <thead><tr>{['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Net (KES)', 'Cumulative (KES)'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
+            <thead><tr>{['Year', 'Energy (kWh)', 'Savings (KES)', 'O&M (KES)', 'Replacements (KES)', 'Net (KES)', 'Cumulative (KES)'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
             <tbody>{p.finance.cashflows.map((c) => (
-              <tr key={c.year}>{[c.year, c.energyKwh, c.savingsKes, c.omKes, c.netKes, c.cumulativeKes].map((v, i) => <td key={i} style={{ ...td, textAlign: 'right', color: i === 5 && v < 0 ? '#fca5a5' : undefined }}>{v.toLocaleString('en-KE')}</td>)}</tr>
+              <tr key={c.year}>{[c.year, c.energyKwh, c.savingsKes, c.omKes, c.replacementKes, c.netKes, c.cumulativeKes].map((v, i) => <td key={i} style={{ ...td, textAlign: 'right', color: i === 6 && v < 0 ? '#fca5a5' : undefined }}>{v.toLocaleString('en-KE')}</td>)}</tr>
             ))}</tbody>
           </table></div>
+          <h4 style={{ fontSize: 13, margin: '10px 0 4px' }}>Sensitivity</h4>
+          <div style={{ fontSize: 11, color: '#94a3b8' }}>{p.finance.sensitivity.note}</div>
+          <table aria-label="Finance sensitivity" style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', marginTop: 4 }}>
+            <thead><tr>{['Variable', 'Change', 'NPV (KES)', 'IRR', 'Payback'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
+            <tbody>{p.finance.sensitivity.rows.map((r) => (
+              <tr key={`${r.variable}${r.changePct}`}><td style={td}>{r.variable}</td><td style={td}>{r.changePct > 0 ? '+' : ''}{r.changePct} %</td><td style={{ ...td, textAlign: 'right' }}>{r.npvKes.toLocaleString('en-KE')}</td><td style={td}>{r.irrPct === null ? 'no unique IRR' : `${r.irrPct} %`}</td><td style={td}>{r.simplePaybackYears === null ? 'not within the lifetime' : `${r.simplePaybackYears} years`}</td></tr>
+            ))}</tbody>
+          </table>
         </>
       ) : <p style={{ fontSize: 12, color: '#94a3b8' }}>No financial result: it needs every item priced and a known self-consumption (see the reasons above).</p>}
 

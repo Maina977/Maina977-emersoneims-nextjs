@@ -22,6 +22,8 @@ export interface Module {
   maxSystemV: number;
   /** Maximum series fuse rating (module overcurrent protection rating), A. */
   maxSeriesFuseA: number;
+  /** Module dimensions from the datasheet, mm (REQ-04; optional). */
+  lengthMm?: number; widthMm?: number;
   datasheet: string;
 }
 
@@ -38,6 +40,10 @@ export interface Inverter {
   batteryMaxChargeKw?: number;
   /** The manufacturer's written statement that the unit supports a generator input, or null. */
   generatorCompatibility: string | null;
+  /** REQ-04 (optional): battery voltage window, battery-port currents, anti-islanding statement (e.g. "IEC 62116 certificate …"). */
+  batteryMinV?: number; batteryMaxV?: number;
+  batteryMaxChargeA?: number; batteryMaxDischargeA?: number;
+  antiIslanding?: string | null;
   datasheet: string;
 }
 
@@ -47,6 +53,13 @@ export interface Battery {
   usableDoD: number; // 0–1
   dischargeEfficiency: number; // 0–1
   maxDischargeC: number; maxChargeC: number;
+  /** REQ-04 (optional): chemistry, nominal voltage per unit, cycle life at a DoD, operating temperature window, warranty. */
+  chemistry?: string; nominalV?: number;
+  /** Per unit, from the datasheet: full-charge (absorption) voltage and discharge cut-off voltage (review advisory A2). */
+  chargeV?: number; cutoffV?: number;
+  cycleLife?: number; cycleLifeDoD?: number;
+  minTempC?: number; maxTempC?: number;
+  warrantyYears?: number;
   datasheet: string;
 }
 
@@ -74,6 +87,20 @@ export interface CableRun {
   /** Correction factors from the same standard. */
   ambientFactor: number; groupingFactor: number;
   maxDropPct: number;
+  /**
+   * What the cable carries (review G3): 'dc-pv' = PV strings into an MPPT,
+   * 'dc-battery', or 'ac'. Not stated is treated as a PV cable, so its
+   * design current is never below the string current it may carry.
+   */
+  kind?: 'dc-pv' | 'dc-string' | 'dc-battery' | 'ac';
+  /** For a PV cable: the MPPT (1-based) it serves; absent = the most heavily loaded MPPT. */
+  mppt?: number;
+  /**
+   * For kind 'dc-string' (a cable serving ONE string): the rating In of the
+   * string fuse protecting it, A. It must lie in the design's fuse window
+   * (1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse)).
+   */
+  stringFuseA?: number;
 }
 
 export type Verdict = 'PASS' | 'WARN' | 'REFUSE';
@@ -112,8 +139,12 @@ function invalid(module: Module, inverter: Inverter, design: ArrayDesign): strin
   if (Math.abs(module.betaVocPct) > 1 || Math.abs(module.betaVmpPct) > 1) e.push('Temperature coefficient over 1 %/°C: probably entered in mV/°C; enter %/°C');
   if (!Number.isInteger(design.modulesPerString) || design.modulesPerString < 1) e.push('Modules per string must be a whole number ≥ 1');
   if (design.stringsPerMppt.length < 1 || design.stringsPerMppt.some((s) => !Number.isInteger(s) || s < 1)) e.push('Each MPPT used needs a whole number of strings ≥ 1');
-  if (design.stringsPerMppt.length > inverter.mpptCount) e.push(`The design uses ${design.stringsPerMppt.length} MPPTs; the inverter has ${inverter.mpptCount}`);
-  if (!module.datasheet || !inverter.datasheet) e.push('Module and inverter datasheet references are required');
+  // Review of 39fa8535, M1: an undefined or NaN MPPT count made the next
+  // comparison false, so any number of MPPTs passed.
+  if (!(Number.isInteger(inverter.mpptCount) && inverter.mpptCount >= 1)) e.push('Inverter MPPT count must be a whole number ≥ 1');
+  else if (design.stringsPerMppt.length > inverter.mpptCount) e.push(`The design uses ${design.stringsPerMppt.length} MPPTs; the inverter has ${inverter.mpptCount}`);
+  // M3: a reference of only spaces is no reference.
+  if (!module.datasheet?.trim() || !inverter.datasheet?.trim()) e.push('Module and inverter datasheet references are required');
   return e;
 }
 
@@ -203,6 +234,167 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
   };
 }
 
+/**
+ * Review G3: a PV cable's design current is tied to the strings it carries.
+ * IEC 62548-1 sizes PV string/array cable for 1.25 × Isc per string, so the
+ * entered design current must be at least strings × Isc × 1.25 of the MPPT it
+ * serves (the most heavily loaded MPPT when not stated). Below that the
+ * cable is REFUSED: the ampacity check would otherwise use a figure the
+ * array can exceed. AC and battery cables are not tied to the strings.
+ */
+/** The stated basis for string cable current (re-review S1): no clause number is cited until the standard is read. */
+export const STRING_CABLE_BASIS = 'IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.';
+
+export function cableStringCurrentCheck(c: CableRun, module: Module, design: ArrayDesign): Check | null {
+  if (c.kind === 'ac' || c.kind === 'dc-battery') return null;
+  const per = design.stringsPerMppt;
+  if (!per.length || !(module.iscA > 0)) return null;
+  const mpptStated = c.mppt !== undefined;
+  const strings = mpptStated ? per[(c.mppt as number) - 1] : Math.max(...per);
+  if (!(Number.isInteger(strings) && strings >= 1)) {
+    return { id: `cable-current-${c.name}`, title: `${c.name}: MPPT served`, verdict: 'REFUSE', value: NaN, limit: per.length, unit: '', marginPct: -100, formula: 'mppt must name an MPPT of the design', reference: 'Design input', note: `MPPT ${c.mppt} is not in the design (1–${per.length})` };
+  }
+  // Review of 39fa8535, R1: a cable serving ONE string was sized as if it
+  // carried every string on the MPPT. Basis (re-review S1: the clause number
+  // was never read, so none is cited): IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.
+  // Unfused, a string cable can carry the reverse current of the other
+  // strings, so the larger of the two applies.
+  if (c.kind === 'dc-string') {
+    const isc125 = module.iscA * 1.25;
+    const fuse = c.stringFuseA;
+    let required: number, basis: string;
+    if (fuse !== undefined) {
+      const lo = 1.5 * module.iscA, hi = Math.min(2.4 * module.iscA, module.maxSeriesFuseA);
+      if (!(Number.isFinite(fuse) && fuse > lo && fuse <= hi)) {
+        return { id: `cable-current-${c.name}`, title: `${c.name}: string fuse rating`, verdict: 'REFUSE', value: Number.isFinite(fuse) ? fuse : NaN, limit: r2(hi), unit: 'A', marginPct: -100,
+          formula: `1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse) = ${r2(lo)} < In ≤ ${r2(hi)} A`, reference: 'IEC 62548-1 string overcurrent protection', note: `A ${fuse} A string fuse is outside the design's fuse window` };
+      }
+      required = Math.max(isc125, fuse);
+      basis = `string cable, fused: max(1.25 × Isc = ${r2(isc125)} A, fuse In = ${fuse} A)`;
+    } else if (strings >= 3 || (strings - 1) * isc125 > module.maxSeriesFuseA) {
+      // Re-review S2: the same rule as the string-fusing check (fusing-mppt):
+      // where fuses are required an unfused string cable is not acceptable.
+      return { id: `cable-current-${c.name}`, title: `${c.name}: string fuse rating`, verdict: 'REFUSE', value: NaN, limit: r2((strings - 1) * isc125), unit: 'A', marginPct: -100,
+        formula: `${strings} strings: fuses required when strings ≥ 3 or (N − 1) × 1.25 × Isc = ${r2((strings - 1) * isc125)} A > module max series fuse ${module.maxSeriesFuseA} A`,
+        reference: STRING_CABLE_BASIS, note: 'String fuses are required on this MPPT: give the string fuse rating' };
+    } else {
+      required = Math.max(isc125, (strings - 1) * isc125);
+      basis = `string cable, no string fuse stated: max(1.25 × Isc, (N − 1) × 1.25 × Isc reverse current) with N = ${strings}`;
+    }
+    const ok = c.designCurrentA >= required * (1 - 1e-9);
+    return {
+      id: `cable-current-${c.name}`, title: `${c.name}: design current covers the string and its protection`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
+      formula: `${basis} = ${r2(required)} A`, reference: STRING_CABLE_BASIS,
+      ...(ok ? {} : { note: 'The entered design current is below the string cable requirement' }),
+    };
+  }
+  const required = strings * module.iscA * 1.25;
+  const ok = c.designCurrentA >= required * (1 - 1e-9);
+  return {
+    id: `cable-current-${c.name}`, title: `${c.name}: design current covers the strings it carries`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
+    formula: `strings × Isc × 1.25 = ${strings} × ${module.iscA} × 1.25 = ${r2(required)} A (${mpptStated ? `MPPT ${c.mppt}` : 'largest MPPT; state the MPPT or kind to narrow it'})`,
+    reference: 'IEC 62548-1 (PV cable current 1.25 × Isc per string)',
+    ...(ok ? {} : { note: 'The entered design current is below what the strings can deliver: size the cable for the string current' }),
+  };
+}
+
+/**
+ * Checks enabled by the REQ-04 datasheet fields (and REQ-01 usable area).
+ * A check whose data is missing is a WARN that says "not checked"; nothing
+ * is assumed.
+ *  - array area: modules × length × width ≤ usable area, else REFUSE (it cannot fit);
+ *  - battery voltage: unit nominal V × units in series inside the inverter's
+ *    battery window, else REFUSE;
+ *  - battery current: inverter battery-port A ≤ battery bank A at its C-rate
+ *    (C × Ah per string × parallel strings), else REFUSE;
+ *  - battery temperature: site temperatures inside the battery window, else WARN
+ *    (the battery may be indoors);
+ *  - anti-islanding: a grid connection with no statement is a WARN.
+ */
+/** Plausible PV module length/width range, mm (smallest residential to largest utility modules); outside it the value is treated as a unit mistake. */
+export const MODULE_DIM_MM = { min: 300, max: 3500 };
+
+export function componentChecks(o: {
+  module: Module; inverter: Inverter; modules: number; usableAreaM2?: number;
+  battery?: { data: Battery; units: number; seriesPerString?: number };
+  temps: SiteTemps; grid: boolean | null;
+}): Check[] {
+  const out: Check[] = [];
+  const notChecked = (id: string, title: string, note: string): Check => ({ id, title, verdict: 'WARN', value: NaN, limit: NaN, unit: '', marginPct: NaN, formula: 'not checked', reference: 'Datasheet value required', note });
+  const m = o.module;
+  if (o.usableAreaM2 !== undefined) {
+    const AREA_TITLE = 'Gross module area (before row spacing and access) fits the usable area';
+    // Review Q1/Q2: a negative dimension (JSON) or metres typed as mm (2.278)
+    // gave a negative or near-zero area that PASSED. Only a finite dimension
+    // in the plausible module range is used; otherwise not checked.
+    const dimOk = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= MODULE_DIM_MM.min && x <= MODULE_DIM_MM.max;
+    if (dimOk(m.lengthMm) && dimOk(m.widthMm)) {
+      const area = (o.modules * m.lengthMm * m.widthMm) / 1e6;
+      out.push({ id: 'array-area', title: AREA_TITLE, verdict: area <= o.usableAreaM2 ? 'PASS' : 'REFUSE', value: r2(area), limit: o.usableAreaM2, unit: 'm²', marginPct: margin(area, o.usableAreaM2, true),
+        formula: `gross module area = modules × length × width = ${o.modules} × ${m.lengthMm} mm × ${m.widthMm} mm = ${r2(area)} m² (before row spacing and access paths; a PASS does not mean the layout fits)`, reference: 'Module datasheet dimensions; site survey usable area' });
+    } else out.push(notChecked('array-area', AREA_TITLE, m.lengthMm === undefined || m.widthMm === undefined
+      ? 'Module dimensions not entered: the array area is not checked against the usable area'
+      : `Module dimensions ${m.lengthMm} × ${m.widthMm} mm are outside ${MODULE_DIM_MM.min}–${MODULE_DIM_MM.max} mm (metres typed in a mm field?): not checked`));
+  }
+  const b = o.battery;
+  if (b) {
+    const series = b.seriesPerString ?? 1;
+    const inv = o.inverter;
+    if (!(Number.isInteger(series) && series >= 1 && b.units % series === 0)) {
+      out.push({ id: 'battery-arrangement', title: 'Battery series/parallel arrangement', verdict: 'REFUSE', value: b.units, limit: series, unit: 'units', marginPct: -100, formula: 'units must be a whole number of strings of seriesPerString units', reference: 'Design input', note: `${b.units} units cannot be arranged in strings of ${series}` });
+    } else {
+      const parallel = b.units / series;
+      const pos = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x > 0;
+      const bankV = pos(b.data.nominalV) ? b.data.nominalV * series : undefined;
+      if (bankV !== undefined && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
+        const ok = bankV >= inv.batteryMinV && bankV <= inv.batteryMaxV;
+        out.push({ id: 'battery-voltage', title: 'Nominal bank voltage inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(bankV), limit: bankV > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: bankV > inv.batteryMaxV ? margin(bankV, inv.batteryMaxV, true) : margin(bankV, inv.batteryMinV, false),
+          formula: `unit nominal V × units in series = ${b.data.nominalV} × ${series} = ${r2(bankV)} V; window ${inv.batteryMinV}–${inv.batteryMaxV} V`, reference: 'Inverter and battery datasheets' });
+      } else out.push(notChecked('battery-voltage', 'Nominal bank voltage inside the inverter battery window', 'Battery nominal voltage or the inverter battery voltage window not entered: not checked'));
+      // Review advisory A2: the nominal voltage can sit inside the window while
+      // the full-charge or cut-off voltage does not (16S LFP charges at ~57.6 V).
+      // Re-review Q6: swapped values sent as JSON (charge 44.8 V, cut-off 57.6 V)
+      // passed a 40–56 V window; the import refuses them but the API path does not run it.
+      if (pos(b.data.chargeV) && pos(b.data.cutoffV) && !(b.data.cutoffV < b.data.chargeV)) {
+        out.push({ id: 'battery-voltage-range', title: 'Charge and cut-off bank voltages inside the inverter battery window', verdict: 'REFUSE', value: b.data.cutoffV, limit: b.data.chargeV, unit: 'V', marginPct: -100,
+          formula: `cut-off ${b.data.cutoffV} V must be below full charge ${b.data.chargeV} V`, reference: 'Battery datasheet', note: 'battery cut-off voltage must be below its full-charge voltage' });
+      } else if (pos(b.data.chargeV) && pos(b.data.cutoffV) && pos(inv.batteryMinV) && pos(inv.batteryMaxV)) {
+        const hi = b.data.chargeV * series, lo = b.data.cutoffV * series;
+        const ok = hi <= inv.batteryMaxV && lo >= inv.batteryMinV;
+        out.push({ id: 'battery-voltage-range', title: 'Charge and cut-off bank voltages inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(hi > inv.batteryMaxV ? hi : lo), limit: hi > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: hi > inv.batteryMaxV ? margin(hi, inv.batteryMaxV, true) : margin(lo, inv.batteryMinV, false),
+          formula: `charge ${b.data.chargeV} × ${series} = ${r2(hi)} V ≤ ${inv.batteryMaxV} V; cut-off ${b.data.cutoffV} × ${series} = ${r2(lo)} V ≥ ${inv.batteryMinV} V`, reference: 'Battery datasheet charge and cut-off voltages; inverter battery window' });
+      } else out.push(notChecked('battery-voltage-range', 'Charge and cut-off bank voltages inside the inverter battery window', 'Battery charge / cut-off voltages or the inverter window not entered: only the nominal voltage is checked; confirm the charge and cut-off voltages on the datasheets'));
+      // Review Q3: a missing battery voltage or inverter battery current made the
+      // current checks disappear; they are now shown as not checked.
+      for (const [dir, invA, c] of [['discharge', inv.batteryMaxDischargeA, b.data.maxDischargeC], ['charge', inv.batteryMaxChargeA, b.data.maxChargeC]] as const) {
+        const title = `Inverter battery ${dir} current within the battery limit`;
+        if (bankV === undefined) { out.push(notChecked(`battery-${dir}-current`, title, 'Battery nominal voltage not entered: the battery current limit cannot be worked out')); continue; }
+        if (!pos(invA)) { out.push(notChecked(`battery-${dir}-current`, title, `Inverter battery ${dir} current not entered: not checked`)); continue; }
+        {
+          // A string of units in series has the Ah of one unit (unit Wh ÷ unit V).
+          const unitAh = (b.data.nominalKwh * 1000) / (b.data.nominalV as number);
+          const bankA = c * unitAh * parallel;
+          out.push({ id: `battery-${dir}-current`, title, verdict: invA <= bankA * (1 + 1e-9) ? 'PASS' : 'REFUSE', value: invA, limit: r2(bankA), unit: 'A', marginPct: margin(invA, bankA, true),
+            formula: `battery limit = C × unit Ah × parallel strings = ${c} × ${r2(unitAh)} Ah × ${parallel} = ${r2(bankA)} A`, reference: 'Inverter battery-port current; battery datasheet C-rate' });
+        }
+      }
+      if (b.data.minTempC !== undefined && b.data.maxTempC !== undefined) {
+        const ok = o.temps.recordLowC >= b.data.minTempC && o.temps.maxAmbientC <= b.data.maxTempC;
+        out.push({ id: 'battery-temperature', title: 'Site temperatures inside the battery operating window', verdict: ok ? 'PASS' : 'WARN', value: o.temps.maxAmbientC, limit: b.data.maxTempC, unit: '°C', marginPct: margin(o.temps.maxAmbientC, b.data.maxTempC, true),
+          formula: `site ${o.temps.recordLowC}–${o.temps.maxAmbientC} °C vs battery ${b.data.minTempC}–${b.data.maxTempC} °C`, reference: 'Battery datasheet operating temperature',
+          ...(ok ? {} : { note: 'Outside the battery window at the site\'s outdoor temperatures: house the battery in a conditioned room, or choose another battery' }) });
+      } else out.push(notChecked('battery-temperature', 'Site temperatures inside the battery operating window', 'Battery operating temperature window not entered: not checked'));
+    }
+  }
+  if (o.grid === true) {
+    const ai = (o.inverter.antiIslanding ?? '').trim();
+    out.push(ai
+      ? { id: 'anti-islanding', title: 'Anti-islanding protection stated', verdict: 'PASS', value: 1, limit: 1, unit: '', marginPct: 0, formula: 'manufacturer statement', reference: 'IEC 62116 (anti-islanding test); utility connection rules', note: ai }
+      : notChecked('anti-islanding', 'Anti-islanding protection stated', 'Grid-connected but no anti-islanding statement (e.g. IEC 62116 certificate) entered for the inverter'));
+  }
+  return out;
+}
+
 /** Battery sizing and C-rate. usableAcKwh is the energy the loads need from the battery per cycle. */
 export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: number, units: number): { checks: Check[]; errors: string[]; requiredNominalKwh: number } {
   const errors: string[] = [];
@@ -211,38 +403,106 @@ export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: 
   if (!(battery.dischargeEfficiency > 0 && battery.dischargeEfficiency <= 1)) errors.push('Discharge efficiency must be between 0 and 1');
   if (!(battery.nominalKwh > 0) || !Number.isInteger(units) || units < 1) errors.push('Battery capacity and number of units must be positive');
   if (!(battery.maxDischargeC > 0 && battery.maxChargeC > 0)) errors.push('C-rates from the battery datasheet are required');
-  if (!battery.datasheet) errors.push('Battery datasheet reference is required');
+  if (!battery.datasheet?.trim()) errors.push('Battery datasheet reference is required');
   if (errors.length) return { checks: [], errors, requiredNominalKwh: 0 };
   const required = usableAcKwh / (battery.usableDoD * battery.dischargeEfficiency);
   const installed = battery.nominalKwh * units;
   const checks: Check[] = [
-    { id: 'battery-energy', title: 'Installed battery energy', verdict: installed >= required ? 'PASS' : 'REFUSE', value: r2(installed), limit: r2(required), unit: 'kWh', marginPct: margin(installed, required, false),
+    // Review G4: 8.55 ÷ (0.9 × 0.95) = 10.000000000000002 refused an exactly-sized
+    // 10 kWh bank; a 1e-9 relative tolerance absorbs float rounding only.
+    { id: 'battery-energy', title: 'Installed battery energy', verdict: installed >= required * (1 - 1e-9) ? 'PASS' : 'REFUSE', value: r2(installed), limit: r2(required), unit: 'kWh', marginPct: margin(installed, required, false),
       formula: `required nominal = usable AC ÷ (DoD × η_discharge) = ${usableAcKwh} ÷ (${battery.usableDoD} × ${battery.dischargeEfficiency})`, reference: 'Energy balance; battery datasheet DoD and efficiency' },
   ];
-  if (inverter.batteryMaxDischargeKw !== undefined) {
-    const c = inverter.batteryMaxDischargeKw / installed;
+  // CA-32 (2026-11-26): without the inverter's battery power the C-rate was
+  // simply not checked and the design passed. Missing data is never assumed
+  // compliant: the check is refused until the datasheet value is entered.
+  // Review G1: 0 kW or a negative power gave 0 C or −0.25 C, a "pass". Anything
+  // not > 0 is treated as not given.
+  if (!(typeof inverter.batteryMaxDischargeKw === 'number' && inverter.batteryMaxDischargeKw > 0)) {
+    checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: 'REFUSE', value: NaN, limit: battery.maxDischargeC, unit: 'C', marginPct: -100,
+      formula: 'inverter battery discharge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous discharge rate', note: 'Inverter battery discharge power not entered (or not above 0 kW): the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+  } else {
+    const c = (inverter.batteryMaxDischargeKw as number) / installed;
     checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: c <= battery.maxDischargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxDischargeC, unit: 'C', marginPct: margin(c, battery.maxDischargeC, true),
       formula: `inverter battery kW ÷ installed kWh = ${inverter.batteryMaxDischargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous discharge rate' });
   }
-  if (inverter.batteryMaxChargeKw !== undefined) {
-    const c = inverter.batteryMaxChargeKw / installed;
+  if (!(typeof inverter.batteryMaxChargeKw === 'number' && inverter.batteryMaxChargeKw > 0)) {
+    checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: 'REFUSE', value: NaN, limit: battery.maxChargeC, unit: 'C', marginPct: -100,
+      formula: 'inverter charge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous charge rate', note: 'Inverter battery charge power not entered (or not above 0 kW): the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+  } else {
+    const c = (inverter.batteryMaxChargeKw as number) / installed;
     checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: c <= battery.maxChargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxChargeC, unit: 'C', marginPct: margin(c, battery.maxChargeC, true),
       formula: `inverter charge kW ÷ installed kWh = ${inverter.batteryMaxChargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous charge rate' });
   }
   return { checks, errors, requiredNominalKwh: r2(required) };
 }
 
+/** What a proposal or diagram states about a generator connection (structurally SldConnections). */
+export interface GeneratorConnection {
+  generator: boolean | null;
+  generatorRatedKw?: number;
+  /** Lowest site load while the generator runs, kW. */
+  generatorMinSiteLoadKw?: number;
+  /** Generator OEM minimum load, % (30 % assumed when absent). */
+  generatorOemMinLoadPct?: number;
+  /** true = PV can push power back into the running generator (no export limiting / reverse-power relay); null = not stated. */
+  pvCanBackfeedGenerator?: boolean | null;
+}
+
+/**
+ * Generator checks for a design that has a generator (CA-32, 2026-11-26: the
+ * proposal and diagram never ran checkGenerator, so an inverter with no
+ * generator-compatibility statement, or PV able to back-feed the generator,
+ * was marked valid). Missing data is refused, never assumed safe: no rating,
+ * or no statement about back-feed, is a REFUSE; an unstated minimum site load
+ * is a WARN (not checked).
+ */
+export function generatorConnectionChecks(inverter: Inverter, conn: GeneratorConnection): Check[] {
+  const rated = conn.generatorRatedKw;
+  const refuse = (id: string, title: string, note: string): Check => ({ id, title, verdict: 'REFUSE', value: NaN, limit: NaN, unit: '', marginPct: -100, formula: 'required input', reference: 'P1-B §3 hybrid / generator: never assume parallel operation is safe', note });
+  const out: Check[] = [];
+  if (!(typeof rated === 'number' && Number.isFinite(rated) && rated > 0)) out.push(refuse('gen-rating', 'Generator rating', 'Generator connected but its rated kW is not given'));
+  if (conn.pvCanBackfeedGenerator !== true && conn.pvCanBackfeedGenerator !== false) out.push(refuse('gen-backfeed-stated', 'Reverse power into the generator: stated?', 'State whether PV can feed power back into the running generator (export limiting or a reverse-power relay); unknown is refused'));
+  const gc = checkGenerator(inverter, { ratedKw: typeof rated === 'number' && rated > 0 ? rated : NaN, oemMinLoadPct: conn.generatorOemMinLoadPct }, conn.generatorMinSiteLoadKw ?? NaN, conn.pvCanBackfeedGenerator === true);
+  for (const c of gc) {
+    if (c.id === 'gen-min-load' && !(typeof conn.generatorMinSiteLoadKw === 'number' && Number.isFinite(conn.generatorMinSiteLoadKw) && out.every((x) => x.id !== 'gen-rating'))) {
+      out.push({ ...c, verdict: 'WARN', value: NaN, marginPct: NaN, note: 'Minimum site load (or the generator rating) not given: minimum loading NOT checked' });
+    } else out.push(c);
+  }
+  return out;
+}
+
 /** Hybrid with a generator. Parallel operation is never assumed safe. */
 export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMinLoadPct?: number }, minSiteLoadKw: number, pvCanBackfeed: boolean): Check[] {
-  const minPct = gen.oemMinLoadPct ?? 30;
+  // Review of 39fa8535, R3: an OEM minimum of 0 % made every site load a
+  // "pass". 0, a negative or a non-number is treated as not given, so the
+  // stated 30 % practice applies and is labelled as such.
+  const oemGiven = typeof gen.oemMinLoadPct === 'number' && Number.isFinite(gen.oemMinLoadPct) && gen.oemMinLoadPct > 0;
+  const minPct = oemGiven ? (gen.oemMinLoadPct as number) : 30;
   const minKw = (gen.ratedKw * minPct) / 100;
+  // R2: a non-string statement is no statement (and never a raw JS error).
+  const compat = typeof inverter.generatorCompatibility === 'string' ? inverter.generatorCompatibility.trim() : '';
+  // Re-review: an OEM minimum below 5 % is almost certainly a fraction typed
+  // as a percentage (0.3 meaning 30 %): never a pass on that value.
+  const probableFraction = oemGiven && (gen.oemMinLoadPct as number) < 5;
   const checks: Check[] = [
-    { id: 'gen-compat', title: 'Inverter listed as generator-compatible', verdict: inverter.generatorCompatibility ? 'PASS' : 'REFUSE', value: inverter.generatorCompatibility ? 1 : 0, limit: 1, unit: '', marginPct: inverter.generatorCompatibility ? 0 : -100,
-      formula: 'manufacturer statement required', reference: 'Inverter manufacturer documentation', note: inverter.generatorCompatibility ?? 'No manufacturer statement: generator connection refused' },
+    // Review G2: a statement of only spaces counted; it is trimmed first. The
+    // text itself ("supported" vs "NOT supported") is the engineer's, checked
+    // by the second-person datasheet verification, not by code.
+    { id: 'gen-compat', title: 'Inverter listed as generator-compatible', verdict: compat ? 'PASS' : 'REFUSE', value: compat ? 1 : 0, limit: 1, unit: '', marginPct: compat ? 0 : -100,
+      formula: 'manufacturer statement required', reference: 'Inverter manufacturer documentation', note: compat ? `${compat} (the statement's wording is confirmed by the second-person datasheet check)` : 'No manufacturer statement: generator connection refused' },
     { id: 'gen-min-load', title: 'Generator minimum loading', verdict: minSiteLoadKw >= minKw ? 'PASS' : 'WARN', value: r2(minSiteLoadKw), limit: r2(minKw), unit: 'kW', marginPct: margin(minSiteLoadKw, minKw, false),
-      formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: gen.oemMinLoadPct !== undefined ? 'Generator OEM minimum load' : 'Common diesel practice (30 %) until the OEM figure is entered',
+      formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: oemGiven ? 'Generator OEM minimum load' : `Common diesel practice (30 %) until the OEM figure is entered${gen.oemMinLoadPct !== undefined ? ` (the ${gen.oemMinLoadPct} % entered is not a usable OEM figure)` : ''}`,
       note: minSiteLoadKw < minKw ? 'Light loading: wet stacking risk; schedule load banks or reduce PV while the generator runs' : undefined },
   ];
+  if (probableFraction) {
+    const k = checks.find((x) => x.id === 'gen-min-load')!;
+    const pct = gen.oemMinLoadPct as number;
+    // Only a value ≤ 1 can be a fraction (0.3 → 30 %); 1–5 % is just unusual (CA-32 third review).
+    Object.assign(k, { verdict: 'WARN', note: pct <= 1
+      ? `Check units: an OEM minimum of ${pct} % is probably a fraction; did you mean ${Math.round(pct * 100 * 100) / 100} %? Minimum loading is not passed on this value.`
+      : `Check the OEM minimum load: ${pct} % is below 5 %, which is unusual for a diesel set. Minimum loading is not passed on this value.` });
+  }
   if (pvCanBackfeed) {
     checks.push({ id: 'gen-reverse-power', title: 'Reverse power into the generator', verdict: 'REFUSE', value: 1, limit: 0, unit: '', marginPct: -100,
       formula: 'PV must not export into a running generator', reference: 'Generator protection practice (reverse-power relay); inverter generator mode',

@@ -64,6 +64,8 @@ export interface Inputs {
   controllerRatingA: number;
   inverterKind: InverterKind;
   batteryChemistry: BatteryChemistry;
+  /** The UPS battery's own chemistry: it can differ from the main bank (register SH-08). */
+  upsBatteryChemistry: BatteryChemistry;
   /* protection toggles (true = present) */
   hasDcBreaker: boolean;
   hasAcBreaker: boolean;
@@ -95,6 +97,7 @@ export const DEFAULTS: Inputs = {
   controllerRatingA: 80,
   inverterKind: 'hybrid',
   batteryChemistry: 'LFP',
+  upsBatteryChemistry: 'LFP',
   hasDcBreaker: true,
   hasAcBreaker: true,
   hasIsolator: true,
@@ -179,11 +182,14 @@ export const UPS_DISCHARGE_EFFICIENCY = 0.9;
  *   kVA = critical kW ÷ PF ÷ 0.8 loading
  *   battery Wh = critical W × autonomy h ÷ (discharge efficiency × usable DoD)
  */
-export function sizeUps(i: Pick<Inputs, 'criticalLoadKw' | 'powerFactor' | 'upsAutonomyMin' | 'batteryChemistry'>) {
+export function sizeUps(i: Pick<Inputs, 'criticalLoadKw' | 'powerFactor' | 'upsAutonomyMin' | 'batteryChemistry'> & { upsBatteryChemistry?: BatteryChemistry }) {
+  // SH-08 (review advisory): the UPS battery used the main bank's DoD; it now
+  // uses its own chemistry when given (the screen always gives it).
+  const chem = i.upsBatteryChemistry ?? i.batteryChemistry;
   const pf = Math.max(0.7, Math.min(1, i.powerFactor));
   const loadKw = Math.max(0, i.criticalLoadKw);
   const kva = loadKw / pf / UPS_MAX_LOADING;
-  const wh = (loadKw * 1000 * (Math.max(0, i.upsAutonomyMin) / 60)) / (UPS_DISCHARGE_EFFICIENCY * CHEM_DOD[i.batteryChemistry]);
+  const wh = (loadKw * 1000 * (Math.max(0, i.upsAutonomyMin) / 60)) / (UPS_DISCHARGE_EFFICIENCY * CHEM_DOD[chem]);
   return { kva, wh };
 }
 
@@ -201,6 +207,12 @@ function syntheticSolarKwPeak(c: TopologyComposition, panelWattageW = DEFAULT_KW
 }
 
 /* ────────── battery chemistry → usable depth-of-discharge ────────── */
+/*
+ * ASSUMED PRACTICE, not a cited source (REQ review advisory, 2026-11-27):
+ * typical usable depth of discharge by chemistry, used until the battery's
+ * own datasheet value is known. The screen labels every use "assumed".
+ * The Proposal tool takes the datasheet DoD instead (lib/solar/design).
+ */
 
 export const CHEM_DOD: Record<BatteryChemistry, number> = {
   LFP:     0.9,
@@ -506,6 +518,17 @@ export default function SimulatorClient() {
               </FieldGroup>
               <FieldGroup title="UPS / Backup / Redundancy">
                 <NumberField label="UPS autonomy" value={inputs.upsAutonomyMin} unit="min" step={5} onChange={set('upsAutonomyMin')} />
+                <SelectField
+                  label="UPS battery chemistry"
+                  value={inputs.upsBatteryChemistry}
+                  options={[
+                    { value: 'LFP', label: 'LFP (LiFePO₄)' },
+                    { value: 'NMC', label: 'NMC' },
+                    { value: 'AGM', label: 'AGM (VRLA)' },
+                    { value: 'Flooded', label: 'Flooded' },
+                  ]}
+                  onChange={set('upsBatteryChemistry')}
+                />
                 <NumberField label="Charge C-rate" value={inputs.chargeCRate} unit="C" step={0.05} min={0} max={0.5} onChange={set('chargeCRate')} />
                 <ReadOnlyField label="Redundancy (composed)" value={effectiveInputs.redundancy} unit="" />
               </FieldGroup>
@@ -557,7 +580,7 @@ export default function SimulatorClient() {
                   ]}
                   onChange={set('batteryChemistry')}
                 />
-                <ReadOnlyField label="Usable DoD" value={Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} unit="%" />
+                <ReadOnlyField label="Usable DoD (assumed practice; use the datasheet)" value={Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} unit="%" />
               </FieldGroup>
               <FieldGroup title="Protections (present)">
                 <CheckboxField label="DC breaker" checked={inputs.hasDcBreaker} onChange={set('hasDcBreaker')} />
@@ -600,7 +623,7 @@ export default function SimulatorClient() {
               <DigitalReadout label="Tank runtime" value={fuel.runtimeH} unit="h" decimals={1} status={fuel.runtimeH < 12 ? 'warn' : 'ok'}
                 caption={Number.isFinite(fuel.tankDays) ? `${formatValue(fuel.litresPerDay, { unit: 'L/day', decimals: 0 })} at ${inputs.hoursPerDay} h/day · ≈ ${fuel.tankDays.toFixed(1)} days per tank` : 'Set Runtime/day for litres per day'} />
               <DigitalReadout label="UPS rating" value={ups.kva} unit="kVA" decimals={1} status="info" caption={`Critical load ÷ PF at ${Math.round(UPS_MAX_LOADING * 100)} % loading`} />
-              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${Math.round(CHEM_DOD[inputs.batteryChemistry] * 100)} % usable, ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
+              <DigitalReadout label="UPS battery" value={ups.wh / 1000} unit="kWh" decimals={2} status="info" caption={`${inputs.upsBatteryChemistry}: ${Math.round(CHEM_DOD[inputs.upsBatteryChemistry] * 100)} % usable (assumed practice), ${Math.round(UPS_DISCHARGE_EFFICIENCY * 100)} % efficiency (assumed)`} />
               <DigitalReadout label="Support margin" value={Math.max(0, supportMargin)} unit="%" decimals={1} status={supportMargin < 10 ? 'fault' : supportMargin < 20 ? 'warn' : 'ok'} caption="Of the site-derated rating, kVA or kW (× 0.8), whichever is tighter; peak includes battery charging" />
             </div>
           </CockpitPanel>
