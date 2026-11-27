@@ -60,6 +60,9 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if (!isObj(t) || !isNum(t.recordLowC) || !isNum(t.maxAmbientC) || !isStr(t.source)) e.push('temps { recordLowC, maxAmbientC, source } is required');
   if (!Array.isArray(i.cables) || !(i.cables as unknown[]).every(isObj)) e.push('cables must be an array (may be empty)');
   else if (!(i.cables as Record<string, unknown>[]).every((k) => (k.kind === undefined || k.kind === 'dc-pv' || k.kind === 'dc-string' || k.kind === 'dc-battery' || k.kind === 'ac') && (k.mppt === undefined || (isNum(k.mppt) && Number.isInteger(k.mppt) && (k.mppt as number) >= 1)) && (k.stringFuseA === undefined || isNum(k.stringFuseA)))) e.push('cable kind must be dc-pv, dc-string, dc-battery or ac, and mppt a whole number ≥ 1');
+  else e.push(...cableRunErrors(i.cables as Record<string, unknown>[]));
+  // REQ-05: AC protection devices, as strictly as the form (acProtectionFromForm).
+  if (i.acProtection !== undefined) e.push(...acProtectionErrors(i.acProtection, Array.isArray(i.cables) ? (i.cables as unknown[]).filter(isObj) : []));
   const p = i.production;
   if (!isObj(p) || !isNum(p.annualKwh) || !isNum(p.clippedKwh) || !isNum(p.specificYieldKwhPerKwp) || !isNum(p.performanceRatio) || !Array.isArray(p.assumptions) || !isStr(p.engineVersion)) e.push('production (hourly simulation result) is required');
   if (isObj(p) && p.shading !== undefined) {
@@ -87,6 +90,44 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   if ('approval' in i || 'verifiedApproval' in i) return { error: CLIENT_APPROVAL_REJECTED };
   if (e.length) return { error: `Invalid proposal input: ${e.join('; ')}` };
   return { input: i as unknown as ProposalInput, format };
+}
+
+/**
+ * REQ-05 cable-run fields. Each run needs a name, unique in the request
+ * (every check is named after its run). The route, installation method and
+ * conductor are optional for API callers (older requests have none), but
+ * when given they must be what the form allows; when absent, the engine never
+ * passes the check they feed (capacity, voltage drop).
+ */
+export function cableRunErrors(runs: Record<string, unknown>[]): string[] {
+  const e: string[] = [];
+  const names: string[] = [];
+  runs.forEach((k, n) => {
+    const label = isStr(k.name) && (k.name as string).trim() ? `cable "${(k.name as string).trim()}"` : `cable ${n + 1}`;
+    if (!isStr(k.name) || !(k.name as string).trim()) e.push(`${label}: name is required`);
+    else if (names.includes((k.name as string).trim())) e.push(`${label}: cable run names must be unique`);
+    else names.push((k.name as string).trim());
+    for (const t of ['from', 'to', 'method'] as const) if (k[t] !== undefined && !(isStr(k[t]) && (k[t] as string).trim())) e.push(`${label}: ${t} must be text when given`);
+    if (k.conductor !== undefined && k.conductor !== 'copper' && k.conductor !== 'aluminium') e.push(`${label}: conductor must be copper or aluminium when given`);
+  });
+  return e;
+}
+
+/** REQ-05: the AC protection object, with the same rules as the form. */
+export function acProtectionErrors(ap: unknown, runs: Record<string, unknown>[]): string[] {
+  if (!isObj(ap)) return ['acProtection must be { breakerA?, device?, cable?, rcdType? }'];
+  const e: string[] = [];
+  if (ap.breakerA !== undefined && !(isNum(ap.breakerA) && (ap.breakerA as number) > 0)) e.push('acProtection.breakerA must be a positive number of A when given');
+  if (ap.device !== undefined && !isStr(ap.device)) e.push('acProtection.device must be text when given');
+  if (ap.cable !== undefined) {
+    const run = isStr(ap.cable) ? runs.find((k) => isStr(k.name) && (k.name as string).trim() === (ap.cable as string).trim()) : undefined;
+    if (!isStr(ap.cable) || !(ap.cable as string).trim()) e.push('acProtection.cable must name one of the cable runs');
+    else if (!run) e.push(`acProtection.cable "${ap.cable as string}" is not one of the cable runs`);
+    else if (run.kind !== 'ac') e.push(`acProtection.cable "${ap.cable as string}" is not an AC cable (kind must be ac)`);
+  }
+  if (ap.rcdType !== undefined && !['none', 'AC', 'A', 'F', 'B'].includes(ap.rcdType as string)) e.push('acProtection.rcdType must be none, AC, A, F or B when given');
+  for (const k of Object.keys(ap)) if (!['breakerA', 'device', 'cable', 'rcdType'].includes(k)) e.push(`acProtection.${k} is not a field (breakerA, device, cable, rcdType)`);
+  return e;
 }
 
 /** Safe file name from the proposal reference. */

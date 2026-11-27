@@ -9,7 +9,7 @@
  * labelled as such.
  */
 import { importModule, importInverter, importBattery, verify, type LibraryEntry } from './datasheet';
-import type { Module, Inverter, Battery, CableRun } from './validate';
+import { CABLE_CONDUCTORS, RCD_TYPES, type Module, type Inverter, type Battery, type CableRun, type AcProtection } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
 import type { ProposalInput, PricedLine, Sourced, SiteDetails, LoadDetails } from './proposal';
@@ -57,7 +57,7 @@ export function parseLoadCsv(text: string, expectedHours?: number): { values: nu
 
 const PROV = ['manufacturer', 'datasheetUrl', 'datasheetRevision', 'datasheetDate', 'enteredBy', 'enteredOn'];
 const MODULE_KEYS = ['model', 'pmaxW', 'vocV', 'iscA', 'vmpV', 'impA', 'betaVocPct', 'betaVmpPct', 'alphaIscPct', 'gammaPmaxPct', 'noctC', 'maxSystemV', 'maxSeriesFuseA', 'lengthMm', 'widthMm'];
-const INVERTER_KEYS = ['model', 'acKw', 'maxDcV', 'mpptMinV', 'mpptMaxV', 'mpptCount', 'maxInputA', 'maxIscA', 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding'];
+const INVERTER_KEYS = ['model', 'acKw', 'maxDcV', 'mpptMinV', 'mpptMaxV', 'mpptCount', 'maxInputA', 'maxIscA', 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding', 'maxAcOutputA', 'rcdTypeRequired'];
 const BATTERY_KEYS = ['model', 'nominalKwh', 'usableDoD', 'dischargeEfficiency', 'maxDischargeC', 'maxChargeC', 'chemistry', 'nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'];
 
 function record(f: ProposalForm, prefix: string, keys: string[]): Record<string, string> {
@@ -225,9 +225,10 @@ export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; e
   const { module, inverter, battery, errors: eErr } = buildEntries(f);
   errors.push(...eErr);
   if (errors.length || !module || !inverter) return { model: null, errors };
-  const cables: CableRun[] = anyFilled(f, 'k.') && CABLE_KEYS.every((k) => !blank(f, `k.${k}`))
-    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }]
-    : [];
+  // Only runs without errors are drawn in the preview; the proposal form lists what is missing.
+  const cables = cablesFromForm(f, []).filter((c) => { const e: string[] = []; cablesFromForm(onlyRun(f, c.name), e); return !e.length; });
+  const acErrors: string[] = [];
+  const acProtection = acProtectionFromForm(f, cables, acErrors);
   const conn = connectionsFromForm(f);
   const units = num(f, 'b.units'), need = num(f, 'b.requiredUsableAcKwh');
   // Re-review S4: a battery with blank units vanished from the preview, which then showed valid.
@@ -238,7 +239,7 @@ export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; e
       design: { modulesPerString: num(f, 'd.modulesPerString'), stringsPerMppt: parseStrings(str(f, 'd.stringsPerMppt')) },
       inverterCount: num(f, 'd.inverterCount'), temps: { recordLowC: num(f, 't.recordLowC'), maxAmbientC: num(f, 't.maxAmbientC') },
       ...(battery && Number.isFinite(units) ? { battery: { data: battery.data, units, ...(Number.isFinite(need) ? { requiredUsableAcKwh: need } : {}) } } : {}),
-      cables, ...(conn ? { connections: conn } : {}),
+      cables, ...(acProtection && !acErrors.length ? { acProtection } : {}), ...(conn ? { connections: conn } : {}),
     }),
     errors,
   };
@@ -275,14 +276,98 @@ export function buildHybridInput(f: ProposalForm, pvAcKwh: number[], loadKwh: nu
 }
 
 /** Review G3: what the cable carries and which MPPT; blank = treated as a PV cable on the largest MPPT. */
-export function cableKindFromForm(f: ProposalForm): Pick<CableRun, 'kind' | 'mppt' | 'stringFuseA'> {
-  const k = str(f, 'k.kind').toLowerCase();
+export function cableKindFromForm(f: ProposalForm, prefix = 'k.'): Pick<CableRun, 'kind' | 'mppt' | 'stringFuseA'> {
+  const k = str(f, `${prefix}kind`).toLowerCase();
   const kind = k === 'ac' || k === 'dc-battery' || k === 'dc-pv' || k === 'dc-string' ? k : undefined;
-  const m = num(f, 'k.mppt');
-  const fuse = num(f, 'k.stringFuseA');
+  const m = num(f, `${prefix}mppt`);
+  const fuse = num(f, `${prefix}stringFuseA`);
   return { ...(kind ? { kind } : {}), ...(Number.isInteger(m) && m >= 1 ? { mppt: m } : {}), ...(kind === 'dc-string' && Number.isFinite(fuse) ? { stringFuseA: fuse } : {}) };
 }
 const CABLE_KEYS = ['name', 'lengthM', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
+/** REQ-05: every run in the form also states its route, installation method and conductor. */
+export const CABLE_RUN_REQUIRED = [...CABLE_KEYS, 'from', 'to', 'method', 'conductor'];
+/** Every field of one run (form key suffixes). */
+export const CABLE_RUN_FIELDS = ['name', 'from', 'to', 'kind', 'mppt', 'stringFuseA', 'lengthM', 'method', 'conductor', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
+/** REQ-05: up to MAX_CABLE_RUNS runs; 'k.' is run 1 (kept so saved drafts still open), then 'k2.', 'k3.', … */
+export const MAX_CABLE_RUNS = 8;
+export const cableRunPrefix = (n: number) => (n === 1 ? 'k.' : `k${n}.`);
+const CABLE_RUN_PREFIXES = Array.from({ length: MAX_CABLE_RUNS }, (_, k) => cableRunPrefix(k + 1));
+const runFilled = (f: ProposalForm, prefix: string) => CABLE_RUN_FIELDS.some((k) => !blank(f, `${prefix}${k}`));
+/** How many cable runs the form shows: up to the last run with anything in it (at least 1). */
+export function cableRunCount(f: ProposalForm): number {
+  let n = 1;
+  CABLE_RUN_PREFIXES.forEach((p, k) => { if (runFilled(f, p)) n = k + 1; });
+  return n;
+}
+/** The form with only the run of this name (as run 1), to check one run on its own. */
+function onlyRun(f: ProposalForm, name: string): ProposalForm {
+  const p = CABLE_RUN_PREFIXES.find((x) => str(f, `${x}name`) === name);
+  const out: ProposalForm = {};
+  if (p) for (const k of CABLE_RUN_FIELDS) if (f[`${p}${k}`] !== undefined) out[`k.${k}`] = f[`${p}${k}`];
+  return out;
+}
+/** Remove run n (1-based) and move the later runs up, so the numbering stays continuous. */
+export function removeCableRun(f: ProposalForm, n: number): ProposalForm {
+  const out: ProposalForm = { ...f };
+  for (let k = n; k <= MAX_CABLE_RUNS; k++) {
+    for (const fld of CABLE_RUN_FIELDS) {
+      const next = k < MAX_CABLE_RUNS ? f[`${cableRunPrefix(k + 1)}${fld}`] : undefined;
+      if (next === undefined || next === '') delete out[`${cableRunPrefix(k)}${fld}`]; else out[`${cableRunPrefix(k)}${fld}`] = next;
+    }
+  }
+  return out;
+}
+
+/**
+ * REQ-05: all the cable runs in the form. A run with anything in it must be
+ * complete (route, installation method, conductor and the IEC 60364-5-52
+ * values); a missing or bad field is reported, never guessed. Names must be
+ * unique, since each check is named after its run.
+ */
+export function cablesFromForm(f: ProposalForm, errors: string[]): CableRun[] {
+  const out: CableRun[] = [];
+  CABLE_RUN_PREFIXES.forEach((p, k) => {
+    if (!runFilled(f, p)) return;
+    const label = str(f, `${p}name`) || String(k + 1);
+    for (const key of CABLE_RUN_REQUIRED) if (blank(f, `${p}${key}`)) errors.push(`Cable run ${label}: ${key} is required (or clear the run)`);
+    for (const key of ['lengthM', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'maxDropPct']) if (!blank(f, `${p}${key}`) && !(num(f, `${p}${key}`) > 0)) errors.push(`Cable run ${label}: ${key} must be a positive number`);
+    for (const key of ['ambientFactor', 'groupingFactor']) if (!blank(f, `${p}${key}`) && !(num(f, `${p}${key}`) > 0)) errors.push(`Cable run ${label}: ${key} must be a positive number from the IEC 60364-5-52 tables`);
+    const cond = str(f, `${p}conductor`).toLowerCase();
+    if (cond && !(CABLE_CONDUCTORS as readonly string[]).includes(cond)) errors.push(`Cable run ${label}: conductor must be copper or aluminium`);
+    const kindTxt = str(f, `${p}kind`).toLowerCase();
+    if (kindTxt && !['dc-pv', 'dc-string', 'dc-battery', 'ac'].includes(kindTxt)) errors.push(`Cable run ${label}: kind must be dc-pv, dc-string, dc-battery or ac`);
+    if (!blank(f, `${p}mppt`) && !(Number.isInteger(num(f, `${p}mppt`)) && num(f, `${p}mppt`) >= 1)) errors.push(`Cable run ${label}: MPPT must be a whole number, 1 or more`);
+    if (!blank(f, `${p}stringFuseA`) && !(num(f, `${p}stringFuseA`) > 0)) errors.push(`Cable run ${label}: string fuse rating must be a positive number of A`);
+    if (str(f, `${p}name`) && out.some((c) => c.name === str(f, `${p}name`))) errors.push(`Cable run ${label}: another run has the same name (names must be unique)`);
+    out.push({
+      name: str(f, `${p}name`), from: str(f, `${p}from`), to: str(f, `${p}to`), method: str(f, `${p}method`),
+      ...((CABLE_CONDUCTORS as readonly string[]).includes(cond) ? { conductor: cond as CableRun['conductor'] } : {}),
+      lengthM: num(f, `${p}lengthM`), csaMm2: num(f, `${p}csaMm2`), designCurrentA: num(f, `${p}designCurrentA`), systemV: num(f, `${p}systemV`), tabulatedAmpacityA: num(f, `${p}tabulatedAmpacityA`), ambientFactor: num(f, `${p}ambientFactor`), groupingFactor: num(f, `${p}groupingFactor`), maxDropPct: num(f, `${p}maxDropPct`),
+      ...cableKindFromForm(f, p),
+    });
+  });
+  return out;
+}
+
+/** REQ-05 AC protection from the form (ap.*); undefined when nothing is entered. Bad entries are reported, never guessed. */
+export function acProtectionFromForm(f: ProposalForm, cables: CableRun[], errors: string[]): AcProtection | undefined {
+  const keys = ['ap.breakerA', 'ap.device', 'ap.cable', 'ap.rcdType'];
+  if (keys.every((k) => blank(f, k))) return undefined;
+  const out: AcProtection = {};
+  if (!blank(f, 'ap.breakerA')) { const v = num(f, 'ap.breakerA'); if (Number.isFinite(v) && v > 0) out.breakerA = v; else errors.push('AC breaker rating must be a positive number of A'); }
+  if (!blank(f, 'ap.device')) out.device = str(f, 'ap.device');
+  if (!blank(f, 'ap.cable')) {
+    const name = str(f, 'ap.cable'), run = cables.find((c) => c.name === name);
+    if (!run) errors.push(`AC breaker: "${name}" is not one of the cable runs`);
+    else if (run.kind !== 'ac') errors.push(`AC breaker: cable run "${name}" is not an AC cable (set its kind to ac)`);
+    out.cable = name;
+  }
+  if (!blank(f, 'ap.rcdType')) {
+    const t = str(f, 'ap.rcdType');
+    if (t === 'none' || (RCD_TYPES as readonly string[]).includes(t)) out.rcdType = t as AcProtection['rcdType']; else errors.push('RCD fitted must be none, AC, A, F or B');
+  }
+  return out;
+}
 
 /** Bill of materials rows: an empty rate means "rate required" (null); a given rate needs its source and date. */
 export function buildBom(rows: BomRow[], errors: string[]): PricedLine[] {
@@ -339,11 +424,8 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   if (!blank(f, 'b.seriesPerString') && !(Number.isInteger(num(f, 'b.seriesPerString')) && num(f, 'b.seriesPerString') >= 1)) errors.push('Battery units in series per string must be a whole number, 1 or more (or blank for 1)');
   const load = loadFromForm(f, errors);
 
-  let cables: CableRun[] = [];
-  if (anyFilled(f, 'k.')) {
-    for (const k of CABLE_KEYS) if (blank(f, `k.${k}`)) errors.push(`Cable run: ${k} is required (or clear the cable section)`);
-    cables = [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }];
-  }
+  const cables = cablesFromForm(f, errors);
+  const acProtection = acProtectionFromForm(f, cables, errors);
   const bom = buildBom(bomRows, errors);
 
   // No approval is ever built from the form: a typed name cannot approve
@@ -361,6 +443,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
     inverterCount: num(f, 'd.inverterCount'),
     temps: { recordLowC: num(f, 't.recordLowC'), maxAmbientC: num(f, 't.maxAmbientC'), source: str(f, 't.source') },
     cables,
+    ...(acProtection ? { acProtection } : {}),
     ...(connectionsFromForm(f) ? { connections: connectionsFromForm(f) } : {}),
     // The hourly series is not used by the proposal engine; dropped to keep the request small.
     production: { ...production, hourlyAcKwh: [] },

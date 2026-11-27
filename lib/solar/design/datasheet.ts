@@ -6,7 +6,7 @@
  * "unverified" until a second person compares it with the datasheet and signs
  * it off. Only verified entries may be used for a design that is quoted.
  */
-import type { Battery, Inverter, Module } from './validate';
+import { RCD_TYPES, type Battery, type Inverter, type Module } from './validate';
 import { MODULE_DIM_MM } from './validate';
 
 export type Kind = 'module' | 'inverter' | 'battery';
@@ -141,11 +141,19 @@ export function importInverter(r: Record<string, string>): ImportResult<Inverter
   const extra = { batteryMaxDischargeKw: opt('batteryMaxDischargeKw'), batteryMaxChargeKw: opt('batteryMaxChargeKw'), generatorCompatibility: (r.generatorCompatibility ?? '').trim() || null }; // review G2: spaces are not a statement
   const ext: { batteryMinV?: number; batteryMaxV?: number; batteryMaxChargeA?: number; batteryMaxDischargeA?: number; antiIslanding?: string } = { ...optionalNumbers(r, ['batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA'], errors), ...((r.antiIslanding ?? '').trim() ? { antiIslanding: r.antiIslanding.trim() } : {}) };
   if (ext.batteryMinV !== undefined && ext.batteryMaxV !== undefined && !(ext.batteryMinV < ext.batteryMaxV)) errors.push('batteryMinV must be below batteryMaxV');
+  // REQ-05 AC protection: maximum AC output current and the RCD type the manufacturer states.
+  const acx: { maxAcOutputA?: number; rcdTypeRequired?: Inverter['rcdTypeRequired'] } = optionalNumbers(r, ['maxAcOutputA'], errors);
+  { const t = (r.rcdTypeRequired ?? '').trim();
+    if (t) { const m = RCD_TYPE_TEXT[t.toLowerCase().replace(/^type\s*/, '')]; if (m) acx.rcdTypeRequired = m; else errors.push(`rcdTypeRequired: enter AC, A, F, B or not-required as the datasheet states it (got "${t}")`); } }
+
   for (const [k, v] of Object.entries(extra)) if (typeof v === 'number' && !(v > 0)) errors.push(`${k} must be positive when given`);
   if (errors.length) return { entry: null, errors };
   if (!extra.generatorCompatibility) warnings.push('No generator compatibility statement: hybrid designs with a generator will be refused');
-  return { entry: { kind: 'inverter', id: id(p, n.model), data: { ...n, ...extra, ...ext, datasheet: `${p.manufacturer} ${n.model} datasheet rev ${p.datasheetRevision} (${p.datasheetDate}) ${p.datasheetUrl}` }, provenance: p, status: 'unverified', warnings }, errors };
+  return { entry: { kind: 'inverter', id: id(p, n.model), data: { ...n, ...extra, ...ext, ...acx, datasheet: `${p.manufacturer} ${n.model} datasheet rev ${p.datasheetRevision} (${p.datasheetDate}) ${p.datasheetUrl}` }, provenance: p, status: 'unverified', warnings }, errors };
 }
+
+/** Accepted spellings of the RCD type a datasheet states (REQ-05). */
+const RCD_TYPE_TEXT: Record<string, Inverter['rcdTypeRequired']> = { ac: 'AC', a: 'A', f: 'F', b: 'B', 'not-required': 'not-required', 'not required': 'not-required' };
 
 export function importBattery(r: Record<string, string>): ImportResult<Battery> {
   const errors: string[] = []; const warnings: string[] = [];
@@ -204,6 +212,8 @@ export function inverterDataErrors(v: Record<string, unknown>): string[] {
   optPositive(v, ['batteryMaxDischargeKw', 'batteryMaxChargeKw', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA'], e, 'inverter');
   if (fin(v.batteryMinV) && fin(v.batteryMaxV) && !(v.batteryMinV < v.batteryMaxV)) e.push('inverter: batteryMinV must be below batteryMaxV');
   if (v.antiIslanding !== undefined && v.antiIslanding !== null && typeof v.antiIslanding !== 'string') e.push('inverter.antiIslanding must be text when given');
+  optPositive(v, ['maxAcOutputA'], e, 'inverter');
+  if (v.rcdTypeRequired !== undefined && v.rcdTypeRequired !== 'not-required' && !(RCD_TYPES as readonly unknown[]).includes(v.rcdTypeRequired)) e.push('inverter.rcdTypeRequired must be AC, A, F, B or not-required when given');
   return e;
 }
 export function batteryDataErrors(b: Record<string, unknown>): string[] {
@@ -241,6 +251,6 @@ export function usableForQuotation(...entries: Array<LibraryEntry<unknown>>): { 
 
 export const DATASHEET_CSV_HEADERS = {
   module: [...PROV_FIELDS, ...MODULE_FIELDS, 'lengthMm', 'widthMm'],
-  inverter: [...PROV_FIELDS, ...INVERTER_FIELDS, 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding'],
+  inverter: [...PROV_FIELDS, ...INVERTER_FIELDS, 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding', 'maxAcOutputA', 'rcdTypeRequired'],
   battery: [...PROV_FIELDS, ...BATTERY_FIELDS, 'chemistry', 'nominalV', 'chargeV', 'cutoffV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'],
 };

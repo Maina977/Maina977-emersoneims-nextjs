@@ -33,8 +33,13 @@ const MAX_FORM_KEYS = 400;
 const MAX_VALUE_LENGTH = 4000;
 const MAX_BOM_ROWS = 500;
 const HEX64 = /^[0-9a-f]{64}$/;
-/** Form keys look like "ref" or "m.pmaxW"; nothing else is accepted. */
-const FORM_KEY = /^[a-z]{1,6}(\.[A-Za-z]{1,40})?$/;
+/**
+ * Form keys look like "ref", "m.pmaxW", "k.csaMm2" or (REQ-05 cable runs 2–8)
+ * "k2.name"; nothing else is accepted. Before 2026-11-27 a digit after the dot
+ * was refused, so any draft or project file with a cable cross-section
+ * ("k.csaMm2") was reported as damaged and not opened.
+ */
+const FORM_KEY = /^[a-z]{1,6}[2-9]?(\.[A-Za-z][A-Za-z0-9]{0,39})?$/;
 const BOM_KEYS: ReadonlyArray<keyof BomRow> = ['item', 'model', 'quantity', 'unit', 'rate', 'rateSource', 'rateDate'];
 const ENVELOPE_KEYS = ['format', 'schemaVersion', 'savedAt', 'form', 'bom', 'production', 'revisionHash'];
 
