@@ -188,7 +188,7 @@ describe('worked example: unit-rate build-up', () => {
     expect(r.lines.map((l) => l.amount)).toEqual([47.25, 20, 12.5, 1]);
     expect([r.materials, r.labour, r.plant, r.net, r.ohp, r.rate]).toEqual([47.25, 32.5, 1, 80.75, 9.69, 90.44]);
     expect(r.priceDate).toBe('2026-10-15'); // the oldest price
-    expect(r.basis).toBe('Rate build-up per m: materials 47.25 + labour 32.5 + plant 1 = net 80.75; O&P 12 % (TEST company policy) = 9.69; unit rate 90.44 KES. Verified (weakest input). Prices dated from 2026-10-15, TEST town.');
+    expect(r.basis).toBe('Rate build-up per m: materials 47.25 + labour 32.5 + plant 1 + transport 0 = net 80.75; O&P 12 % (TEST company policy) = 9.69; unit rate 90.44 KES. Verified (weakest input). Prices dated from 2026-10-15, TEST town.');
   });
   it('a line without a price keeps "rate required"; nothing is invented', () => {
     const d = { ...CABLE_BUILDUP, resources: CABLE_BUILDUP.resources.map((x, i) => (i === 0 ? { ...x, price: '' } : x)) };
@@ -212,7 +212,7 @@ describe('worked example: unit-rate build-up', () => {
     expect(bad({ kind: 'labour', waste: '5' })).toMatch(/waste applies to materials only/);
     expect(bad({ source: '' })).toMatch(/needs its source/);
     expect(bad({ date: '1/11/2026' })).toMatch(/needs its date/);
-    expect(bad({ kind: '' })).toMatch(/choose material, labour or plant/);
+    expect(bad({ kind: '' })).toMatch(/choose material, labour, plant or transport/);
     expect(bad({}, '120')).toMatch(/0–100 %/);
     expect(bad({}, '12', '')).toMatch(/state its basis/);
   });
