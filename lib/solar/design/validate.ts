@@ -131,8 +131,12 @@ function invalid(module: Module, inverter: Inverter, design: ArrayDesign): strin
   if (Math.abs(module.betaVocPct) > 1 || Math.abs(module.betaVmpPct) > 1) e.push('Temperature coefficient over 1 %/°C: probably entered in mV/°C; enter %/°C');
   if (!Number.isInteger(design.modulesPerString) || design.modulesPerString < 1) e.push('Modules per string must be a whole number ≥ 1');
   if (design.stringsPerMppt.length < 1 || design.stringsPerMppt.some((s) => !Number.isInteger(s) || s < 1)) e.push('Each MPPT used needs a whole number of strings ≥ 1');
-  if (design.stringsPerMppt.length > inverter.mpptCount) e.push(`The design uses ${design.stringsPerMppt.length} MPPTs; the inverter has ${inverter.mpptCount}`);
-  if (!module.datasheet || !inverter.datasheet) e.push('Module and inverter datasheet references are required');
+  // Review of 39fa8535, M1: an undefined or NaN MPPT count made the next
+  // comparison false, so any number of MPPTs passed.
+  if (!(Number.isInteger(inverter.mpptCount) && inverter.mpptCount >= 1)) e.push('Inverter MPPT count must be a whole number ≥ 1');
+  else if (design.stringsPerMppt.length > inverter.mpptCount) e.push(`The design uses ${design.stringsPerMppt.length} MPPTs; the inverter has ${inverter.mpptCount}`);
+  // M3: a reference of only spaces is no reference.
+  if (!module.datasheet?.trim() || !inverter.datasheet?.trim()) e.push('Module and inverter datasheet references are required');
   return e;
 }
 
@@ -326,7 +330,7 @@ export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: 
   if (!(battery.dischargeEfficiency > 0 && battery.dischargeEfficiency <= 1)) errors.push('Discharge efficiency must be between 0 and 1');
   if (!(battery.nominalKwh > 0) || !Number.isInteger(units) || units < 1) errors.push('Battery capacity and number of units must be positive');
   if (!(battery.maxDischargeC > 0 && battery.maxChargeC > 0)) errors.push('C-rates from the battery datasheet are required');
-  if (!battery.datasheet) errors.push('Battery datasheet reference is required');
+  if (!battery.datasheet?.trim()) errors.push('Battery datasheet reference is required');
   if (errors.length) return { checks: [], errors, requiredNominalKwh: 0 };
   const required = usableAcKwh / (battery.usableDoD * battery.dischargeEfficiency);
   const installed = battery.nominalKwh * units;

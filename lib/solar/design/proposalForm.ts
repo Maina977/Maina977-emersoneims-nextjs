@@ -92,6 +92,13 @@ export function buildEntries(f: ProposalForm): { module: LibraryEntry<Module> | 
   return { module: moduleEntry, inverter, battery, errors, warnings };
 }
 
+/** Review of 39fa8535, M2: the form only checked that the inverter count was not blank; −1, 0 and 1.5 went through. */
+export function inverterCountError(f: ProposalForm, errors: string[]): void {
+  if (blank(f, 'd.inverterCount')) return;
+  const n = num(f, 'd.inverterCount');
+  if (!(Number.isInteger(n) && n >= 1)) errors.push('Inverter count must be a whole number of inverters, 1 or more');
+}
+
 export function parseStrings(s: string): number[] { return s.split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number); }
 
 /** DC kWp from the form's array design and module Pmax (NaN when incomplete). */
@@ -214,6 +221,7 @@ export function connectionsFromForm(f: ProposalForm): SldConnections | undefined
 export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; errors: string[] } {
   const errors: string[] = [];
   for (const [k, l] of [['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature']] as const) if (blank(f, k)) errors.push(`${l} is required`);
+  inverterCountError(f, errors);
   const { module, inverter, battery, errors: eErr } = buildEntries(f);
   errors.push(...eErr);
   if (errors.length || !module || !inverter) return { model: null, errors };
@@ -300,6 +308,7 @@ export function buildBom(rows: BomRow[], errors: string[]): PricedLine[] {
 /** Map the whole form to a ProposalInput. Engine rules (ranges, refusals) stay in buildProposal on the server. */
 export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], production: HourlyResult | null, hybrid: HybridResult | null): { input: ProposalInput | null; errors: string[]; warnings: string[] } {
   const errors: string[] = [];
+  inverterCountError(f, errors);
   for (const [k, l] of [['ref', 'Proposal reference'], ['c.name', 'Client name'], ['c.address', 'Site address'], ['c.lat', 'Latitude'], ['c.lon', 'Longitude'], ['d.modulesPerString', 'Modules per string'], ['d.stringsPerMppt', 'Strings per MPPT'], ['d.inverterCount', 'Inverter count'], ['t.recordLowC', 'Site record low temperature'], ['t.maxAmbientC', 'Max ambient temperature'], ['t.source', 'Source of the site temperatures'], ['f.lifetime', 'Lifetime']] as const) {
     if (blank(f, k)) errors.push(`${l} is required`);
   }

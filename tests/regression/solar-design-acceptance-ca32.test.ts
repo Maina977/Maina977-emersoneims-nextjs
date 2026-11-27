@@ -207,3 +207,54 @@ describe('CA-32 review G1–G4: further designs', () => {
     expect(r.entry?.data.generatorCompatibility).toBeNull();
   });
 });
+
+// ── Review of 39fa8535 (REVIEW-SOLAR-CA32-39fa8535.md): M1–M4 and the API cable check ──
+describe('CA-32 review of 39fa8535: missing or nonsensical data is never valid', () => {
+  it('M1 (U22): inverter MPPT count missing or NaN with a 3-MPPT design → REFUSED, not valid', async () => {
+    for (const mpptCount of [undefined, NaN, 0, 1.5]) {
+      const i = design({ design: { modulesPerString: 16, stringsPerMppt: [1, 1, 1] } });
+      (i.inverter.data as unknown as Record<string, unknown>).mpptCount = mpptCount;
+      const p = buildProposal(i);
+      expect(p.status, String(mpptCount)).toBe('REFUSED');
+      expect(p.statusReasons.join(' ')).toMatch(/MPPT count must be a whole number/);
+      expect(p.sld.designValid).toBe(false);
+    }
+    // Control: count 3 with 3 MPPTs used is accepted.
+    expect(buildProposal(design({ inv: { mpptCount: 3 }, design: { modulesPerString: 16, stringsPerMppt: [1, 1, 1] } })).status).not.toBe('REFUSED');
+  });
+  it('M2 (U23): inverter count −1, 0, 1.5 is refused by the engine, the diagram and the form', async () => {
+    const { buildSld } = await import('@/lib/solar/design/sld');
+    const { formToProposalInput, sldPreviewFromForm, WORKED_EXAMPLE_FORM } = await import('@/lib/solar/design/proposalForm');
+    for (const n of [-1, 0, 1.5]) {
+      expect(() => buildProposal(design({ inverterCount: n }))).toThrow(/Inverter count must be a whole number/);
+      expect(buildSld({ reference: 'T', module: MOD, inverter: INV, design: { modulesPerString: 16, stringsPerMppt: [1, 1] }, inverterCount: n, temps: { recordLowC: 10, maxAmbientC: 35 }, cables: [] }).designValid).toBe(false);
+      const f = { ...WORKED_EXAMPLE_FORM, 'd.inverterCount': String(n) };
+      const r = formToProposalInput(f, [{ item: 'PV modules', model: 'm', quantity: '32', unit: 'No', rate: '15000', rateSource: 'q', rateDate: '2026-11-01' }], production, null);
+      expect(r.input).toBeNull();
+      expect(r.errors.join(' ')).toMatch(/Inverter count must be a whole number of inverters, 1 or more/);
+      expect(sldPreviewFromForm(f).model).toBeNull();
+    }
+  });
+  it('M3 (U24): datasheet references of only spaces are no references → REFUSED', () => {
+    expect(buildProposal(design({ mod: { datasheet: '   ' } })).status).toBe('REFUSED');
+    expect(buildProposal(design({ inv: { datasheet: ' ' } })).status).toBe('REFUSED');
+    const p = buildProposal(design({ inv: { batteryMaxDischargeKw: 8, batteryMaxChargeKw: 8 }, battery: { entry: entry({ ...BAT, datasheet: ' ' }, 'battery'), units: 4, requiredUsableAcKwh: 10 } }));
+    expect(p.statusReasons.join(' ')).toMatch(/Battery datasheet reference is required/);
+    expect(p.sld.designValid).toBe(false);
+  });
+  it('M4 (U25): the diagram with a battery but no energy need is not valid, and its C-rate is still checked', async () => {
+    const { buildSld } = await import('@/lib/solar/design/sld');
+    const sld = (inv: Inverter) => buildSld({ reference: 'T', module: MOD, inverter: inv, design: { modulesPerString: 16, stringsPerMppt: [1, 1] }, inverterCount: 1, temps: { recordLowC: 10, maxAmbientC: 35 }, battery: { data: BAT, units: 1 }, cables: [] });
+    expect(sld(INV).designValid).toBe(false); // no inverter battery power and no need
+    expect(sld({ ...INV, batteryMaxDischargeKw: 2, batteryMaxChargeKw: 2 }).designValid).toBe(false); // C-rate fine (0.4 C), energy need missing
+  });
+  it('API (F-G3d): cable kind and MPPT are validated by the request check', async () => {
+    const { checkProposalRequest } = await import('@/lib/solar/design/proposalRequest');
+    const cable = { name: 'DC', lengthM: 10, csaMm2: 16, designCurrentA: 40, systemV: 600, tabulatedAmpacityA: 76, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3 };
+    for (const bad of [{ kind: 'DC-PV' }, { kind: 'string' }, { mppt: 0 }, { mppt: 1.5 }, { mppt: '1' }]) {
+      const r = checkProposalRequest({ format: 'json', input: design({ cables: [{ ...cable, ...bad } as never] }) });
+      expect('error' in r ? r.error : '', JSON.stringify(bad)).toMatch(/cable kind must be dc-pv, dc-battery or ac, and mppt a whole number/);
+    }
+    expect('error' in checkProposalRequest({ format: 'json', input: design({ cables: [{ ...cable, kind: 'dc-pv', mppt: 1 }] }) })).toBe(false);
+  });
+});

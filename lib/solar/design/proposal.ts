@@ -168,6 +168,9 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const om = need('O&M (KES/yr)', f.omKesPerYear, 0, 1e9);
   if (!(Number.isInteger(f.lifetimeYears) && f.lifetimeYears >= 5 && f.lifetimeYears <= 30)) throw new Error('Lifetime must be 5–30 whole years');
   if (!i.temps.source?.trim()) throw new Error('Source of the site temperatures is required');
+  // Review of 39fa8535, M2: −1, 0 or 1.5 inverters gave negative or odd
+  // quantities on a DRAFT marked valid.
+  if (!(Number.isInteger(i.inverterCount) && i.inverterCount >= 1)) throw new Error('Inverter count must be a whole number ≥ 1');
   const c = i.connections;
   if (c !== undefined && (typeof c !== 'object' || c === null || ![true, false, null].includes(c.grid) || ![true, false, null].includes(c.generator)
     || (c.generatorRatedKw !== undefined && !(Number.isFinite(c.generatorRatedKw) && c.generatorRatedKw > 0))

@@ -82,11 +82,23 @@ export function buildSld(i: SldInput): SldModel {
   const checks = [...str.checks];
   const cableResults = i.cables.map((c) => ({ c, r: checkCable(c) }));
   cableResults.forEach(({ c, r }) => { checks.push(...r.checks); const sc = cableStringCurrentCheck(c, i.module, i.design); if (sc) checks.push(sc); });
-  const bat = i.battery && i.battery.requiredUsableAcKwh !== undefined ? checkBattery(i.battery.data, i.inverter, i.battery.requiredUsableAcKwh, i.battery.units) : null;
-  if (bat) checks.push(...bat.checks);
+  // Review of 39fa8535, M4: with the energy need blank, checkBattery (and so
+  // the C-rate checks) was skipped and the preview showed valid. The C-rate
+  // checks do not depend on the need, so they run on a token need; the energy
+  // check itself is REFUSED as not checkable.
+  const needGiven = !!i.battery && typeof i.battery.requiredUsableAcKwh === 'number' && Number.isFinite(i.battery.requiredUsableAcKwh);
+  const bat = i.battery ? checkBattery(i.battery.data, i.inverter, needGiven ? (i.battery.requiredUsableAcKwh as number) : 1e-9, i.battery.units) : null;
+  if (bat) {
+    if (needGiven) checks.push(...bat.checks);
+    else {
+      checks.push(...bat.checks.filter((c) => c.id !== 'battery-energy'));
+      checks.push({ id: 'battery-energy', title: 'Installed battery energy', verdict: 'REFUSE', value: NaN, limit: NaN, unit: 'kWh', marginPct: -100, formula: 'energy needed from the battery per cycle not entered', reference: 'Design input', note: 'Enter the energy needed from the battery per cycle: the battery cannot be checked without it' });
+    }
+  }
   // A connected generator is checked as the proposal checks it (CA-32).
   if (i.connections?.generator === true) checks.push(...generatorConnectionChecks(i.inverter, i.connections));
-  const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length);
+  const designValid = str.errors.length === 0 && !checks.some((c) => c.verdict === 'REFUSE') && cableResults.every(({ r }) => !r.errors.length) && !(bat && bat.errors.length)
+    && Number.isInteger(i.inverterCount) && i.inverterCount >= 1; // M2
   const m = i.module, inv = i.inverter, N = i.design.modulesPerString;
   const cold = find(checks, 'cold-voc');
   const coldTxt = cold ? `${cold.value} V` : `not available (design check refused the input) — ${TBS}`;
