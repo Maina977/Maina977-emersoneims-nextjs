@@ -131,7 +131,8 @@ export async function POST(request: Request) {
       });
     }
 
-    if (!allowRecipient(customerEmail)) {
+    // One recipient identity: the limiter keys the same trimmed, allowlisted address the email is sent to.
+    if (!allowRecipient(customerEmail.trim())) {
       return Response.json(TOO_MANY, { status: 429, headers: { 'Cache-Control': 'no-store' } });
     }
 
