@@ -22,6 +22,40 @@ export const LOCAL_REPORTS_LABEL = 'Saved in this browser only';
 export const LOCAL_REPORTS_NOTE =
   'These are the reports you downloaded on this device, listed by this browser. EmersonEIMS does not keep a copy; the downloaded file is on your device. Clearing your browser data removes this list.';
 
+/** Same cap as reportTracker's MAX_HISTORY. */
+export const HISTORY_DISPLAY_LIMIT = 1000;
+const FORMATS = new Set(['PDF', 'Word', 'Excel', 'CSV', 'JSON']);
+const PLACE_FIELDS = ['city', 'region', 'country', 'coordinates'] as const;
+// A recorded place is a geocoded name or "lat, lon". A percentage or analysis wording in it
+// (e.g. "Nairobi Site Analysis 78%") is not something recordReport ever writes.
+const NOT_A_PLACE = /%|analysis|probability|success/i;
+
+/**
+ * CA-52 review: the browser's stored list is untrusted (edited storage, other scripts, old
+ * versions). Only entries with the shape recordReport() writes are shown; anything else is
+ * skipped, never crashes the list and is never shown as the visitor's report.
+ */
+export function validSavedReports(list: unknown): ReportRecord[] {
+  if (!Array.isArray(list)) return [];
+  const out: ReportRecord[] = [];
+  for (const e of list) {
+    if (!e || typeof e !== 'object' || Array.isArray(e)) continue;
+    const r = e as Record<string, unknown>;
+    if (typeof r.id !== 'number' || !Number.isFinite(r.id)) continue;
+    if (typeof r.timestamp !== 'string' || r.timestamp.length > 40 || Number.isNaN(Date.parse(r.timestamp))) continue;
+    if (typeof r.format !== 'string' || !FORMATS.has(r.format)) continue;
+    let placesOk = true;
+    for (const f of PLACE_FIELDS) {
+      const v = r[f];
+      if (v === undefined || v === null) continue;
+      if (typeof v !== 'string' || v.length > 120 || NOT_A_PLACE.test(v)) { placesOk = false; break; }
+    }
+    if (!placesOk) continue;
+    out.push(r as unknown as ReportRecord);
+  }
+  return out.slice(-HISTORY_DISPLAY_LIMIT);
+}
+
 function placeOf(r: ReportRecord): string {
   const named = [r.city, r.region, r.country].filter((x) => x && x !== 'Unknown' && x !== 'N/A');
   return named.length ? named.join(', ') : r.coordinates || 'Location not recorded';
@@ -32,8 +66,13 @@ export const ReportHistory: React.FC = () => {
 
   useEffect(() => {
     // Only what this browser recorded when the visitor downloaded a report.
-    const list = typeof window === 'undefined' ? [] : getHistory();
-    setReports([...list].sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp))));
+    let list: ReportRecord[] = [];
+    try {
+      list = typeof window === 'undefined' ? [] : validSavedReports(getHistory());
+    } catch {
+      list = [];
+    }
+    setReports(list.sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)));
   }, []);
 
   if (reports === null) {
