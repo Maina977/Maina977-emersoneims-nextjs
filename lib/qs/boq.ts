@@ -36,6 +36,8 @@ export interface BoqItem {
   links: Array<{ measurementId: string; factor: number }>;
   /** For reinforcement (kg/t) or items not measured on drawings: a quantity with its source document, never estimated. */
   scheduledQuantity?: { value: number; source: string };
+  /** Why the scheduled quantity could not be re-derived from the current measurements (the bill then has no total). */
+  quantityError?: string;
   rate: Rate | null;
   /** A unit-rate build-up (lib/qs/rateBuildUp) instead of a single rate: the rate is computed from it here. */
   buildUp?: BuildUp;
@@ -101,6 +103,7 @@ export function buildBoq(items: BoqItem[], quantities: Map<string, Quantity>, ad
   for (const it of items) {
     if (seen.has(it.code)) errors.push(`${it.code}: item code repeated`);
     seen.add(it.code);
+    if (it.quantityError) errors.push(`${it.code}: ${it.quantityError}`);
     let quantity = 0;
     const src: string[] = [];
     if (it.scheduledQuantity) {

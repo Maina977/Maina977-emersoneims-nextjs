@@ -33,6 +33,14 @@ export interface TradeLine {
 export class TradeError extends Error {}
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
+/**
+ * Whole units needed, rounded UP — but not past an exact whole number that
+ * binary arithmetic misses by a hair. 42 m² ÷ (1.0 × (3.0 − 0.2)) m² is exactly
+ * 15 sheets; in floating point it is 15.000000000000002 and Math.ceil gave 16
+ * (audit 2026-11-26). The quotient is cleaned to 6 decimals first, far below
+ * any measurable quantity, then rounded up.
+ */
+export const ceilCount = (x: number) => Math.ceil(Math.round(x * 1e6) / 1e6);
 function need(name: string, p: Param | undefined, min: number, max: number, unit: string): number {
   if (!p || !Number.isFinite(p.value)) throw new TradeError(`${name} is required (${unit})`);
   if (!p.source?.trim()) throw new TradeError(`${name}: give its source (drawing, section, schedule or specification)`);
@@ -98,7 +106,7 @@ export function masonry(i: MasonryInput): TradeLine[] {
     const j = need('Joint', i.block.jointM, 0, 0.03, 'm'), w = need('Block wastage', i.block.wastagePct, 0, 20, '%');
     const perM2 = 1 / ((bl + j) * (bh + j));
     lines.push({
-      code: `${i.code}.3`, trade: 'Masonry', unit: 'No', quantity: Math.ceil(net * perM2 * (1 + w / 100)),
+      code: `${i.code}.3`, trade: 'Masonry', unit: 'No', quantity: ceilCount(net * perM2 * (1 + w / 100)),
       description: `${i.description}: blocks ${bl * 1000} × ${bh * 1000} mm incl. ${w} % wastage`,
       formula: `net area × 1/((l+j)(h+j)) = ${r3(perM2)} /m², × (1 + wastage)`,
       inputs: [...inputs, src('block length', i.block.lengthM, 'm'), src('block height', i.block.heightM, 'm'), src('joint', i.block.jointM, 'm'), src('wastage', i.block.wastagePct, '%')],
@@ -157,7 +165,7 @@ export function roofing(i: RoofInput): TradeLine[] {
     const w = need('Sheet wastage', i.sheet.wastagePct, 0, 20, '%');
     if (!(len > lap)) throw new TradeError('Sheet length must exceed the end lap');
     lines.push({
-      code: `${i.code}.2`, trade: 'Roofing', unit: 'No', quantity: Math.ceil((slope / (c * (len - lap))) * (1 + w / 100)),
+      code: `${i.code}.2`, trade: 'Roofing', unit: 'No', quantity: ceilCount((slope / (c * (len - lap))) * (1 + w / 100)),
       description: `${i.description}: sheets ${len} m, cover ${c} m, incl. ${w} % wastage`,
       formula: 'slope area ÷ (cover width × (length − end lap)) × (1 + wastage); a QS sheet layout per roof slope can be smaller',
       inputs: [...base, src('cover width', i.sheet.effectiveCoverWidthM, 'm'), src('sheet length', i.sheet.lengthM, 'm'), src('end lap', i.sheet.endLapM, 'm'), src('wastage', i.sheet.wastagePct, '%')],

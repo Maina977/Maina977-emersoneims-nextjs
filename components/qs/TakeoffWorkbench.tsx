@@ -625,7 +625,7 @@ export default function TakeoffWorkbench() {
                     <tr className="border-t border-slate-800">
                       {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={name(k)} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
                       {d.trade ? (
-                        <td colSpan={2} className="max-w-xs truncate text-slate-400" title={d.trade.scheduled.source}>{d.trade.name}: {d.trade.scheduled.source}</td>
+                        <td colSpan={2} className="max-w-xs truncate text-slate-400" title={line?.quantitySource ?? d.trade.scheduled.source}>{d.trade.name}: {line?.quantitySource ?? d.trade.scheduled.source}</td>
                       ) : (
                         <>
                           <td><select aria-label={name('measurement')} value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>
@@ -652,7 +652,7 @@ export default function TakeoffWorkbench() {
                   <tr key={i} className="border-t border-slate-800">
                     {(['code', 'section', 'description'] as const).map((k) => <td key={k}><input aria-label={name(k)} value={d[k]} onChange={(e) => up(k, e.target.value)} className={`${input} w-full`} /></td>)}
                     {d.trade ? (
-                      <td colSpan={2} className="max-w-xs truncate text-slate-400" title={d.trade.scheduled.source}>{d.trade.name}: {d.trade.scheduled.source}</td>
+                      <td colSpan={2} className="max-w-xs truncate text-slate-400" title={line?.quantitySource ?? d.trade.scheduled.source}>{d.trade.name}: {line?.quantitySource ?? d.trade.scheduled.source}</td>
                     ) : (
                       <>
                         <td><select aria-label={name('measurement')} value={d.measurementId} onChange={(e) => up('measurementId', e.target.value)} className={input}>{ms.map((m) => <option key={m.id} value={m.id}>{m.id} {m.label}</option>)}</select></td>

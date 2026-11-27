@@ -68,19 +68,47 @@ const coordNum = (v: unknown): number => (v == null || String(v).trim() === '' ?
 const fail = (message: string, status = 502) =>
   NextResponse.json({ success: false, ok: false, error: message }, { status });
 
+/** Largest JSON body the dispatcher reads: 1 MB is well above any legitimate calc input. */
+export const MAX_BODY_BYTES = 1_000_000;
+
+/** The body as text, or null as soon as more than `max` bytes have arrived (the rest is not read). */
+async function readCapped(req: NextRequest, max: number): Promise<string | null> {
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) { await reader.cancel().catch(() => undefined); return null; }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) { all.set(c, at); at += c.byteLength; }
+  return new TextDecoder().decode(all);
+}
+
 async function readJson(req: NextRequest): Promise<Record<string, unknown>> {
   if (req.method === 'GET' || req.method === 'HEAD') return {};
   // Hard cap on JSON body size to prevent memory-exhaustion abuse via the
   // open dispatcher endpoints. 1 MB is well above any legitimate calc input.
-  const MAX_BYTES = 1_000_000;
   const cl = parseInt(req.headers.get('content-length') || '0', 10);
-  if (cl > MAX_BYTES) return {};
+  if (cl > MAX_BODY_BYTES) return { __tooLarge: true };
   // Skip multipart/form-data uploads — those hit the /api/site/upload stub
   // path and are handled elsewhere (the stub doesn't read the body).
   const ct = req.headers.get('content-type') || '';
   if (!ct.includes('application/json')) return {};
+  // The limit is enforced on the bytes actually streamed, not only on the
+  // Content-Length header, which a chunked request omits and a client can
+  // under-state (review advisory A3, 2026-11-26).
+  let text: string | null;
+  // A body already read (or a broken stream) is reported as invalid JSON, as req.json() did.
+  try { text = await readCapped(req, MAX_BODY_BYTES); } catch { return { __invalidJson: true }; }
+  if (text === null) return { __tooLarge: true };
   try {
-    const parsed = await req.json();
+    const parsed = JSON.parse(text);
     // `null`, a number or an array is valid JSON but not a set of inputs
     // (2026-10-25 audit: a `null` body crashed with an empty 500).
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { __invalidJson: true };
@@ -296,6 +324,7 @@ async function globalFxRates() {
 export async function dispatch(req: NextRequest, segments: string[], prefix: string) {
   const path = `/api/${prefix}/${segments.join('/')}`.replace(/\/+$/, '');
   const body = await readJson(req);
+  if (body.__tooLarge) return fail(`Request body is larger than ${MAX_BODY_BYTES.toLocaleString('en-GB')} bytes`, 413);
   if (body.__invalidJson) return fail('Request body is not valid JSON', 400);
 
   // ── architecture

@@ -6798,8 +6798,8 @@ async function crShowReport(){
         const overrides=crLoadOverrides(crCountry);
         if(Object.keys(overrides).length) p.price_overrides=overrides;
         let r=await fetch(API+'/report/comprehensive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
-        let rp=await r.json();
-        if(!rp.success){el.innerHTML='<div style="color:#f44">Error generating report</div>';return;}
+        let rp=await r.json().catch(()=>null);
+        if(!rp||!rp.success){crUnavailable(el,rp,'The project report');return;}
         let ps=rp.project_summary||{};
         let ss=rp.structural_summary||{};
         let cs=rp.cost_summary||{};
@@ -6868,24 +6868,39 @@ async function crShowReport(){
     }catch(e){el.innerHTML='<div style="color:#f44">Error: '+e.message+'</div>';}
 }
 
+// The Costing tab's report, quotation and client package need a server step
+// that is not online: /api/report/* answers 501 not_available (2026-11-26; the
+// path had no route, so the screens showed only "Error generating ..."). Say
+// so, and point to the tool that does produce a priced bill online: the
+// measured take-off and BOQ, with rates the user enters with their source.
+function crUnavailable(el,j,what){
+    const msg=(j&&j.message)?String(j.message).replace(/[<>&]/g,''):'This calculation is not available online yet. Talk to an EmersonEIMS engineer: 0768 860 665.';
+    el.innerHTML='<div id="cr-unavailable" style="background:rgba(255,183,77,.08);border:1px solid rgba(255,183,77,.35);border-radius:6px;padding:12px;font-size:12px;line-height:1.6;color:#ffcc80">'
+        +'<b>'+what+' is not available online.</b> '+msg+'<br>'
+        +'A priced bill needs measured quantities and sourced, dated rates: use the '
+        +'<a href="/solutions/building/takeoff" target="_top" style="color:#64b5f6">measured take-off and bill of quantities</a> '
+        +'(quantities measured on your drawings, rates you enter with their source, preliminaries, contingency, VAT once; PDF and Excel export, marked DRAFT). '
+        +'For a quotation from EmersonEIMS: <a href="https://wa.me/254768860665" target="_blank" rel="noopener noreferrer" style="color:#64b5f6">WhatsApp 0768 860 665</a>.</div>';
+}
+
 async function crShowQuotation(){
     let el=document.getElementById('cr-content');
     if(!el) return;
     el.innerHTML='<div style="text-align:center;padding:40px;color:#42a5f5">⏳ Generating QS Quotation...</div>';
     try{
+        // No client/VAT/discount prompts any more (2026-11-26): they were asked
+        // before a request that has no server step online, so they only led to
+        // "Error generating quotation". The server answers not_available and the
+        // screen says so (crUnavailable).
         let p=crGetParams();
-        p.client_name=prompt('Client Name:','Valued Client')||'Valued Client';
-        p.company_name=prompt('Company Name:','EIMS Construction Solutions')||'EIMS Construction Solutions';
-        p.vat_rate=parseFloat(prompt('VAT Rate %:','16'))||0;
-        p.discount_pct=parseFloat(prompt('Discount %:','0'))||0;
         p.payment_terms='50/40/10';
         p.validity_days=30;
         const overrides=crLoadOverrides(crCountry);
         if(Object.keys(overrides).length) p.price_overrides=overrides;
 
         let r=await fetch(API+'/report/quotation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
-        let q=await r.json();
-        if(!q.success){el.innerHTML='<div style="color:#f44">Error generating quotation</div>';return;}
+        let q=await r.json().catch(()=>null);
+        if(!q||!q.success){crUnavailable(el,q,'A QS quotation');return;}
         let sym=q.symbol||'$';
         let cs=q.cost_summary||{};
 
@@ -6976,8 +6991,8 @@ async function crShowPackage(){
         const overrides=crLoadOverrides(crCountry);
         if(Object.keys(overrides).length) p.price_overrides=overrides;
         let r=await fetch(API+'/report/client-package',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
-        let pkg=await r.json();
-        if(!pkg.success){el.innerHTML='<div style="color:#f44">Error generating package</div>';return;}
+        let pkg=await r.json().catch(()=>null);
+        if(!pkg||!pkg.success){crUnavailable(el,pkg,'The client package');return;}
 
         let rp=pkg.project_report||{};
         let qt=pkg.quotation||{};
