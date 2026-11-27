@@ -22,6 +22,7 @@ import { TRADES_ENGINE_VERSION } from '@/lib/qs/trades';
 import { extractGeometry, SnapIndex, snap, type SnapKind } from '@/lib/qs/snap';
 import TradesPanel from './TradesPanel';
 import BuildUpEditor from './BuildUpEditor';
+import TenderComparison from './TenderComparison';
 import { BUILDUP_ENGINE_VERSION, emptyBuildUp, parseRatesFile, RatesFileError, TIER_SHORT, type RatesFile } from '@/lib/qs/rateBuildUp';
 import { MEP_ENGINE_VERSION } from '@/lib/qs/mep';
 import { importWithRetry, onBeforeRecoveryReload } from '@/lib/loading/resilientImport';
@@ -715,6 +716,7 @@ export default function TakeoffWorkbench() {
           )}
         </div>
       )}
+      {boq && boq.boq.lines.length > 0 && <TenderComparison lines={boq.boq.lines} />}
       <p className="text-[11px] text-slate-500">{TAKEOFF_ENGINE_VERSION} · {PDF_SHEET_VERSION} · {BOQ_ENGINE_VERSION} · {BUILDUP_ENGINE_VERSION}. Reinforcement is not measured here: it comes from the bar bending schedule (enter it as a scheduled quantity). Formwork is measured from contact areas in the Formwork trade. Rates come only from your dated rate library, supplier quotes, or build-ups of sourced, dated prices.</p>
     </div>
   );
