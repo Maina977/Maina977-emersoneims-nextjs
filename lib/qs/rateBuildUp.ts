@@ -28,7 +28,7 @@
  * No price is built into this module. Prices are typed by the user or taken
  * from a rates dataset (data/building/rates/*.json) that cites each value.
  */
-export const BUILDUP_ENGINE_VERSION = 'qs-buildup 1.1.0 (2026-11-25: price status)';
+export const BUILDUP_ENGINE_VERSION = 'qs-buildup 1.2.0 (2026-11-27: transport component)';
 
 export type ResourceKind = 'material' | 'labour' | 'plant' | 'transport';
 export const RESOURCE_LABELS: Record<ResourceKind, string> = { material: 'Material', labour: 'Labour', plant: 'Plant', transport: 'Transport' };

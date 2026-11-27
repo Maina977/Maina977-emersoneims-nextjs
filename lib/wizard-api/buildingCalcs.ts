@@ -267,7 +267,7 @@ export function ventilation(b: Body) {
       'One zone only. A system serving several zones also needs the system ventilation efficiency (§6.2.4). Exhaust (toilets, kitchens) is separate (Table 6.5).',
       'Kenya: confirm against the Building Code 2024 and the project mechanical engineer before submission',
     ],
-    method: 'ASHRAE 62.1 Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
+    method: 'ASHRAE 62.1 (edition not stated) Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
   };
 }
 
@@ -401,7 +401,7 @@ export function daylightAdf(b: Body) {
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
     assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
-    method: 'Average daylight factor, BRE Digest 309 / BS 8206-2:2008 formula',
+    method: 'Average daylight factor, BRE Digest 309 (edition not stated) / BS 8206-2:2008 (superseded 2022-01-31) formula',
   };
 }
 

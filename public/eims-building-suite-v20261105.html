@@ -756,6 +756,8 @@ function showReports(){
 }
 
 /* Report inputs that must be entered (2026-11-26): the names of those missing or invalid. */
+/* "lat,lng" from the report's Coords field, or null (2026-11-27). */
+function repSiteCoords(t){const m=String(t||'').split(',').map((x)=>Number(x.trim()));return m.length===2&&m.every(Number.isFinite)&&Math.abs(m[0])<=90&&Math.abs(m[1])<=180?{lat:m[0],lng:m[1]}:null;}
 function repPreflight(v){
     const m=[];
     if(!(typeof v.location==='string' && v.location.trim())) m.push('the location');
@@ -911,7 +913,7 @@ async function repBuild(){
         })),
         fjson('/arch/egress', post({
             occupancy_type:'residential', floor_area_m2:p.area,
-            sprinklered:true, voice_notification:false
+            sprinklered:false, voice_notification:false // not stated for the project: the unsprinklered (larger) widths are used, and the card says so
         })),
         fjson('/arch/accessibility/check', post({
             jurisdiction:'strictest',
@@ -920,7 +922,7 @@ async function repBuild(){
                 ramp_slope_pct:7, wc_clear_diameter_mm:1500, threshold_height_mm:15
             }
         })),
-        fjson('/arch/shadow/solstice', post({lat:-1.286, lng:36.817, pole_height_m:H})),
+        ((c)=>c ? fjson('/arch/shadow/solstice', post({lat:c.lat, lng:c.lng, pole_height_m:H})) : Promise.resolve({success:false, error:'no site coordinates entered'}))(repSiteCoords(p.coords)), // the site's own coordinates; none entered = no shadow study (was always Nairobi)
         // ---- ENGINEER ----
         fjson('/loads/wind/eurocode', post({
             vb_ms:24, height_m:H, length_m:L, width_m:W,
@@ -1002,18 +1004,11 @@ function repRender(report, quote, drawings, render, p, extras){
     _ovr('Bedrooms / unit',     'bedrooms_per_unit', ps, p.bedrooms);
     _ovr('Foundation type',     'foundation_type',   ss, p.foundation_type);
     // Currency normalisation — if backend used a different currency, FX-convert the totals into the user's currency
-    const _fxToKES = { USD: 130, EUR: 140, GBP: 165, KES: 1 };
+    // No exchange rate is built in (2026-11-27: a fixed USD 130 / EUR 140 / GBP 165 table was shown as a "CBK rate"). Totals stay in the currency they were priced in.
     if(rcs.currency && p.currency && rcs.currency.toUpperCase()!==p.currency.toUpperCase()){
-        const fIn = _fxToKES[rcs.currency.toUpperCase()] || 1;
-        const fOut = _fxToKES[p.currency.toUpperCase()] || 1;
-        const k = fIn / fOut;
-        ['total_project_cost_local','cost_per_sqm_local','subtotal_local','vat_local','contingency_local'].forEach(key=>{
-            if(typeof rcs[key]==='number') rcs[key] = rcs[key] * k;
-        });
-        _overrides.push(['Currency', rcs.currency, p.currency, `Backend priced in ${rcs.currency}; converted at indicative CBK rate 1 ${rcs.currency} ≈ ${(_fxToKES[rcs.currency.toUpperCase()]||1).toFixed(0)} KES (live rate at print).`]);
-        rcs.currency = p.currency.toUpperCase();
+        _overrides.push(['Currency', rcs.currency, rcs.currency, `Priced in ${rcs.currency}; shown in ${rcs.currency}, not converted to ${p.currency}: no dated exchange rate was entered.`]);
     }
-    const sym = ({KES:'KSh ',USD:'$ ',EUR:'€ ',GBP:'£ '}[(p.currency||'KES').toUpperCase()]) || (quote && quote.symbol) || rcs.symbol || '$';
+    const sym = ({KES:'KSh ',USD:'$ ',EUR:'€ ',GBP:'£ '}[(rcs.currency||p.currency||'KES').toUpperCase()]) || (quote && quote.symbol) || rcs.symbol || '$';
     const cs = (quote && quote.cost_summary) || {};
     const drs = (drawings && drawings.drawings) || {};
     const proj = document.getElementById('rp-name').value || 'Project';
@@ -1226,9 +1221,9 @@ function repRender(report, quote, drawings, render, p, extras){
         if(ok(extras.daylight)){
             const d = extras.daylight;
             const adf = d.ADF_pct ?? d.adf_pct ?? d.adf ?? d.average_daylight_factor;
-            const status = (adf>=2)?'<span style="color:#1b5e20;font-weight:600">✅ Compliant (BS 8206-2: ADF ≥ 2% for living spaces)</span>':'<span style="color:#c62828;font-weight:600">⚠️ Below 2% — review glazing area</span>';
+            const status = '<span style="color:#7a4f01">No compliance verdict is given for an assumed room: check the building\'s own windows and rooms in Physics → Daylight.</span>';
             arch += card('6.1 Daylight Study (BS 8206-2 / CIBSE LG10)',
-                `Average Daylight Factor (ADF): <strong>${fmt(adf)}%</strong><br>Glazing transmittance T<sub>glass</sub>: 0.68 · Sky angle: 65° · Maintenance factor: 0.90<br>${status}`);
+                `<em>Illustrative, with ASSUMED glazing and surfaces (2026-11-27), not this building's design:</em> window area = floor area × 0.15, internal surfaces = floor area × 5.<br>Average Daylight Factor (ADF) of that assumed room: <strong>${fmt(adf)}%</strong><br>Glazing transmittance T<sub>glass</sub>: 0.68 · Sky angle: 65° · Maintenance factor: 0.90<br>${status}`);
         }
         // 6.2 U-value
         if(ok(extras.uvalue)){
@@ -1236,7 +1231,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const uval = u.U_value_W_m2K ?? u.U_W_m2K ?? u.u_value ?? u.U;
             const r = u.R_total_m2K_W ?? u.R_total_m2K_per_W ?? u.R_total ?? u.r_total;
             arch += card('6.2 Envelope Thermal Performance (ISO 6946)',
-                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br>Layers: 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster<br>Target (Part L1A 2021): U ≤ 0.18 W/m²K · Tropical climate target: U ≤ 0.50 W/m²K`);
+                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br><em>ASSUMED build-up (2026-11-27), not this building's specification:</em> 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster.<br>For reference only: Approved Document L 2021 Vol. 1 (England) limiting wall U-value 0.26 W/m²K (its notional dwelling uses 0.18). Kenya sets no statutory wall U-value: use the project specification.`);
         }
         // 6.3 Acoustics
         if(ok(extras.acoustics)){
@@ -1252,7 +1247,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const exits = e.required_exits ?? e.exits_required;
             const tw = e.required_egress_width_mm ?? e.egress_width_mm;
             arch += card('6.4 Life-Safety / Egress (IBC 2021 §1005)',
-                `Calculated occupant load: <strong>${fmt(occ)}</strong> persons · Required exits: <strong>${exits||'-'}</strong><br>Required cumulative egress width: <strong>${fmt(tw)} mm</strong> · Sprinklered: yes`);
+                `Calculated occupant load: <strong>${fmt(occ)}</strong> persons · Required exits: <strong>${exits||'-'}</strong><br>Required cumulative egress width: <strong>${fmt(tw)} mm</strong> · Sprinkler protection: not stated, so the unsprinklered (larger) egress widths are used`);
         }
         // 6.5 Accessibility
         if(ok(extras.access)){
@@ -1260,17 +1255,17 @@ function repRender(report, quote, drawings, render, p, extras){
             const fails = (ac.failures||ac.violations||[]).length;
             const passes = (ac.passes||ac.compliant||[]).length;
             const status = fails===0
-                ? '<span style="color:#1b5e20;font-weight:600">✅ All measured items compliant (ADA 2010 / BS 8300:2018)</span>'
+                ? '<span style="color:#7a4f01">No compliance verdict: these are assumed typical dimensions, not measured ones. Enter the building\'s own dimensions in Physics → Accessibility.</span>'
                 : `<span style="color:#c62828;font-weight:600">⚠️ ${fails} non-conformance(s) — see Pro Console: Accessibility</span>`;
             arch += card('6.5 Accessibility Audit (ADA / BS 8300 / Part M)',
-                `Items checked: door clear width, corridor width, ramp gradient, WC turning circle, threshold height.<br>Pass: ${passes} · Fail: ${fails}<br>${status}`);
+                `<em>Illustrative check of ASSUMED typical dimensions (2026-11-27), not measured:</em> door clear width 900 mm, corridor 1200 mm, ramp 7 %, WC turning circle 1500 mm, threshold 15 mm.<br>Pass: ${passes} · Fail: ${fails}<br>${status}`);
         }
         // 6.6 Shadow study
         if(ok(extras.shadow)){
             const s = extras.shadow;
             const sw = s.summer_solstice || s.summer || {};
             const ww = s.winter_solstice || s.winter || {};
-            arch += card('6.6 Solar / Shadow Study (NOAA SPA, lat -1.29°)',
+            arch += card(`6.6 Solar / Shadow Study (NOAA SPA, site ${String(p.coords||'').replace(/[<>&]/g,'')})`,
                 `Summer solstice noon altitude: <strong>${fmt(sw.altitude_deg||sw.solar_altitude)}°</strong> · shadow length: ${fmt(sw.shadow_length_m||sw.shadow_m)} m<br>Winter solstice noon altitude: <strong>${fmt(ww.altitude_deg||ww.solar_altitude)}°</strong> · shadow length: ${fmt(ww.shadow_length_m||ww.shadow_m)} m<br>Use to size overhangs and verify right-to-light of neighbouring properties.`);
         }
         if(arch){
@@ -1324,7 +1319,7 @@ function repRender(report, quote, drawings, render, p, extras){
                 <tr><td style="padding:3px 6px;border-bottom:1px solid #eee;font-weight:600">SLS-2</td><td style="padding:3px 6px;border-bottom:1px solid #eee">G<sub>k</sub> + 0.3 Q<sub>k</sub></td><td style="padding:3px 6px;border-bottom:1px solid #eee">Quasi-permanent — long-term creep deflection</td></tr>
               </tbody>
              </table>
-             <div style="margin-top:6px;font-size:10px;color:#666">Imposed loads per EN 1991-1-1 Cat A (residential): 1.5 kN/m² floors / 0.4 kN/m² roof. Seismic combinations (EN 1998-1) only required for Kenya UBC seismic zones III–IV (e.g. Rift Valley, Mt Kenya region).</div>`);
+             <div style="margin-top:6px;font-size:10px;color:#666">Imposed loads per EN 1991-1-1 Cat A (residential): 1.5 kN/m² floors / 0.4 kN/m² roof. Seismic actions: take the site's design ground acceleration from the seismic hazard map of the building code in force for the site, as assessed by the structural engineer.</div>`);
         if(eng){
             h += sec('7. Engineering Design Calculations', eng, '#d84315');
         }
@@ -2961,13 +2956,14 @@ async function dgRun(){
         location: (ext.location && ext.location.city) ? (ext.location.city + (ext.location.country ? (', ' + ext.location.country) : '')) : '',
         area:     num('dgArea', ext.area_m2 ?? NaN),
         bedrooms: num('dgBeds', ext.bedrooms ?? NaN),
-        stories:  num('dgStories', ext.stories || 1),
-        units:    num('dgUnits', ext.units || 1),
+        stories:  num('dgStories', ext.stories ?? NaN),
+        units:    num('dgUnits', ext.units ?? NaN),
         style:    sel('dgStyle', (ext.styles && ext.styles[0]) || 'modern'),
-        gps_lat: -1.29, gps_lng: 36.82,
+        gps_lat: null, gps_lng: null, // no site coordinates in Describe mode (were Nairobi -1.29, 36.82)
         features: ext.features || [],
     };
     dgState.params = params;
+    if(wizStop({area:params.area, bedrooms:params.bedrooms, stories:params.stories, units:params.units})){ btn.disabled = false; btn.textContent = '🪄 Generate'; out.innerHTML = ''; return; }
 
     // Step 2: /api/generate
     out.innerHTML = `
@@ -3250,13 +3246,13 @@ function showBIMStudio(){
           </div>
           <div class="row r2">
             <div class="fg"><label class="fl">Area (m²)</label>
-              <input type="number" id="bimQArea" value="180"></div>
+              <input type="number" id="bimQArea" value=""></div>
             <div class="fg"><label class="fl">Bedrooms</label>
-              <input type="number" id="bimQBeds" value="3"></div>
+              <input type="number" id="bimQBeds" value=""></div>
           </div>
           <div class="row r2">
             <div class="fg"><label class="fl">Storeys</label>
-              <input type="number" id="bimQStories" value="1"></div>
+              <input type="number" id="bimQStories" value=""></div>
             <div class="fg"><label class="fl">Style</label>
               <select id="bimQStyle">
                 <option value="modern">Modern</option>
@@ -4223,7 +4219,7 @@ async function bimQuickBuild(){
                 bedrooms: wizNum('bimQBeds'),
                 stories:  wizNum('bimQStories'),
                 style:    document.getElementById('bimQStyle').value || 'modern',
-                building_type: 'BUNGALOW',
+                building_type: null, // not chosen in the quick build (was a hard-coded BUNGALOW)
             }),
         });
         const j = await r.json();
@@ -6014,19 +6010,22 @@ async function srSelectColumn(){
     }catch(e){el.innerHTML='<span style="color:#e74c3c">Error: '+e.message+'</span>';}
 }
 
+/* The steel / rebar server step answered no design: say so, show no figures (2026-11-27). */
+function srNoResult(d){const m=(d&&d.message)?String(d.message).replace(/[<>&]/g,''):'No design was returned.';return '<div style="color:#ffb74d;font-size:11px">'+m+' No figures are shown.</div>';}
 async function srConnection(){
     const el=document.getElementById('sr-conn-result');el.innerHTML='<span style="color:#42a5f5">Designing...</span>';
     try{
         const r=await fetch(API+'/steel/connection',{method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({connection_type:document.getElementById('sr-conn-type').value,shear_kn:+document.getElementById('sr-conn-shear').value,beam_section:'UB 406x178x74',column_section:'UC 254x254x89'})});
-        const d=await r.json();
+        const d=await r.json().catch(()=>null);
+        if(!d||d.success===false||!(d.connection||d.bolts)){el.innerHTML=srNoResult(d);return;}
         const c=d.connection||d;
         el.innerHTML=`<div style="background:#0d1b2a;border-radius:6px;padding:8px;border:1px solid #e74c3c;font-size:10px">
             <b style="color:#e74c3c">${c.type||document.getElementById('sr-conn-type').value} Connection</b><br>
-            Bolts: ${c.bolts?.count||c.bolts?.quantity||'-'}× M${c.bolts?.diameter_mm||c.bolts?.size||20} Grade ${c.bolts?.grade||'8.8'}<br>
+            Bolts: ${c.bolts?.count||c.bolts?.quantity||'-'}× M${c.bolts?.diameter_mm||c.bolts?.size||'-'} Grade ${c.bolts?.grade||'-'}<br>
             ${c.plate?.thickness_mm?'Plate: '+c.plate.thickness_mm+'mm thick<br>':''}
             ${c.welds?.size_mm?'Weld: '+c.welds.size_mm+'mm fillet<br>':''}
-            Utilization: ${c.utilization!==undefined?(c.utilization*100).toFixed(1)+'%':'OK'}
+            Utilization: ${c.utilization!==undefined?(c.utilization*100).toFixed(1)+'%':'not returned'}
         </div>`;
     }catch(e){el.innerHTML='<span style="color:#e74c3c">Error: '+e.message+'</span>';}
 }
@@ -6048,19 +6047,21 @@ async function srDesignRebar(){
         else if(type==='column'){url=API+'/rebar/column';body={width_mm:w,depth_mm:d,height_m:span,axial_kn:+document.getElementById('rb-axial').value,concrete_grade:conc};}
         else{url=API+'/rebar/slab';body={span_m:span,thickness_mm:d,load_kn_m2:load,concrete_grade:conc};}
         const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const data=await r.json();
+        const data=await r.json().catch(()=>null);
+        if(!data||data.success===false){el.innerHTML=srNoResult(data);draw.innerHTML='';return;}
         // Display results
         const rb=data.rebar||data;
         let html=`<div style="background:#0d1b2a;border-radius:6px;padding:10px;border:1px solid #27ae60">
             <div style="color:#27ae60;font-weight:bold;margin-bottom:6px">✅ ${type.toUpperCase()} REBAR DESIGN</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:10px">`;
         const rec=rb.recommended||(rb.main_bar_options&&rb.main_bar_options[0])||rb.main_bars||rb.main_reinforcement||{};
+        if(!rec.diameter_mm){el.innerHTML=srNoResult(data);draw.innerHTML='';return;}
         if(type==='beam'){
             html+=`<div>Main: ${rec.count||'-'}T${rec.diameter_mm||'-'}</div><div>As: ${rec.As_provided_mm2||rb.As_required_mm2||'-'} mm²</div>`;
-            if(rb.shear_links)html+=`<div>Links: T${rb.shear_links.diameter_mm||8}@${rb.shear_links.spacing_mm||'-'}mm</div><div>${rb.shear_links.arrangement||''}</div>`;
+            if(rb.shear_links)html+=`<div>Links: T${rb.shear_links.diameter_mm||'-'}@${rb.shear_links.spacing_mm||'-'}mm</div><div>${rb.shear_links.arrangement||''}</div>`;
         } else if(type==='column'){
             html+=`<div>Main: ${rec.count||'-'}T${rec.diameter_mm||'-'}</div><div>As: ${rec.As_provided_mm2||rb.As_required_mm2||'-'} mm²</div>`;
-            if(rb.links)html+=`<div>Links: T${rb.links.diameter_mm||8}@${rb.links.spacing_mm||'-'}mm</div><div>Weight: ${rb.links.weight_kg||'-'} kg</div>`;
+            if(rb.links)html+=`<div>Links: T${rb.links.diameter_mm||'-'}@${rb.links.spacing_mm||'-'}mm</div><div>Weight: ${rb.links.weight_kg||'-'} kg</div>`;
         } else {
             html+=`<div>Main: T${rec.diameter_mm||'-'}@${rec.spacing_mm||'-'}mm</div><div>As: ${rec.As_per_m_mm2||rb.As_required_mm2_per_m||'-'} mm²/m</div>`;
             if(rb.distribution_reinforcement)html+=`<div>Dist: T${rb.distribution_reinforcement.diameter_mm}@${rb.distribution_reinforcement.spacing_mm}mm</div>`;
@@ -6069,7 +6070,9 @@ async function srDesignRebar(){
         html+=`</div></div>`;
         el.innerHTML=html;
 
-        // SVG cross-section drawing
+        // SVG cross-section drawing: only of what the design returned (2026-11-27: it drew 4T16, 2 top bars and T8@200 when nothing came back).
+        const _lk=rb.shear_links||rb.links;
+        if(!(rec.count&&rec.diameter_mm&&_lk&&_lk.diameter_mm&&_lk.spacing_mm)){draw.innerHTML='<div style="color:#ffb74d;font-size:11px">No section drawing: the design did not return the bars and links.</div>';return;}
         const sw=300,sh=250,cx=sw/2,cy=sh/2;
         let svg=`<svg width="${sw}" height="${sh}" xmlns="http://www.w3.org/2000/svg" style="background:#0d1b2a;border-radius:6px">`;
         const scale=Math.min((sw-40)/w,(sh-60)/d);
@@ -6081,23 +6084,23 @@ async function srDesignRebar(){
         const cover_v=cover*scale;
         svg+=`<rect x="${rx+cover_v}" y="${ry+cover_v}" width="${rw-2*cover_v}" height="${rd-2*cover_v}" fill="none" stroke="#555" stroke-width="0.5" stroke-dasharray="4,4"/>`;
         // Main bars (bottom)
-        const nBars=rec.count||rec.quantity||4;
-        const dia=rec.diameter_mm||16;
+        const nBars=rec.count;
+        const dia=rec.diameter_mm;
         const barR=dia*scale/2*3; // exaggerated for visibility
         for(let i=0;i<Math.min(nBars,8);i++){
             const bx=rx+cover_v+barR+(rw-2*cover_v-2*barR)*i/Math.max(1,Math.min(nBars,8)-1);
             const by=ry+rd-cover_v;
             svg+=`<circle cx="${bx}" cy="${by}" r="${barR}" fill="#e74c3c" stroke="#fff" stroke-width="0.5"/>`;
         }
-        // Top bars (2)
-        for(let i=0;i<2;i++){
+        // Top bars: only when the design returns them (2 were always drawn)
+        for(let i=0;i<(rb.top_bars&&rb.top_bars.count||0);i++){
             const bx=rx+cover_v+barR+(rw-2*cover_v-2*barR)*i;
             svg+=`<circle cx="${bx}" cy="${ry+cover_v}" r="${barR*0.7}" fill="#e67e22" stroke="#fff" stroke-width="0.5"/>`;
         }
         // Stirrup
         svg+=`<rect x="${rx+cover_v-2}" y="${ry+cover_v-2}" width="${rw-2*cover_v+4}" height="${rd-2*cover_v+4}" fill="none" stroke="#27ae60" stroke-width="1.5" rx="3"/>`;
-        const linkDia=rb.shear_links?.diameter_mm||rb.links?.diameter_mm||8;
-        const linkSpacing=rb.shear_links?.spacing_mm||rb.links?.spacing_mm||200;
+        const linkDia=_lk.diameter_mm;
+        const linkSpacing=_lk.spacing_mm;
         svg+=`<text x="${cx}" y="${sh-5}" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="bold">${nBars}T${dia} + T${linkDia}@${linkSpacing} stirrups</text>`;
         svg+=`</svg>`;
         draw.innerHTML=svg;
