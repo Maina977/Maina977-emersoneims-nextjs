@@ -23,7 +23,7 @@
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
  */
-import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, componentChecks, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
@@ -42,7 +42,7 @@ export interface ProposalInput {
   client: { name: string; siteAddress: string; lat: number; lon: number };
   /** Site details (P1-B §2 Site, REQ-01), as surveyed or entered by the designer, with their source. */
   site?: SiteDetails;
-  module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number };
+  module: LibraryEntry<Module>; inverter: LibraryEntry<Inverter>; battery?: { entry: LibraryEntry<Battery>; units: number; requiredUsableAcKwh: number; /** REQ-05: units in series per string (default 1). */ seriesPerString?: number };
   design: ArrayDesign; inverterCount: number; temps: SiteTemps & { source: string };
   cables: CableRun[];
   /** Grid / generator connection for the single-line diagram; absent = not stated (shown as to be specified by the engineer). */
@@ -199,6 +199,12 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     const sc = cableStringCurrentCheck(c, i.module.data, i.design); if (sc) checks.push(sc);
   }
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
+  // REQ-04 datasheet fields (and REQ-01 usable area, REQ-05 battery arrangement).
+  {
+    const nMod = i.design.stringsPerMppt.reduce((a, b) => a + b, 0) * i.inverterCount * i.design.modulesPerString;
+    checks.push(...componentChecks({ module: i.module.data, inverter: i.inverter.data, modules: nMod, usableAreaM2: i.site?.usableAreaM2, temps: i.temps, grid: i.connections?.grid ?? null,
+      ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, seriesPerString: i.battery.seriesPerString } } : {}) }));
+  }
   // Generator (CA-32, 2026-11-26): checkGenerator was never run here, so an
   // inverter without a generator-compatibility statement, or PV able to
   // back-feed the generator, gave a valid design. A generator counts as
@@ -298,13 +304,16 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     ? { reviewerId: approvalCheck.reviewer.reviewerId, reviewerName: approvalCheck.reviewer.name, registration: approvalCheck.reviewer.registration, approvedAt: approvalCheck.approval.approvedAt }
     : null;
 
-  const sld = buildSld({
+  const sldBuilt = buildSld({
     reference: i.reference, module: i.module.data, inverter: i.inverter.data, design: i.design, inverterCount: i.inverterCount, temps: i.temps,
     ...(i.battery ? { battery: { data: i.battery.entry.data, units: i.battery.units, requiredUsableAcKwh: i.battery.requiredUsableAcKwh } } : {}),
     // The diagram shows (and checks) the generator the hybrid balance ran, even
     // when the connection data did not state one (CA-32).
     cables: i.cables, ...(i.connections || hybridUsedGenerator ? { connections: hybridUsedGenerator && i.connections?.generator !== true ? { grid: i.connections?.grid ?? null, ...(i.connections ?? {}), generator: true } : i.connections! } : {}),
   });
+  // The diagram never says "valid" for a design the proposal refuses (e.g. the
+  // REQ-04 area, battery voltage or current checks, which need proposal data).
+  const sld = refused.length && sldBuilt.designValid ? { ...sldBuilt, designValid: false } : sldBuilt;
 
   return {
     reference: i.reference, status, statusReasons: reasons, revisionHash, approval, client: i.client, site: siteStated ? site! : null,
@@ -318,6 +327,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       'The simulation agrees with pvlib on identical inputs; it has not yet been compared with measured output of installed EmersonEIMS systems.',
       'Shading, soiling and the roof\'s real temperature are only as good as the losses entered; a site survey confirms them.',
       'Prices are those listed with their dated sources; they change, and the proposal is valid only while they hold.',
+      ...(i.battery ? [`Battery (datasheet): ${[i.battery.entry.data.chemistry ?? 'chemistry not entered', i.battery.entry.data.nominalV ? `${i.battery.entry.data.nominalV} V per unit` : 'voltage not entered', i.battery.entry.data.cycleLife ? `${i.battery.entry.data.cycleLife} cycles${i.battery.entry.data.cycleLifeDoD ? ` at ${Math.round(i.battery.entry.data.cycleLifeDoD * 100)} % DoD` : ''}` : 'cycle life not entered', i.battery.entry.data.warrantyYears ? `${i.battery.entry.data.warrantyYears}-year warranty` : 'warranty not entered'].join(', ')}; ${i.battery.units} units${i.battery.seriesPerString ? ` as ${i.battery.units / i.battery.seriesPerString} string(s) of ${i.battery.seriesPerString} in series` : ''}.`] : []),
       siteStated
         ? `Site: ${[site!.mounting ? `${site!.mounting}-mounted` : null, site!.elevationM !== undefined ? `elevation ${site!.elevationM} m` : null, site!.usableAreaM2 !== undefined ? `usable area ${site!.usableAreaM2} m²` : null].filter(Boolean).join(', ')} (${site!.source}).`
         : 'Site elevation, roof or ground mounting and usable area were not entered: the layout is not checked against the available area.',

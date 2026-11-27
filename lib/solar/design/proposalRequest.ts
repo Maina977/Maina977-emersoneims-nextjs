@@ -28,7 +28,7 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   }
   if (i.battery !== undefined) {
     const b = i.battery;
-    if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh)) e.push('battery must be { entry, units, requiredUsableAcKwh }');
+    if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh) || (b.seriesPerString !== undefined && !isNum(b.seriesPerString))) e.push('battery must be { entry, units, requiredUsableAcKwh, seriesPerString? }');
   }
   if (i.site !== undefined) {
     const st = i.site;

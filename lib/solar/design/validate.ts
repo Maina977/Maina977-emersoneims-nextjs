@@ -22,6 +22,8 @@ export interface Module {
   maxSystemV: number;
   /** Maximum series fuse rating (module overcurrent protection rating), A. */
   maxSeriesFuseA: number;
+  /** Module dimensions from the datasheet, mm (REQ-04; optional). */
+  lengthMm?: number; widthMm?: number;
   datasheet: string;
 }
 
@@ -38,6 +40,10 @@ export interface Inverter {
   batteryMaxChargeKw?: number;
   /** The manufacturer's written statement that the unit supports a generator input, or null. */
   generatorCompatibility: string | null;
+  /** REQ-04 (optional): battery voltage window, battery-port currents, anti-islanding statement (e.g. "IEC 62116 certificate …"). */
+  batteryMinV?: number; batteryMaxV?: number;
+  batteryMaxChargeA?: number; batteryMaxDischargeA?: number;
+  antiIslanding?: string | null;
   datasheet: string;
 }
 
@@ -47,6 +53,11 @@ export interface Battery {
   usableDoD: number; // 0–1
   dischargeEfficiency: number; // 0–1
   maxDischargeC: number; maxChargeC: number;
+  /** REQ-04 (optional): chemistry, nominal voltage per unit, cycle life at a DoD, operating temperature window, warranty. */
+  chemistry?: string; nominalV?: number;
+  cycleLife?: number; cycleLifeDoD?: number;
+  minTempC?: number; maxTempC?: number;
+  warrantyYears?: number;
   datasheet: string;
 }
 
@@ -236,6 +247,75 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
     reference: 'IEC 62548-1 (PV cable current 1.25 × Isc per string)',
     ...(ok ? {} : { note: 'The entered design current is below what the strings can deliver: size the cable for the string current' }),
   };
+}
+
+/**
+ * Checks enabled by the REQ-04 datasheet fields (and REQ-01 usable area).
+ * A check whose data is missing is a WARN that says "not checked"; nothing
+ * is assumed.
+ *  - array area: modules × length × width ≤ usable area, else REFUSE (it cannot fit);
+ *  - battery voltage: unit nominal V × units in series inside the inverter's
+ *    battery window, else REFUSE;
+ *  - battery current: inverter battery-port A ≤ battery bank A at its C-rate
+ *    (C × Ah per string × parallel strings), else REFUSE;
+ *  - battery temperature: site temperatures inside the battery window, else WARN
+ *    (the battery may be indoors);
+ *  - anti-islanding: a grid connection with no statement is a WARN.
+ */
+export function componentChecks(o: {
+  module: Module; inverter: Inverter; modules: number; usableAreaM2?: number;
+  battery?: { data: Battery; units: number; seriesPerString?: number };
+  temps: SiteTemps; grid: boolean | null;
+}): Check[] {
+  const out: Check[] = [];
+  const notChecked = (id: string, title: string, note: string): Check => ({ id, title, verdict: 'WARN', value: NaN, limit: NaN, unit: '', marginPct: NaN, formula: 'not checked', reference: 'Datasheet value required', note });
+  const m = o.module;
+  if (o.usableAreaM2 !== undefined) {
+    if (m.lengthMm && m.widthMm) {
+      const area = (o.modules * m.lengthMm * m.widthMm) / 1e6;
+      out.push({ id: 'array-area', title: 'Module area fits the usable area', verdict: area <= o.usableAreaM2 ? 'PASS' : 'REFUSE', value: r2(area), limit: o.usableAreaM2, unit: 'm²', marginPct: margin(area, o.usableAreaM2, true),
+        formula: `modules × length × width = ${o.modules} × ${m.lengthMm} mm × ${m.widthMm} mm = ${r2(area)} m² (before row spacing and access paths)`, reference: 'Module datasheet dimensions; site survey usable area' });
+    } else out.push(notChecked('array-area', 'Module area fits the usable area', 'Module dimensions not entered: the array area is not checked against the usable area'));
+  }
+  const b = o.battery;
+  if (b) {
+    const series = b.seriesPerString ?? 1;
+    const inv = o.inverter;
+    if (!(Number.isInteger(series) && series >= 1 && b.units % series === 0)) {
+      out.push({ id: 'battery-arrangement', title: 'Battery series/parallel arrangement', verdict: 'REFUSE', value: b.units, limit: series, unit: 'units', marginPct: -100, formula: 'units must be a whole number of strings of seriesPerString units', reference: 'Design input', note: `${b.units} units cannot be arranged in strings of ${series}` });
+    } else {
+      const parallel = b.units / series;
+      const bankV = b.data.nominalV ? b.data.nominalV * series : undefined;
+      if (bankV !== undefined && inv.batteryMinV && inv.batteryMaxV) {
+        const ok = bankV >= inv.batteryMinV && bankV <= inv.batteryMaxV;
+        out.push({ id: 'battery-voltage', title: 'Battery bank voltage inside the inverter battery window', verdict: ok ? 'PASS' : 'REFUSE', value: r2(bankV), limit: bankV > inv.batteryMaxV ? inv.batteryMaxV : inv.batteryMinV, unit: 'V', marginPct: bankV > inv.batteryMaxV ? margin(bankV, inv.batteryMaxV, true) : margin(bankV, inv.batteryMinV, false),
+          formula: `unit nominal V × units in series = ${b.data.nominalV} × ${series} = ${r2(bankV)} V; window ${inv.batteryMinV}–${inv.batteryMaxV} V`, reference: 'Inverter and battery datasheets' });
+      } else out.push(notChecked('battery-voltage', 'Battery bank voltage inside the inverter battery window', 'Battery nominal voltage or the inverter battery voltage window not entered: not checked'));
+      if (bankV !== undefined) {
+        // A string of units in series has the Ah of one unit (unit Wh ÷ unit V).
+        const unitAh = (b.data.nominalKwh * 1000) / b.data.nominalV!;
+        for (const [dir, invA, c] of [['discharge', inv.batteryMaxDischargeA, b.data.maxDischargeC], ['charge', inv.batteryMaxChargeA, b.data.maxChargeC]] as const) {
+          if (!(typeof invA === 'number' && invA > 0)) continue;
+          const bankA = c * unitAh * parallel;
+          out.push({ id: `battery-${dir}-current`, title: `Inverter battery ${dir} current within the battery limit`, verdict: invA <= bankA * (1 + 1e-9) ? 'PASS' : 'REFUSE', value: invA, limit: r2(bankA), unit: 'A', marginPct: margin(invA, bankA, true),
+            formula: `battery limit = C × unit Ah × parallel strings = ${c} × ${r2(unitAh)} Ah × ${parallel} = ${r2(bankA)} A`, reference: 'Inverter battery-port current; battery datasheet C-rate' });
+        }
+      }
+      if (b.data.minTempC !== undefined && b.data.maxTempC !== undefined) {
+        const ok = o.temps.recordLowC >= b.data.minTempC && o.temps.maxAmbientC <= b.data.maxTempC;
+        out.push({ id: 'battery-temperature', title: 'Site temperatures inside the battery operating window', verdict: ok ? 'PASS' : 'WARN', value: o.temps.maxAmbientC, limit: b.data.maxTempC, unit: '°C', marginPct: margin(o.temps.maxAmbientC, b.data.maxTempC, true),
+          formula: `site ${o.temps.recordLowC}–${o.temps.maxAmbientC} °C vs battery ${b.data.minTempC}–${b.data.maxTempC} °C`, reference: 'Battery datasheet operating temperature',
+          ...(ok ? {} : { note: 'Outside the battery window at the site\'s outdoor temperatures: house the battery in a conditioned room, or choose another battery' }) });
+      } else out.push(notChecked('battery-temperature', 'Site temperatures inside the battery operating window', 'Battery operating temperature window not entered: not checked'));
+    }
+  }
+  if (o.grid === true) {
+    const ai = (o.inverter.antiIslanding ?? '').trim();
+    out.push(ai
+      ? { id: 'anti-islanding', title: 'Anti-islanding protection stated', verdict: 'PASS', value: 1, limit: 1, unit: '', marginPct: 0, formula: 'manufacturer statement', reference: 'IEC 62116 (anti-islanding test); utility connection rules', note: ai }
+      : notChecked('anti-islanding', 'Anti-islanding protection stated', 'Grid-connected but no anti-islanding statement (e.g. IEC 62116 certificate) entered for the inverter'));
+  }
+  return out;
 }
 
 /** Battery sizing and C-rate. usableAcKwh is the energy the loads need from the battery per cycle. */

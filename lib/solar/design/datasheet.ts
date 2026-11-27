@@ -69,12 +69,25 @@ function numbers<F extends readonly string[]>(r: Record<string, string>, fields:
   }
   return o;
 }
+/** Optional numeric datasheet fields (REQ-04): blank = not given; given = a number (positive unless signed). */
+function optionalNumbers(r: Record<string, string>, fields: string[], errors: string[], signed = false): Record<string, number> {
+  const o: Record<string, number> = {};
+  for (const f of fields) {
+    const v = (r[f] ?? '').trim();
+    if (v === '') continue;
+    const n = Number(v);
+    if (!Number.isFinite(n) || (!signed && !(n > 0))) { errors.push(`${f}: enter a ${signed ? '' : 'positive '}number in the column's unit (got "${v}")`); continue; }
+    o[f] = n;
+  }
+  return o;
+}
 const id = (p: Provenance, model: string) => `${p.manufacturer}|${model}|${p.datasheetRevision}`.toLowerCase();
 
 export function importModule(r: Record<string, string>): ImportResult<Module> {
   const errors: string[] = []; const warnings: string[] = [];
   const p = provenance(r, errors);
   const n = numbers(r, MODULE_FIELDS, errors) as unknown as Module;
+  Object.assign(n, optionalNumbers(r, ['lengthMm', 'widthMm'], errors));
   if (!errors.length) {
     if (!(n.vmpV < n.vocV)) errors.push('Vmp must be below Voc');
     if (!(n.impA < n.iscA)) errors.push('Imp must be below Isc');
@@ -104,16 +117,21 @@ export function importInverter(r: Record<string, string>): ImportResult<Inverter
   }
   const opt = (k: string) => (r[k] ? Number(r[k]) : undefined);
   const extra = { batteryMaxDischargeKw: opt('batteryMaxDischargeKw'), batteryMaxChargeKw: opt('batteryMaxChargeKw'), generatorCompatibility: (r.generatorCompatibility ?? '').trim() || null }; // review G2: spaces are not a statement
+  const ext: { batteryMinV?: number; batteryMaxV?: number; batteryMaxChargeA?: number; batteryMaxDischargeA?: number; antiIslanding?: string } = { ...optionalNumbers(r, ['batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA'], errors), ...((r.antiIslanding ?? '').trim() ? { antiIslanding: r.antiIslanding.trim() } : {}) };
+  if (ext.batteryMinV !== undefined && ext.batteryMaxV !== undefined && !(ext.batteryMinV < ext.batteryMaxV)) errors.push('batteryMinV must be below batteryMaxV');
   for (const [k, v] of Object.entries(extra)) if (typeof v === 'number' && !(v > 0)) errors.push(`${k} must be positive when given`);
   if (errors.length) return { entry: null, errors };
   if (!extra.generatorCompatibility) warnings.push('No generator compatibility statement: hybrid designs with a generator will be refused');
-  return { entry: { kind: 'inverter', id: id(p, n.model), data: { ...n, ...extra, datasheet: `${p.manufacturer} ${n.model} datasheet rev ${p.datasheetRevision} (${p.datasheetDate}) ${p.datasheetUrl}` }, provenance: p, status: 'unverified', warnings }, errors };
+  return { entry: { kind: 'inverter', id: id(p, n.model), data: { ...n, ...extra, ...ext, datasheet: `${p.manufacturer} ${n.model} datasheet rev ${p.datasheetRevision} (${p.datasheetDate}) ${p.datasheetUrl}` }, provenance: p, status: 'unverified', warnings }, errors };
 }
 
 export function importBattery(r: Record<string, string>): ImportResult<Battery> {
   const errors: string[] = []; const warnings: string[] = [];
   const p = provenance(r, errors);
   const n = numbers(r, BATTERY_FIELDS, errors) as unknown as Battery;
+  Object.assign(n, optionalNumbers(r, ['nominalV', 'cycleLife', 'cycleLifeDoD', 'warrantyYears'], errors), optionalNumbers(r, ['minTempC', 'maxTempC'], errors, true), (r.chemistry ?? '').trim() ? { chemistry: r.chemistry.trim() } : {});
+  if (n.cycleLifeDoD !== undefined && !(n.cycleLifeDoD > 0 && n.cycleLifeDoD <= 1)) errors.push('cycleLifeDoD is a fraction 0–1');
+  if (n.minTempC !== undefined && n.maxTempC !== undefined && !(n.minTempC < n.maxTempC)) errors.push('minTempC must be below maxTempC');
   if (!errors.length) {
     if (!(n.usableDoD > 0 && n.usableDoD <= 1)) errors.push('usableDoD is a fraction 0–1 (90 % → 0.9)');
     if (!(n.dischargeEfficiency > 0 && n.dischargeEfficiency <= 1)) errors.push('dischargeEfficiency is a fraction 0–1');
@@ -139,7 +157,7 @@ export function usableForQuotation(...entries: Array<LibraryEntry<unknown>>): { 
 }
 
 export const DATASHEET_CSV_HEADERS = {
-  module: [...PROV_FIELDS, ...MODULE_FIELDS],
-  inverter: [...PROV_FIELDS, ...INVERTER_FIELDS, 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility'],
-  battery: [...PROV_FIELDS, ...BATTERY_FIELDS],
+  module: [...PROV_FIELDS, ...MODULE_FIELDS, 'lengthMm', 'widthMm'],
+  inverter: [...PROV_FIELDS, ...INVERTER_FIELDS, 'batteryMaxDischargeKw', 'batteryMaxChargeKw', 'generatorCompatibility', 'batteryMinV', 'batteryMaxV', 'batteryMaxChargeA', 'batteryMaxDischargeA', 'antiIslanding'],
+  battery: [...PROV_FIELDS, ...BATTERY_FIELDS, 'chemistry', 'nominalV', 'cycleLife', 'cycleLifeDoD', 'minTempC', 'maxTempC', 'warrantyYears'],
 };
