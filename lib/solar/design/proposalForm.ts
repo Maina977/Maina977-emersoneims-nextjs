@@ -230,6 +230,8 @@ export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; e
     : [];
   const conn = connectionsFromForm(f);
   const units = num(f, 'b.units'), need = num(f, 'b.requiredUsableAcKwh');
+  // Re-review S4: a battery with blank units vanished from the preview, which then showed valid.
+  if (battery && !Number.isFinite(units)) return { model: null, errors: [...errors, 'Battery units is required'] };
   return {
     model: buildSld({
       reference: str(f, 'ref') || '(no reference yet)', module: module.data, inverter: inverter.data,

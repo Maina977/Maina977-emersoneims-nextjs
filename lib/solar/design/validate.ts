@@ -242,6 +242,9 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
  * cable is REFUSED: the ampacity check would otherwise use a figure the
  * array can exceed. AC and battery cables are not tied to the strings.
  */
+/** The stated basis for string cable current (re-review S1): no clause number is cited until the standard is read. */
+export const STRING_CABLE_BASIS = 'IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.';
+
 export function cableStringCurrentCheck(c: CableRun, module: Module, design: ArrayDesign): Check | null {
   if (c.kind === 'ac' || c.kind === 'dc-battery') return null;
   const per = design.stringsPerMppt;
@@ -252,11 +255,10 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
     return { id: `cable-current-${c.name}`, title: `${c.name}: MPPT served`, verdict: 'REFUSE', value: NaN, limit: per.length, unit: '', marginPct: -100, formula: 'mppt must name an MPPT of the design', reference: 'Design input', note: `MPPT ${c.mppt} is not in the design (1–${per.length})` };
   }
   // Review of 39fa8535, R1: a cable serving ONE string was sized as if it
-  // carried every string on the MPPT. IEC 62548-1:2023 §7.2.2 (current
-  // rating of PV circuits): a string cable needs at least 1.25 × Isc, and,
-  // where the string has overcurrent protection, at least that device's
-  // rating In (Iz ≥ In). Unfused, a string cable can carry the reverse
-  // current of the other strings, (N − 1) × 1.25 × Isc, so the larger applies.
+  // carried every string on the MPPT. Basis (re-review S1: the clause number
+  // was never read, so none is cited): IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.
+  // Unfused, a string cable can carry the reverse current of the other
+  // strings, so the larger of the two applies.
   if (c.kind === 'dc-string') {
     const isc125 = module.iscA * 1.25;
     const fuse = c.stringFuseA;
@@ -269,6 +271,12 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
       }
       required = Math.max(isc125, fuse);
       basis = `string cable, fused: max(1.25 × Isc = ${r2(isc125)} A, fuse In = ${fuse} A)`;
+    } else if (strings >= 3 || (strings - 1) * isc125 > module.maxSeriesFuseA) {
+      // Re-review S2: the same rule as the string-fusing check (fusing-mppt):
+      // where fuses are required an unfused string cable is not acceptable.
+      return { id: `cable-current-${c.name}`, title: `${c.name}: string fuse rating`, verdict: 'REFUSE', value: NaN, limit: r2((strings - 1) * isc125), unit: 'A', marginPct: -100,
+        formula: `${strings} strings: fuses required when strings ≥ 3 or (N − 1) × 1.25 × Isc = ${r2((strings - 1) * isc125)} A > module max series fuse ${module.maxSeriesFuseA} A`,
+        reference: STRING_CABLE_BASIS, note: 'String fuses are required on this MPPT: give the string fuse rating' };
     } else {
       required = Math.max(isc125, (strings - 1) * isc125);
       basis = `string cable, no string fuse stated: max(1.25 × Isc, (N − 1) × 1.25 × Isc reverse current) with N = ${strings}`;
@@ -276,7 +284,7 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
     const ok = c.designCurrentA >= required * (1 - 1e-9);
     return {
       id: `cable-current-${c.name}`, title: `${c.name}: design current covers the string and its protection`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
-      formula: `${basis} = ${r2(required)} A`, reference: 'IEC 62548-1:2023 §7.2.2 (current rating of PV circuits; Iz ≥ In of the string protection)',
+      formula: `${basis} = ${r2(required)} A`, reference: STRING_CABLE_BASIS,
       ...(ok ? {} : { note: 'The entered design current is below the string cable requirement' }),
     };
   }
@@ -469,6 +477,9 @@ export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMi
   const minKw = (gen.ratedKw * minPct) / 100;
   // R2: a non-string statement is no statement (and never a raw JS error).
   const compat = typeof inverter.generatorCompatibility === 'string' ? inverter.generatorCompatibility.trim() : '';
+  // Re-review: an OEM minimum below 5 % is almost certainly a fraction typed
+  // as a percentage (0.3 meaning 30 %): never a pass on that value.
+  const probableFraction = oemGiven && (gen.oemMinLoadPct as number) < 5;
   const checks: Check[] = [
     // Review G2: a statement of only spaces counted; it is trimmed first. The
     // text itself ("supported" vs "NOT supported") is the engineer's, checked
@@ -479,6 +490,11 @@ export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMi
       formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: oemGiven ? 'Generator OEM minimum load' : `Common diesel practice (30 %) until the OEM figure is entered${gen.oemMinLoadPct !== undefined ? ` (the ${gen.oemMinLoadPct} % entered is not a usable OEM figure)` : ''}`,
       note: minSiteLoadKw < minKw ? 'Light loading: wet stacking risk; schedule load banks or reduce PV while the generator runs' : undefined },
   ];
+  if (probableFraction) {
+    const k = checks.find((x) => x.id === 'gen-min-load')!;
+    const pct = gen.oemMinLoadPct as number;
+    Object.assign(k, { verdict: 'WARN', note: `Check units: an OEM minimum of ${pct} % is probably a fraction; did you mean ${Math.round(pct * 100 * 100) / 100} %? Minimum loading is not passed on this value.` });
+  }
   if (pvCanBackfeed) {
     checks.push({ id: 'gen-reverse-power', title: 'Reverse power into the generator', verdict: 'REFUSE', value: 1, limit: 0, unit: '', marginPct: -100,
       formula: 'PV must not export into a running generator', reference: 'Generator protection practice (reverse-power relay); inverter generator mode',

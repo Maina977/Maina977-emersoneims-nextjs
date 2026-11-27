@@ -193,12 +193,16 @@ export function buildSld(i: SldInput): SldModel {
   let bottom = Math.max(arrayBottom, top + invBox.h, rightBottom);
   if (i.battery) {
     const b = i.battery.data, by = top + invBox.h + 40;
-    const bv = bat ? find(bat.checks, 'battery-energy') : undefined;
+    // Re-review S3: read the energy check that was actually recorded (the
+    // token-need run in bat.checks always PASSes when the need is blank).
+    const bv = find(checks, 'battery-energy');
     const bb = box('battery', 'Battery', [
       `${i.battery.units} × ${b.model} (datasheet ${b.datasheet})`,
       `${b.nominalKwh} kWh nominal each = ${r2(b.nominalKwh * i.battery.units)} kWh nominal`,
       `Usable DoD ${b.usableDoD}; max discharge ${b.maxDischargeC} C, max charge ${b.maxChargeC} C`,
-      bv ? `Energy check: ${bv.verdict} (${bv.value} kWh installed vs ${bv.limit} kWh required)` : 'Energy check: not run (energy needed per cycle not given)',
+      !bv ? 'Energy check: not run (energy needed per cycle not given)'
+        : Number.isFinite(bv.limit) ? `Energy check: ${bv.verdict} (${bv.value} kWh installed vs ${bv.limit} kWh required)`
+        : 'Energy check: NOT CHECKED (energy needed per cycle not given): refused',
       `Battery DC voltage, DC breaker / fuse and cable: ${TBS}`,
     ], X.inv, by, W.inv);
     boxes.push(bb);

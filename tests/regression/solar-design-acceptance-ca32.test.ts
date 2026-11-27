@@ -259,7 +259,8 @@ describe('CA-32 review of 39fa8535: missing or nonsensical data is never valid',
   });
 });
 
-// ── R1: a cable serving ONE string (IEC 62548-1:2023 §7.2.2: Iz ≥ 1.25 × Isc and ≥ the string fuse In) ──
+// ── R1: a cable serving ONE string (IEC 62548-1, string cable current rating: Iz ≥ 1.25 × Isc and ≥ the string fuse In;
+//    clause and edition to be confirmed against the purchased standard — re-review S1) ──
 // Module Isc 13.9 A: 1.25 × Isc = 17.375 A; fuse window 1.5 × 13.9 = 20.85 A < In ≤ min(2.4 × 13.9 = 33.36, 25) = 25 A.
 describe('CA-32 R1: single-string cable on a fused 3-string MPPT', () => {
   const D = { inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] } };
@@ -278,9 +279,13 @@ describe('CA-32 R1: single-string cable on a fused 3-string MPPT', () => {
   it('U27: a 20 A fuse is outside the window (≤ 20.85 A) → refused', () => {
     expect(k(run({ designCurrentA: 25, stringFuseA: 20 }))).toMatchObject({ verdict: 'REFUSE', title: 'S1: string fuse rating' });
   });
-  it('U28: unfused string cable on 3 strings → (3 − 1) × 17.375 = 34.75 A required; 25 A refused, 35 A passes', () => {
-    expect(k(run({ designCurrentA: 25 }))).toMatchObject({ verdict: 'REFUSE', limit: 34.75 });
-    expect(k(run({ designCurrentA: 35, tabulatedAmpacityA: 41, csaMm2: 6 })).verdict).toBe('PASS');
+  it('U28 (revised after re-review S2): unfused string cable on a 2-string MPPT, where fuses are not required → max(17.375, (2 − 1) × 17.375) = 17.375 A; 15 A refused, 17.4 A passes', () => {
+    const run2 = (o: Record<string, unknown>) => buildProposal(design({ ...D, design: { modulesPerString: 16, stringsPerMppt: [2, 1] }, cables: [cable(o) as never] }));
+    expect(k(run2({ designCurrentA: 15 }))).toMatchObject({ verdict: 'REFUSE', limit: 17.38 });
+    expect(k(run2({ designCurrentA: 17.4 })).verdict).toBe('PASS');
+  });
+  it('U29 (re-review S2): unfused string cable on a 3-string MPPT, where fuses ARE required (3 ≥ 3; reverse 34.75 A > 25 A fuse) → refused, whatever current is entered', () => {
+    for (const a of [25, 35, 60]) expect(k(run({ designCurrentA: a, tabulatedAmpacityA: 76, csaMm2: 16 }))).toMatchObject({ verdict: 'REFUSE', note: 'String fuses are required on this MPPT: give the string fuse rating' });
   });
   it('without the dc-string input the safe refusal stays (all-strings current 52.1 A)', () => {
     expect(k(run({ kind: 'dc-pv', designCurrentA: 25, stringFuseA: 25 })).verdict).toBe('REFUSE');
@@ -305,5 +310,44 @@ describe('CA-32 R2/R3 (review of 39fa8535)', () => {
     expect(k.reference).toMatch(/the 0 % entered is not a usable OEM figure/);
     // A real OEM figure still replaces the default: 20 % of 20 kW = 4 kW; 4.5 kW passes.
     expect(buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 4.5, generatorOemMinLoadPct: 20, pvCanBackfeedGenerator: false } })).checks.find((c) => c.id === 'gen-min-load')?.verdict).toBe('PASS');
+  });
+});
+
+describe('CA-32 re-review of 221d977a: S1, S3, S4, fraction guard, bifacial note', () => {
+  it('S1: the string-cable basis cites no unread clause and says it is to be confirmed', async () => {
+    const { STRING_CABLE_BASIS } = await import('@/lib/solar/design/validate');
+    expect(STRING_CABLE_BASIS).toBe('IEC 62548-1, string cable current rating (protected: Iz ≥ In of the string fuse; unprotected: ≥ (N − 1) × 1.25 × Isc, min 1.25 × Isc). Clause and edition to be confirmed against the purchased standard.');
+    const p = buildProposal(design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'S1', lengthM: 10, csaMm2: 4, designCurrentA: 25, systemV: 600, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'dc-string', mppt: 1, stringFuseA: 25 }] }));
+    expect(p.checks.find((c) => c.id === 'cable-current-S1')?.reference).toBe(STRING_CABLE_BASIS);
+  });
+  it('S3: with the energy need blank the diagram battery box says NOT CHECKED … refused, never PASS', async () => {
+    const { buildSld } = await import('@/lib/solar/design/sld');
+    const m = buildSld({ reference: 'T', module: MOD, inverter: { ...INV, batteryMaxDischargeKw: 2, batteryMaxChargeKw: 2 }, design: { modulesPerString: 16, stringsPerMppt: [1, 1] }, inverterCount: 1, temps: { recordLowC: 10, maxAmbientC: 35 }, battery: { data: BAT, units: 1 }, cables: [] });
+    const line = m.boxes.find((b) => b.id === 'battery')!.lines.join(' ');
+    expect(line).toMatch(/Energy check: NOT CHECKED \(energy needed per cycle not given\): refused/);
+    expect(line).not.toMatch(/Energy check: PASS/);
+    // With the need given, the real verdict is printed: 4 × 5 = 20 kWh vs 10 ÷ 0.855 = 11.7 kWh → PASS.
+    const ok = buildSld({ reference: 'T', module: MOD, inverter: { ...INV, batteryMaxDischargeKw: 8, batteryMaxChargeKw: 8 }, design: { modulesPerString: 16, stringsPerMppt: [1, 1] }, inverterCount: 1, temps: { recordLowC: 10, maxAmbientC: 35 }, battery: { data: BAT, units: 4, requiredUsableAcKwh: 10 }, cables: [] });
+    expect(ok.boxes.find((b) => b.id === 'battery')!.lines.join(' ')).toMatch(/Energy check: PASS \(20 kWh installed vs 11.7 kWh required\)/);
+  });
+  it('S4: a battery entered with blank units gives no preview and "Battery units is required"', async () => {
+    const { sldPreviewFromForm, WORKED_EXAMPLE_FORM } = await import('@/lib/solar/design/proposalForm');
+    const bat = { 'b.manufacturer': 'TEST', 'b.datasheetUrl': 'https://example.com/b.pdf', 'b.datasheetRevision': 'A', 'b.datasheetDate': '2026-01-01', 'b.enteredBy': 'test', 'b.enteredOn': '2026-11-20',
+      'b.model': 'TEST-LFP-5', 'b.nominalKwh': '5', 'b.usableDoD': '0.9', 'b.dischargeEfficiency': '0.95', 'b.maxDischargeC': '0.5', 'b.maxChargeC': '0.5', 'b.requiredUsableAcKwh': '10' };
+    const r = sldPreviewFromForm({ ...WORKED_EXAMPLE_FORM, ...bat });
+    expect(r.model).toBeNull();
+    expect(r.errors).toContain('Battery units is required');
+  });
+  it('fraction guard: an OEM minimum of 0.3 % (meaning 30 %) warns "check units", never passes on that value', () => {
+    const p = buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 0.5, generatorOemMinLoadPct: 0.3, pvCanBackfeedGenerator: false } }));
+    const k = p.checks.find((c) => c.id === 'gen-min-load')!;
+    // 0.3 % of 20 kW = 0.06 kW, so 0.5 kW would "pass"; the guard makes it a WARN.
+    expect(k.verdict).toBe('WARN');
+    expect(k.note).toMatch(/Check units: an OEM minimum of 0.3 % is probably a fraction; did you mean 30 %\?/);
+    // 5 % and above is taken as a real OEM figure: 5 % of 20 = 1 kW; 1.2 kW passes.
+    expect(buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 1.2, generatorOemMinLoadPct: 5, pvCanBackfeedGenerator: false } })).checks.find((c) => c.id === 'gen-min-load')?.verdict).toBe('PASS');
+  });
+  it('bifacial: the proposal says 1.25 × Isc at STC does not cover bifacial gain', () => {
+    expect(buildProposal(design()).disclosures.join(' ')).toMatch(/1.25 × Isc at STC, which does not cover bifacial gain: for bifacial modules, use the datasheet's bifacial Isc/);
   });
 });
