@@ -19,11 +19,12 @@ import {
 } from './trades';
 import type { BoqItem } from './boq';
 import { electrical, plumbing, FIXTURE_LABELS, POINT_LABELS, SERVICE_LABELS, type FixtureKind, type PipeService, type PointKind } from './mep';
+import { measuredWorks, WORKS_CATALOGUES, type WorksTrade } from './works';
 
 export interface ParamForm { value: string; source: string }
 export interface OpeningForm { mark: string; type: Opening['type']; width: ParamForm; height: ParamForm; count: string }
 
-export type TradeKind = 'masonry' | 'plaster' | 'roofing' | 'rooms' | 'strip' | 'openings' | 'electrical' | 'plumbing';
+export type TradeKind = 'masonry' | 'plaster' | 'roofing' | 'rooms' | 'strip' | 'openings' | 'electrical' | 'plumbing' | WorksTrade;
 export const TRADE_LABELS: Record<TradeKind, string> = {
   masonry: 'Masonry walling',
   plaster: 'Plaster / render',
@@ -33,6 +34,7 @@ export const TRADE_LABELS: Record<TradeKind, string> = {
   openings: 'Door & window schedule',
   electrical: 'Electrical installation',
   plumbing: 'Plumbing & sanitary',
+  external: 'External works',
 };
 
 // ---- MEP rows (lib/qs/mep). Measurement ids are take-off ids; '' = none chosen.
@@ -74,7 +76,11 @@ export interface StripForm {
 export interface OpeningsForm { trade: 'openings'; code: string; openings: OpeningForm[] }
 export interface ElectricalForm { trade: 'electrical'; code: string; description: string; points: PointRowForm[]; runs: CircuitRunForm[]; enumerated: EnumeratedRowForm[] }
 export interface PlumbingForm { trade: 'plumbing'; code: string; description: string; fixtures: FixtureRowForm[]; pipes: PipeRunForm[] }
-export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm | ElectricalForm | PlumbingForm;
+/** Measured-item trades (lib/qs/works): one row per item; d1, d2 are the catalogue's dimensions in order. */
+export interface WorksRowForm { item: string; spec: string; measurementId: string; d1: ParamForm; d2: ParamForm }
+export const emptyWorksRow = (): WorksRowForm => ({ item: '', spec: '', measurementId: '', d1: P(), d2: P() });
+export interface WorksForm { trade: WorksTrade; code: string; description: string; works: WorksRowForm[] }
+export type TradeForm = MasonryForm | PlasterForm | RoofingForm | RoomsForm | StripForm | OpeningsForm | ElectricalForm | PlumbingForm | WorksForm;
 
 function P(): ParamForm { return { value: '', source: '' }; }
 export const emptyOpening = (): OpeningForm => ({ mark: '', type: 'door', width: P(), height: P(), count: '' });
@@ -86,13 +92,14 @@ export const emptyRoom = (): RoomForm => ({ name: '', areaId: '', perimeterId: '
  */
 export const FORM_LIST_ELEMENTS: Record<string, () => object> = {
   openings: emptyOpening, rooms: emptyRoom, doorWidths: P,
-  points: emptyPointRow, runs: emptyCircuitRun, enumerated: emptyEnumeratedRow, fixtures: emptyFixtureRow, pipes: emptyPipeRun,
+  points: emptyPointRow, runs: emptyCircuitRun, enumerated: emptyEnumeratedRow, fixtures: emptyFixtureRow, pipes: emptyPipeRun, works: emptyWorksRow,
 };
 export const FORM_LIST_CHOICES: Record<string, Record<string, readonly string[]>> = {
   openings: { type: ['door', 'window', 'other'] },
   points: { kind: ['', ...Object.keys(POINT_LABELS)] },
   fixtures: { kind: ['', ...Object.keys(FIXTURE_LABELS)] },
   pipes: { service: ['', ...Object.keys(SERVICE_LABELS)] },
+  works: { item: ['', ...new Set(Object.values(WORKS_CATALOGUES).flatMap((c) => Object.keys(c.items)))] },
 };
 
 /** A blank form for a trade: every value and source empty, every option off. */
@@ -106,6 +113,7 @@ export function emptyForm(trade: TradeKind): TradeForm {
     case 'openings': return { trade, code: '', openings: [emptyOpening()] };
     case 'electrical': return { trade, code: '', description: '', points: [], runs: [], enumerated: [] };
     case 'plumbing': return { trade, code: '', description: '', fixtures: [], pipes: [] };
+    default: return { trade, code: '', description: '', works: [] };
   }
 }
 
@@ -241,6 +249,22 @@ export function calculateTrade(f: TradeForm, quantities: Map<string, Quantity>):
           dropM: optional(`Pipe run ${i + 1}: rise per fixture`, p.drop), allowancePct: optional(`Pipe run ${i + 1}: allowance`, p.allowance),
           fittingsPerM: optional(`Pipe run ${i + 1}: fittings allowance`, p.fittings),
         })),
+      });
+    }
+    default: {
+      // Measured-item trades (lib/qs/works): external works and the trades that follow its pattern.
+      const description = text('Description', f.description);
+      const cat = WORKS_CATALOGUES[f.trade];
+      return measuredWorks({
+        code, description, trade: f.trade,
+        rows: f.works.map((w, i) => {
+          const c = Object.prototype.hasOwnProperty.call(cat.items, w.item) ? cat.items[w.item] : undefined;
+          return {
+            item: w.item, spec: w.spec,
+            measurement: c ? optPick(`Item ${i + 1}: measurement`, w.measurementId, quantities, c.takes) : undefined,
+            dims: (c?.dims ?? []).map((d, k) => param(`Item ${i + 1}: ${d.label}`, k === 0 ? w.d1 : w.d2)),
+          };
+        }),
       });
     }
   }
