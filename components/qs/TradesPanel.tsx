@@ -14,10 +14,11 @@ import type { BoqItem } from '@/lib/qs/boq';
 import { TradeError, TRADES_ENGINE_VERSION, type TradeLine } from '@/lib/qs/trades';
 import {
   calculateTrade, emptyForm, emptyOpening, emptyRoom, measurementOptions, tradeBoqItems, TRADE_LABELS,
-  emptyPointRow, emptyCircuitRun, emptyEnumeratedRow, emptyFixtureRow, emptyPipeRun,
-  type OpeningForm, type ParamForm, type TradeForm, type TradeKind, type ElectricalForm, type PlumbingForm,
+  emptyPointRow, emptyCircuitRun, emptyEnumeratedRow, emptyFixtureRow, emptyPipeRun, emptyWorksRow,
+  type OpeningForm, type ParamForm, type TradeForm, type TradeKind, type ElectricalForm, type PlumbingForm, type WorksForm,
 } from '@/lib/qs/tradeForms';
 import { FIXTURE_LABELS, MEP_ENGINE_VERSION, MEP_NOT_MEASURED, POINT_LABELS, SERVICE_LABELS } from '@/lib/qs/mep';
+import { WORKS_CATALOGUES, WORKS_ENGINE_VERSION } from '@/lib/qs/works';
 
 const input = 'rounded bg-slate-900 border border-slate-700 px-2 py-1 text-xs text-white';
 
@@ -170,6 +171,35 @@ function PlumbingFields({ f, edit, pick }: { f: PlumbingForm; edit: (f: Plumbing
   );
 }
 
+/** Measured-item trades (lib/qs/works): item type from the trade's catalogue, its measurement and dimensions. */
+function WorksFields({ f, edit, pick }: { f: WorksForm; edit: (f: WorksForm) => void; pick: PickProps }) {
+  const cat = WORKS_CATALOGUES[f.trade];
+  const options = Object.fromEntries(Object.entries(cat.items).map(([k, c]) => [k, `${c.label} (${c.unit})`]));
+  return (
+    <>
+      <ParamField label="Voids not deducted up to (each, ≤; needed when an area has openings)" unit="m²" value={f.voidRule} onChange={(v) => edit({ ...f, voidRule: v })} />
+      <RowList title="Items" rows={f.works} add={emptyWorksRow} onChange={(works) => edit({ ...f, works })} row={(r, i, up) => {
+        const c = Object.prototype.hasOwnProperty.call(cat.items, r.item) ? cat.items[r.item] : undefined;
+        return (
+          <>
+            <ChoiceField label={`Item ${i + 1} type`} value={r.item} options={options} onChange={(v) => up({ ...r, item: v, measurementId: '' })} />
+            <TextField label={`Item ${i + 1} description`} value={r.spec} onChange={(v) => up({ ...r, spec: v })} placeholder={c?.specHint ?? 'choose the item type first'} />
+            {c && <MeasurementPick label={`Item ${i + 1} measurement`} kind={c.takes} value={r.measurementId} onChange={(id) => up({ ...r, measurementId: id })} {...pick} />}
+            {c?.dims[0] && <ParamField label={`Item ${i + 1} ${c.dims[0].label}`} unit={c.dims[0].unit} value={r.d1} onChange={(v) => up({ ...r, d1: v })} />}
+            {c?.dims[1] && <ParamField label={`Item ${i + 1} ${c.dims[1].label}`} unit={c.dims[1].unit} value={r.d2} onChange={(v) => up({ ...r, d2: v })} />}
+            {c?.dims[2] && <ParamField label={`Item ${i + 1} ${c.dims[2].label}`} unit={c.dims[2].unit} value={r.d3} onChange={(v) => up({ ...r, d3: v })} />}
+          </>
+        );
+      }} />
+      <div className="rounded border border-amber-500/40 p-2 text-[11px] text-amber-200 space-y-1">
+        <p>Measure each item on the drawing (area, length or count tool), then pick it here. A row with no measurement is refused, not guessed. One measurement feeds one item only.</p>
+        {cat.note && <p>{cat.note}</p>}
+        <p>Not measured here (price separately or add as your own items): {cat.notMeasured.join('; ')}.</p>
+      </div>
+    </>
+  );
+}
+
 export default function TradesPanel({ quantities, measurements, existingCodes, onAdd }: {
   quantities: Map<string, Quantity>; measurements: Measurement[]; existingCodes: string[];
   /** `form` is a copy of the form the items were calculated from: a saved project recomputes the quantities from it. */
@@ -220,7 +250,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
             <MeasurementPick label="Wall length" kind="linear" value={f.wallLengthId} onChange={(id) => edit({ ...f, wallLengthId: id })} {...pickProps} />
             <ParamField label="Wall height" unit="m" value={f.height} onChange={(v) => edit({ ...f, height: v })} />
             <ParamField label="Wall thickness" unit="m" value={f.thickness} onChange={(v) => edit({ ...f, thickness: v })} />
-            <ParamField label="Min. deducted opening" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
+            <ParamField label="Openings not deducted up to (each, ≤)" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
             <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />
             <label className="block text-xs"><input type="checkbox" checked={f.block.enabled} onChange={(e) => edit({ ...f, block: { ...f.block, enabled: e.target.checked } })} /> Count blocks</label>
             {f.block.enabled && (
@@ -239,7 +269,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
             <ParamField label="Plaster height" unit="m" value={f.height} onChange={(v) => edit({ ...f, height: v })} />
             <label className="flex flex-wrap items-center gap-2 text-xs"><span className="w-40">Faces</span>
               <select aria-label="Faces" value={f.faces} onChange={(e) => edit({ ...f, faces: e.target.value as '' | '1' | '2' })} className={input}><option value="">choose…</option><option value="1">one face</option><option value="2">both faces</option></select></label>
-            <ParamField label="Min. deducted opening" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
+            <ParamField label="Openings not deducted up to (each, ≤)" unit="m²" value={f.minDeducted} onChange={(v) => edit({ ...f, minDeducted: v })} />
             <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />
             <label className="block text-xs"><input type="checkbox" checked={f.reveal.enabled} onChange={(e) => edit({ ...f, reveal: { ...f.reveal, enabled: e.target.checked } })} /> Plaster reveals</label>
             {f.reveal.enabled && <div className="pl-4"><ParamField label="Reveal depth" unit="m" value={f.reveal.depth} onChange={(v) => edit({ ...f, reveal: { ...f.reveal, depth: v } })} /></div>}
@@ -313,6 +343,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
         {f.trade === 'openings' && <OpeningsTable rows={f.openings} onChange={(rows) => edit({ ...f, openings: rows })} />}
         {f.trade === 'electrical' && <ElectricalFields f={f} edit={edit} pick={pickProps} />}
         {f.trade === 'plumbing' && <PlumbingFields f={f} edit={edit} pick={pickProps} />}
+        {'works' in f && <WorksFields f={f} edit={edit} pick={pickProps} />}
         {(f.trade === 'electrical' || f.trade === 'plumbing') && (
           <div className="rounded border border-amber-500/40 p-2 text-[11px] text-amber-200 space-y-1">
             <p>Count points and fixtures on the drawing with the Count tool, and measure runs with the Length tool (along the run as drawn). Drops, rises, conductors and allowances are entered with their source. A row with no measurement or no sourced count is refused, not guessed.</p>
@@ -346,7 +377,7 @@ export default function TradesPanel({ quantities, measurements, existingCodes, o
           </tbody>
         </table></div>
       )}
-      <p className="text-[11px] text-slate-500">{TRADES_ENGINE_VERSION} · {MEP_ENGINE_VERSION}</p>
+      <p className="text-[11px] text-slate-500">{TRADES_ENGINE_VERSION} · {MEP_ENGINE_VERSION} · {WORKS_ENGINE_VERSION}</p>
     </div>
   );
 }

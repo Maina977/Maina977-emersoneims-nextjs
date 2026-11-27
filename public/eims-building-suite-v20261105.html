@@ -668,16 +668,16 @@ function showReports(){
     const _wizUnits = parseInt(document.getElementById('p4_units')?.value || 0);
     const _wizBeds = parseInt(document.getElementById('p4_beds')?.value || 0);
     const country = _wizLoc
-        || ((typeof crCountry !== 'undefined' && crCountry) ? crCountry : 'Nairobi, Kenya');
+        || ((typeof crCountry !== 'undefined' && crCountry) ? crCountry : ''); // no default location (was 'Nairobi, Kenya', 2026-11-26)
     // Auto-pick currency: any Kenyan locality forces KES (overrides any prior USD default)
     const _isKenya = /kenya|nairobi|mombasa|kisumu|nakuru|eldoret|thika|machakos|kiambu|kajiado/i.test(country);
     const currency = _isKenya ? 'KES'
         : (document.getElementById('cr-currency')?.value
            || (typeof crCurrency !== 'undefined' && crCurrency) || 'KES');
-    const area = _wizArea > 0 ? _wizArea : parseFloat(document.getElementById('cr-area')?.value || 220);
-    const stories = _wizStories > 0 ? _wizStories : parseInt(document.getElementById('cr-stories')?.value || 1);
-    const units = _wizUnits > 0 ? _wizUnits : parseInt(document.getElementById('cr-units')?.value || 1);
-    const beds = _wizBeds > 0 ? _wizBeds : parseInt(document.getElementById('cr-beds')?.value || 4);
+    const area = _wizArea > 0 ? _wizArea : (parseFloat(document.getElementById('cr-area')?.value) || ''); // blank stays blank (was || 220, 2026-11-26)
+    const stories = _wizStories > 0 ? _wizStories : (parseInt(document.getElementById('cr-stories')?.value) || ''); // no default (was || 1)
+    const units = _wizUnits > 0 ? _wizUnits : (parseInt(document.getElementById('cr-units')?.value) || ''); // no default (was || 1)
+    const beds = _wizBeds > 0 ? _wizBeds : (parseInt(document.getElementById('cr-beds')?.value) || ''); // blank stays blank (was || 4)
     // Country-aware statutory requirements (BORAQS/EBK/NCA in Kenya, ARB/RICS in UK, AIA/PE in USA…)
     const _stat = getStatutoryReqs(country);
     // Build placeholder labels that name the *correct* regulator for the user's country
@@ -755,6 +755,27 @@ function showReports(){
     repBuild();
 }
 
+/* Report inputs that must be entered (2026-11-26): the names of those missing or invalid. */
+/* "lat,lng" from the report's Coords field, or null (2026-11-27). */
+function repSiteCoords(t){const m=String(t||'').split(',').map((x)=>Number(x.trim()));return m.length===2&&m.every(Number.isFinite)&&Math.abs(m[0])<=90&&Math.abs(m[1])<=180?{lat:m[0],lng:m[1]}:null;}
+function repPreflight(v){
+    const m=[];
+    if(!(typeof v.location==='string' && v.location.trim())) m.push('the location');
+    if(!(Number.isFinite(v.area) && v.area>0)) m.push('the floor area (m²)');
+    if(!(Number.isInteger(v.stories) && v.stories>=1)) m.push('the number of storeys');
+    if(!(Number.isInteger(v.units) && v.units>=1)) m.push('the number of units');
+    if(!(Number.isInteger(v.bedrooms) && v.bedrooms>=1)) m.push('the bedrooms per unit');
+    return m;
+}
+
+/* What the report does not derive from floor area and bedroom count (2026-11-26). */
+const REP_NOT_FROM_DESCRIPTION = {
+    schedules: 'Door, window and staircase schedules are not derived from floor area and bedroom count: they come from the architect’s drawings. Use the measured take-off (/solutions/building/takeoff) on the drawings for the door and window schedule.',
+    electrical: 'Electrical layouts, socket specifications, circuit protection and lighting loads require a project-specific design reviewed by a qualified electrical professional.',
+    drainage: 'Sanitary fittings, pipe sizes and septic tank / soak-pit sizes are not derived from the bedroom count: they need the plumbing layout, a percolation test on site and a design approved by the county public health office (NEMA licence where it applies).',
+    reinforcement: 'Reinforcement (bar sizes, spacing, cover, member sizes) needs a structural design by a registered engineer from the actual loads, spans and soil. No reinforcement is given from a description.',
+};
+
 async function repBuild(){
     const body = document.getElementById('rep-body');
     if(!body) return;
@@ -781,20 +802,17 @@ async function repBuild(){
     let _stories = parseInt(document.getElementById('rp-stories').value);
     let _units = parseInt(document.getElementById('rp-units').value);
     let _beds = parseInt(document.getElementById('rp-beds').value);
-    if(!_loc){ const fb=(document.getElementById('p1_location')?.value||'').trim()||'Nairobi, Kenya'; _autoFixes.push(['Location','(empty)',fb,'Pulled from wizard / fallback to capital city']); _loc=fb; document.getElementById('rp-loc').value=fb; }
+    // No silent defaults (2026-11-26). This pre-flight used to fill a blank
+    // location with "Nairobi, Kenya", force storeys/units/bedrooms to 1, cap the
+    // units at area/30 m² ("KQS 2025", no such rule) and pick a foundation type
+    // from storeys × area ("BS 8004 §7", no such rule). Missing or invalid
+    // inputs now stop the report and are named (repPreflight); no foundation
+    // type is chosen: that needs a site investigation and a structural design.
+    const _missing = repPreflight({ location: _loc, area: _area, stories: _stories, units: _units, bedrooms: _beds });
+    if(_missing.length){ body.innerHTML = '<div id="rep-missing" style="color:#b71c1c;padding:40px;text-align:center">Enter '+_missing.join(', ')+' to build the report. Nothing is assumed.</div>'; return; }
     const _isKE = /kenya|nairobi|mombasa|kisumu|nakuru|eldoret|thika|machakos|kiambu|kajiado/i.test(_loc);
     if(_isKE && _cur && _cur.toUpperCase()!=='KES'){ _autoFixes.push(['Currency',_cur,'KES','Kenyan locality detected — statutory billing currency is KES (CBK Cap.491)']); _cur='KES'; document.getElementById('rp-cur').value='KES'; }
-    if(!isFinite(_stories)||_stories<1){ _autoFixes.push(['Stories',_stories,1,'Min 1 storey enforced']); _stories=1; }
-    if(!isFinite(_units)||_units<1){ _autoFixes.push(['Units',_units,1,'Min 1 unit enforced']); _units=1; }
-    if(!isFinite(_beds)||_beds<1){ _autoFixes.push(['Bedrooms',_beds,1,'Min 1 bedroom enforced']); _beds=1; }
-    if(_units > Math.floor(_area/30)){ const fix=Math.max(1,Math.floor(_area/30)); _autoFixes.push(['Units',_units,fix,`Cannot exceed area/30 m² (KQS 2025 min unit footprint)`]); _units=fix; }
-    // Auto-pick foundation by stories + area + (assumed) bearing capacity
-    let _foundation;
-    if(_stories>=3 || _area>500) _foundation='raft';
-    else if(_stories>=2)         _foundation='strip+ground beam';
-    else if(_area<=120)          _foundation='pad';
-    else                          _foundation='strip';
-    _autoFixes.push(['Foundation type','(auto)',_foundation,`Selected from ${_stories}-storey × ${_area} m² rule (BS 8004 §7)`]);
+    const _foundation = null;
     // Floor count = stories (single source of truth — eliminates the storeys-vs-floor-count contradiction)
     const _floorCount = _stories;
     const p = {
@@ -895,7 +913,7 @@ async function repBuild(){
         })),
         fjson('/arch/egress', post({
             occupancy_type:'residential', floor_area_m2:p.area,
-            sprinklered:true, voice_notification:false
+            sprinklered:false, voice_notification:false // not stated for the project: the unsprinklered (larger) widths are used, and the card says so
         })),
         fjson('/arch/accessibility/check', post({
             jurisdiction:'strictest',
@@ -904,7 +922,7 @@ async function repBuild(){
                 ramp_slope_pct:7, wc_clear_diameter_mm:1500, threshold_height_mm:15
             }
         })),
-        fjson('/arch/shadow/solstice', post({lat:-1.286, lng:36.817, pole_height_m:H})),
+        ((c)=>c ? fjson('/arch/shadow/solstice', post({lat:c.lat, lng:c.lng, pole_height_m:H})) : Promise.resolve({success:false, error:'no site coordinates entered'}))(repSiteCoords(p.coords)), // the site's own coordinates; none entered = no shadow study (was always Nairobi)
         // ---- ENGINEER ----
         fjson('/loads/wind/eurocode', post({
             vb_ms:24, height_m:H, length_m:L, width_m:W,
@@ -986,18 +1004,11 @@ function repRender(report, quote, drawings, render, p, extras){
     _ovr('Bedrooms / unit',     'bedrooms_per_unit', ps, p.bedrooms);
     _ovr('Foundation type',     'foundation_type',   ss, p.foundation_type);
     // Currency normalisation — if backend used a different currency, FX-convert the totals into the user's currency
-    const _fxToKES = { USD: 130, EUR: 140, GBP: 165, KES: 1 };
+    // No exchange rate is built in (2026-11-27: a fixed USD 130 / EUR 140 / GBP 165 table was shown as a "CBK rate"). Totals stay in the currency they were priced in.
     if(rcs.currency && p.currency && rcs.currency.toUpperCase()!==p.currency.toUpperCase()){
-        const fIn = _fxToKES[rcs.currency.toUpperCase()] || 1;
-        const fOut = _fxToKES[p.currency.toUpperCase()] || 1;
-        const k = fIn / fOut;
-        ['total_project_cost_local','cost_per_sqm_local','subtotal_local','vat_local','contingency_local'].forEach(key=>{
-            if(typeof rcs[key]==='number') rcs[key] = rcs[key] * k;
-        });
-        _overrides.push(['Currency', rcs.currency, p.currency, `Backend priced in ${rcs.currency}; converted at indicative CBK rate 1 ${rcs.currency} ≈ ${(_fxToKES[rcs.currency.toUpperCase()]||1).toFixed(0)} KES (live rate at print).`]);
-        rcs.currency = p.currency.toUpperCase();
+        _overrides.push(['Currency', rcs.currency, rcs.currency, `Priced in ${rcs.currency}; shown in ${rcs.currency}, not converted to ${p.currency}: no dated exchange rate was entered.`]);
     }
-    const sym = ({KES:'KSh ',USD:'$ ',EUR:'€ ',GBP:'£ '}[(p.currency||'KES').toUpperCase()]) || (quote && quote.symbol) || rcs.symbol || '$';
+    const sym = ({KES:'KSh ',USD:'$ ',EUR:'€ ',GBP:'£ '}[(rcs.currency||p.currency||'KES').toUpperCase()]) || (quote && quote.symbol) || rcs.symbol || '$';
     const cs = (quote && quote.cost_summary) || {};
     const drs = (drawings && drawings.drawings) || {};
     const proj = document.getElementById('rp-name').value || 'Project';
@@ -1210,9 +1221,9 @@ function repRender(report, quote, drawings, render, p, extras){
         if(ok(extras.daylight)){
             const d = extras.daylight;
             const adf = d.ADF_pct ?? d.adf_pct ?? d.adf ?? d.average_daylight_factor;
-            const status = (adf>=2)?'<span style="color:#1b5e20;font-weight:600">✅ Compliant (BS 8206-2: ADF ≥ 2% for living spaces)</span>':'<span style="color:#c62828;font-weight:600">⚠️ Below 2% — review glazing area</span>';
+            const status = '<span style="color:#7a4f01">No compliance verdict is given for an assumed room: check the building\'s own windows and rooms in Physics → Daylight.</span>';
             arch += card('6.1 Daylight Study (BS 8206-2 / CIBSE LG10)',
-                `Average Daylight Factor (ADF): <strong>${fmt(adf)}%</strong><br>Glazing transmittance T<sub>glass</sub>: 0.68 · Sky angle: 65° · Maintenance factor: 0.90<br>${status}`);
+                `<em>Illustrative, with ASSUMED glazing and surfaces (2026-11-27), not this building's design:</em> window area = floor area × 0.15, internal surfaces = floor area × 5.<br>Average Daylight Factor (ADF) of that assumed room: <strong>${fmt(adf)}%</strong><br>Glazing transmittance T<sub>glass</sub>: 0.68 · Sky angle: 65° · Maintenance factor: 0.90<br>${status}`);
         }
         // 6.2 U-value
         if(ok(extras.uvalue)){
@@ -1220,14 +1231,14 @@ function repRender(report, quote, drawings, render, p, extras){
             const uval = u.U_value_W_m2K ?? u.U_W_m2K ?? u.u_value ?? u.U;
             const r = u.R_total_m2K_W ?? u.R_total_m2K_per_W ?? u.R_total ?? u.r_total;
             arch += card('6.2 Envelope Thermal Performance (ISO 6946)',
-                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br>Layers: 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster<br>Target (Part L1A 2021): U ≤ 0.18 W/m²K · Tropical climate target: U ≤ 0.50 W/m²K`);
+                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br><em>ASSUMED build-up (2026-11-27), not this building's specification:</em> 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster.<br>For reference only: Approved Document L 2021 Vol. 1 (England) limiting wall U-value 0.26 W/m²K (its notional dwelling uses 0.18). Check the Kenyan code in force (National Building Code 2024) and the project specification for the wall U-value requirement.`);
         }
         // 6.3 Acoustics
         if(ok(extras.acoustics)){
             const a = extras.acoustics;
             const rt = a.T60_s ?? a.T60_seconds ?? a.RT60_s ?? a.rt60 ?? a.reverberation_time_s;
             arch += card('6.3 Room Acoustics (Sabine, BS EN 12354-6)',
-                `Reverberation Time RT<sub>60</sub>: <strong>${fmt(rt)} s</strong> (volume ${fmt(p.area*3)} m³)<br>Living-room target: 0.4–0.6 s (BS 8233:2014). Bedroom target: 0.5–0.8 s.<br>If above target: add absorptive ceiling tiles or carpet to reduce flutter echo.`);
+                `<em>Illustrative, with ASSUMED room geometry and finishes (2026-11-27), not this building's measured reverberation time:</em> volume = floor area × 3 m (${fmt(p.area*3)} m³), walls = floor area × 2, glazing = floor area × 0.15, soft furnishings = floor area × 0.5.<br>RT<sub>60</sub> of that assumed room: <strong>${fmt(rt)} s</strong>.<br>For a real room, enter its own dimensions and finishes in Physics → Acoustics and compare with the target in the project specification.`);
         }
         // 6.4 Egress
         if(ok(extras.egress)){
@@ -1236,7 +1247,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const exits = e.required_exits ?? e.exits_required;
             const tw = e.required_egress_width_mm ?? e.egress_width_mm;
             arch += card('6.4 Life-Safety / Egress (IBC 2021 §1005)',
-                `Calculated occupant load: <strong>${fmt(occ)}</strong> persons · Required exits: <strong>${exits||'-'}</strong><br>Required cumulative egress width: <strong>${fmt(tw)} mm</strong> · Sprinklered: yes`);
+                `Calculated occupant load: <strong>${fmt(occ)}</strong> persons · Required exits: <strong>${exits||'-'}</strong><br>Required cumulative egress width: <strong>${fmt(tw)} mm</strong> · Sprinkler protection: not stated, so the unsprinklered (larger) egress widths are used`);
         }
         // 6.5 Accessibility
         if(ok(extras.access)){
@@ -1244,17 +1255,17 @@ function repRender(report, quote, drawings, render, p, extras){
             const fails = (ac.failures||ac.violations||[]).length;
             const passes = (ac.passes||ac.compliant||[]).length;
             const status = fails===0
-                ? '<span style="color:#1b5e20;font-weight:600">✅ All measured items compliant (ADA 2010 / BS 8300:2018)</span>'
+                ? '<span style="color:#7a4f01">No compliance verdict: these are assumed typical dimensions, not measured ones. Enter the building\'s own dimensions in Physics → Accessibility.</span>'
                 : `<span style="color:#c62828;font-weight:600">⚠️ ${fails} non-conformance(s) — see Pro Console: Accessibility</span>`;
             arch += card('6.5 Accessibility Audit (ADA / BS 8300 / Part M)',
-                `Items checked: door clear width, corridor width, ramp gradient, WC turning circle, threshold height.<br>Pass: ${passes} · Fail: ${fails}<br>${status}`);
+                `<em>Illustrative check of ASSUMED typical dimensions (2026-11-27), not measured:</em> door clear width 900 mm, corridor 1200 mm, ramp 7 %, WC turning circle 1500 mm, threshold 15 mm.<br>Pass: ${passes} · Fail: ${fails}<br>${status}`);
         }
         // 6.6 Shadow study
         if(ok(extras.shadow)){
             const s = extras.shadow;
             const sw = s.summer_solstice || s.summer || {};
             const ww = s.winter_solstice || s.winter || {};
-            arch += card('6.6 Solar / Shadow Study (NOAA SPA, lat -1.29°)',
+            arch += card(`6.6 Solar / Shadow Study (NOAA SPA, site ${String(p.coords||'').replace(/[<>&]/g,'')})`,
                 `Summer solstice noon altitude: <strong>${fmt(sw.altitude_deg||sw.solar_altitude)}°</strong> · shadow length: ${fmt(sw.shadow_length_m||sw.shadow_m)} m<br>Winter solstice noon altitude: <strong>${fmt(ww.altitude_deg||ww.solar_altitude)}°</strong> · shadow length: ${fmt(ww.shadow_length_m||ww.shadow_m)} m<br>Use to size overhangs and verify right-to-light of neighbouring properties.`);
         }
         if(arch){
@@ -1277,7 +1288,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const qp = w.qp_kPa ?? w.peak_velocity_pressure_kPa ?? w.qp;
             const ve = w.vm_ms ?? w.ve_ms ?? w.basic_velocity_ms;
             eng += card('7.1 Wind Loading (EN 1991-1-4 / Eurocode 1)',
-                `Basic wind velocity v<sub>b</sub>: 24 m/s · Building H×L×W: ${fmt(_H)}×${fmt(_L)}×${fmt(_W)} m · Terrain cat. II<br>Peak velocity pressure q<sub>p</sub>: <strong>${fmt(qp)} kPa</strong> · Reference height velocity: ${fmt(ve)} m/s<br>Apply external pressure coefficients c<sub>pe,10</sub> per Table 7.1; verify against ASCE 7-22 for jurisdictions outside EU.`);
+                `<em>Illustrative, with ASSUMED inputs (2026-11-26):</em> basic wind velocity v<sub>b</sub>: 24 m/s (assumed; take v<sub>b,0</sub> from the national wind map for the site) · Building H×L×W (assumed: 3.5 m per storey, plan from floor area): ${fmt(_H)}×${fmt(_L)}×${fmt(_W)} m · Terrain cat. II<br>Peak velocity pressure q<sub>p</sub>: <strong>${fmt(qp)} kPa</strong> · Reference height velocity: ${fmt(ve)} m/s<br>Apply external pressure coefficients c<sub>pe,10</sub> per Table 7.1; verify against ASCE 7-22 for jurisdictions outside EU.`);
         }
         // 7.2 Geotech
         if(ok(extras.geotech)){
@@ -1294,7 +1305,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const ratio = rb.utilisation ?? rb.utilization ?? rb.ratio;
             const code = rb.code || 'EN 1992-1-1 (Eurocode 2)';
             eng += card('7.3 RC Beam Bending Design ('+code+')',
-                `Beam 300×500 mm · d = 450 mm · f<sub>ck</sub> = 30 MPa · f<sub>yk</sub> = 500 MPa · M<sub>Ed</sub> = 120 kNm<br>Required tension steel A<sub>s,req</sub>: <strong>${fmt(asReq)} mm²</strong> · Provided 1500 mm² · Utilisation: <strong>${fmt((ratio||0)*100)}%</strong><br>Suggested arrangement: 3 Ø 25 mm bottom + 2 Ø 16 top (hangers).`);
+                `<em>Illustrative check of an ASSUMED typical member, not this project's design (2026-11-26):</em> beam 300×500 mm · d = 450 mm · f<sub>ck</sub> = 30 MPa · f<sub>yk</sub> = 500 MPa · M<sub>Ed</sub> = 120 kNm (assumed)<br>Required tension steel A<sub>s,req</sub>: <strong>${fmt(asReq)} mm²</strong> · Provided 1500 mm² (assumed) · Utilisation: <strong>${fmt((ratio||0)*100)}%</strong><br>${REP_NOT_FROM_DESCRIPTION.reinforcement}`);
         }
         // 7.4 Load Combinations (always shown — textbook table)
         eng += card('7.4 Ultimate Limit State Load Combinations (EN 1990 §6.4.3)',
@@ -1308,7 +1319,7 @@ function repRender(report, quote, drawings, render, p, extras){
                 <tr><td style="padding:3px 6px;border-bottom:1px solid #eee;font-weight:600">SLS-2</td><td style="padding:3px 6px;border-bottom:1px solid #eee">G<sub>k</sub> + 0.3 Q<sub>k</sub></td><td style="padding:3px 6px;border-bottom:1px solid #eee">Quasi-permanent — long-term creep deflection</td></tr>
               </tbody>
              </table>
-             <div style="margin-top:6px;font-size:10px;color:#666">Imposed loads per EN 1991-1-1 Cat A (residential): 1.5 kN/m² floors / 0.4 kN/m² roof. Seismic combinations (EN 1998-1) only required for Kenya UBC seismic zones III–IV (e.g. Rift Valley, Mt Kenya region).</div>`);
+             <div style="margin-top:6px;font-size:10px;color:#666">Imposed loads per EN 1991-1-1 Cat A (residential): 1.5 kN/m² floors / 0.4 kN/m² roof. Seismic actions: take the site's design ground acceleration from the seismic hazard map of the building code in force for the site, as assessed by the structural engineer.</div>`);
         if(eng){
             h += sec('7. Engineering Design Calculations', eng, '#d84315');
         }
@@ -1332,7 +1343,7 @@ function repRender(report, quote, drawings, render, p, extras){
            <tbody>` + rows.map(([l,v])=>`<tr><td style=\"padding:6px 8px;border-bottom:1px solid #eee\">${l}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right\">${fmt(v)}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right\">${sym} ${fmt(v*usdToLocal)}</td><td style=\"padding:6px 8px;border-bottom:1px solid #eee;text-align:right;color:#666\">${rcs.total_project_cost_usd?((v||0)/rcs.total_project_cost_usd*100).toFixed(1):'-'}%</td></tr>`).join('') +
         `<tr style=\"background:#0d47a1;color:#fff;font-weight:bold\"><td style=\"padding:10px 8px\">TOTAL PROJECT COST</td><td style=\"padding:10px 8px;text-align:right\">USD ${fmt(rcs.total_project_cost_usd)}</td><td style=\"padding:10px 8px;text-align:right\">${sym} ${fmt(rcs.total_project_cost_local)}</td><td style=\"padding:10px 8px;text-align:right\">100%</td></tr>
          </tbody></table>
-         <div style=\"font-size:10px;color:#666;margin-top:6px\">Kenya residential benchmark (KQS 2025): KES 35,000\u201355,000 / m\u00b2 for standard finish bungalow; KES 55,000\u201380,000 / m\u00b2 for high-spec maisonette. Compare against this report's <strong>${sym} ${fmt(rcs.cost_per_sqm_local)}/m\u00b2</strong> for sanity-check.</div>`,
+         <div style=\"font-size:10px;color:#666;margin-top:6px\">No cost-per-m\u00b2 benchmark is given (2026-11-27: the range shown here had no real source). A cost needs measured quantities and sourced, dated rates: request a quotation (WhatsApp 0768 860 665).</div>`,
         '#0d47a1');
 
     // ---------- 9. QS Quotation ----------
@@ -1553,171 +1564,23 @@ function repRender(report, quote, drawings, render, p, extras){
             '#1b5e20');
     }
 
-    // ---------- 14. Architectural Schedules (Doors, Windows, Finishes, Staircase) ----------
+    // ---------- 14-16. Schedules, MEP design and reinforcement: not from a description (2026-11-26) ----------
+    // These three sections used to derive, from floor area and bedroom count
+    // alone (with silent defaults p.area || 220 and p.bedrooms || 4): door and
+    // window counts; an electrical maximum demand (5 W/m² lighting, 25 W/m²
+    // sockets, an unsourced diversity of 0.65, a single-phase main switch at any
+    // load, MCB ratings, and a water-heater row labelled ceil(beds/2) units but
+    // computed as ceil(beds/3)); fixture counts, pipe sizes and septic / soak-pit
+    // sizes (occupancy credited to "BS 8233", an acoustics standard); and a
+    // reinforcement register (3ØT25 + 2ØT16 beams, 4ØT16 columns, T12 @ 150
+    // footings, slab ≈ L/24 from √area). None of that is a design. They are not
+    // produced, on the same rule as /api/building/floor-plan; the previous code
+    // is in git history (fix/building-2026-11-26 before this commit).
     {
-        // Heuristic indicative schedules — must be reconciled against final architectural plans.
-        const beds = p.bedrooms || 4;
-        const dwellings = Math.max(1, p.units || 1);
-        const stories = Math.max(1, p.stories || 1);
-        // Door schedule (per dwelling unit)
-        const doors = [
-            ['D1', 'Main entrance', '1000 × 2100 mm', 'Solid hardwood, panelled', 1*dwellings],
-            ['D2', 'Internal bedroom', '900 × 2100 mm', 'Flush hollow-core, painted',  beds*dwellings],
-            ['D3', 'Bathroom / WC', '800 × 2100 mm', 'PVC moisture-resistant', Math.max(2, Math.ceil(beds/2))*dwellings],
-            ['D4', 'Kitchen / Service', '900 × 2100 mm', 'Flush, semi-solid', 1*dwellings],
-            ['D5', 'Rear / utility', '900 × 2100 mm', 'Steel security door', 1*dwellings]
-        ];
-        const winRows = [
-            ['W1', 'Living / Dining', '1800 × 1500 mm', 'Sliding aluminium, 6 mm clear glazing', 2*dwellings],
-            ['W2', 'Bedroom', '1500 × 1200 mm', 'Casement aluminium, 6 mm clear', beds*dwellings],
-            ['W3', 'Kitchen', '1200 × 900 mm', 'Top-hung aluminium, obscure 6 mm', 1*dwellings],
-            ['W4', 'Bathroom / WC', '600 × 600 mm', 'Top-hung aluminium, obscure 6 mm', Math.max(2, Math.ceil(beds/2))*dwellings],
-            ['W5', 'High-level vent', '900 × 450 mm', 'Awning, fixed obscure', dwellings]
-        ];
-        const doorTbl = `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#e8eaf6"><th style="padding:5px 8px;text-align:left">Mark</th><th style="padding:5px 8px;text-align:left">Location</th><th style="padding:5px 8px;text-align:left">Size (W × H)</th><th style="padding:5px 8px;text-align:left">Material / Finish</th><th style="padding:5px 8px;text-align:right">Qty</th></tr></thead><tbody>` +
-            doors.map(d=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;color:#3949ab">${d[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[1]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[2]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[3]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${d[4]}</td></tr>`).join('') + `</tbody></table>`;
-        const winTbl = `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#e8eaf6"><th style="padding:5px 8px;text-align:left">Mark</th><th style="padding:5px 8px;text-align:left">Location</th><th style="padding:5px 8px;text-align:left">Size (W × H)</th><th style="padding:5px 8px;text-align:left">Specification</th><th style="padding:5px 8px;text-align:right">Qty</th></tr></thead><tbody>` +
-            winRows.map(d=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;color:#3949ab">${d[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[1]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[2]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${d[3]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${d[4]}</td></tr>`).join('') + `</tbody></table>`;
-        // Finishes schedule
-        const fin = [
-            ['Living / Dining', 'Porcelain tile 600×600 (rectified)', 'Skim plaster + vinyl matt emulsion', 'Skim plaster + vinyl matt emulsion', 'PVC tile-edge skirting 100 mm'],
-            ['Bedrooms', 'Engineered timber laminate 8 mm AC4', 'Skim + matt emulsion', 'Skim + matt emulsion', 'Painted timber 75 mm'],
-            ['Kitchen', 'Anti-slip ceramic tile 300×300', 'Splashback ceramic tile to 1500 mm; emulsion above', 'Skim + acrylic emulsion (washable)', 'Tiled cove'],
-            ['Bathrooms / WC', 'Anti-slip ceramic tile R10', 'Full-height ceramic tile 300×600', 'Plaster + acrylic anti-mould emulsion', 'Tiled cove'],
-            ['Wet areas / Yard', 'Quarry tile / textured concrete', '20 mm cement-sand render', 'Cement render + masonry paint', 'Cement plinth 150 mm'],
-            ['Stairs (if any)', 'Granite tread + non-slip nosing', 'Skim + emulsion', 'Skim + emulsion', '—']
-        ];
-        const finTbl = `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#e8eaf6"><th style="padding:5px 8px;text-align:left">Room</th><th style="padding:5px 8px;text-align:left">Floor</th><th style="padding:5px 8px;text-align:left">Walls</th><th style="padding:5px 8px;text-align:left">Ceiling</th><th style="padding:5px 8px;text-align:left">Skirting</th></tr></thead><tbody>` +
-            fin.map(r=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600">${r[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[1]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[2]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[3]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[4]}</td></tr>`).join('') + `</tbody></table>`;
-        // Staircase (only relevant if multi-storey)
-        let stairBlock = '';
-        if(stories > 1){
-            // BS 5395-1 / Building Code Kenya: rise 150–190 mm, going 220–300 mm; 2R+G ∈ [550,700]
-            const rise = 175;            // mm
-            const going = 280;           // mm
-            const floorH = 3000;          // mm typical
-            const risers = Math.ceil(floorH / rise);
-            const treads = risers - 1;
-            const flightLen = treads * going;     // mm horizontal run
-            const ratio = (2*rise + going);        // walking ratio
-            const headroom = 2050;        // mm minimum
-            stairBlock = `<div style="background:#f5f7fa;border-left:3px solid #3949ab;padding:10px 12px;margin-top:10px">
-                <div style="font-weight:600;color:#283593;font-size:12px;margin-bottom:6px">14.4 Staircase Detail (BS 5395-1 / Building Code Kenya 2024)</div>
-                <div style="font-size:11px;color:#333;line-height:1.6">
-                  Floor-to-floor height: <strong>${floorH} mm</strong> · Risers: <strong>${risers}</strong> @ ${rise} mm · Treads: <strong>${treads}</strong> @ ${going} mm going<br>
-                  Walking-line ratio (2R+G): <strong>${ratio} mm</strong> (target 550–700 mm) ✅<br>
-                  Total horizontal run: <strong>${flightLen} mm</strong> · Minimum headroom: <strong>${headroom} mm</strong><br>
-                  Handrail height 900–1000 mm; balustrade openings &le; 100 mm (no climb-able horizontal members); landings every 16 risers max.
-                </div>
-              </div>`;
-        }
-        h += sec('14. Architectural Schedules',
-            `<h3 style="font-size:13px;color:#283593;margin:0 0 6px">14.1 Door Schedule (indicative — reconcile with final plans)</h3>${doorTbl}
-             <h3 style="font-size:13px;color:#283593;margin:14px 0 6px">14.2 Window Schedule (indicative)</h3>${winTbl}
-             <h3 style="font-size:13px;color:#283593;margin:14px 0 6px">14.3 Finishes Schedule (indicative specification)</h3>${finTbl}
-             ${stairBlock}
-             <div style="font-size:10px;color:#7a4f01;background:#fff3cd;border-left:3px solid #ff9800;padding:6px 10px;margin-top:10px">⚠️ Quantities and door/window marks above are <strong>derived heuristically from area and bedroom count</strong>. The Lead Architect must reconcile against the as-drawn floor plans before issue for tender or construction.</div>`,
-            '#3949ab');
-    }
-
-    // ---------- 15. MEP Detailed Design (Electrical load, Plumbing, Drainage, Septic) ----------
-    {
-        const A = p.area || 220;
-        const beds = p.bedrooms || 4;
-        const persons = beds * 2;     // BS 8233 typical occupancy
-        // Electrical loads (IEC 60364 / Kenya KS IEC 60364, indicative tropical residential)
-        const lightingW = 5 * A;                  // 5 W/m² LED lighting allowance
-        const socketsW  = 25 * A;                  // small power 25 W/m² diversified
-        const cookerW   = 6000;                    // built-in cooker + hob
-        const wHeaterW  = 3000 * Math.max(1, Math.ceil(beds/3));   // instant water heater per bath
-        const acW       = 1500 * Math.max(1, beds);                // split unit per bedroom (tropical)
-        const totalW    = lightingW + socketsW + cookerW + wHeaterW + acW;
-        const diversity = 0.65;                     // typical residential diversity factor
-        const designW   = totalW * diversity;
-        const designkVA = designW / 1000 / 0.95;     // pf 0.95
-        const mainAmp   = designW / (230 * 0.95);     // single-phase 230 V
-        const elecRows = [
-            ['Lighting (LED) @ 5 W/m²', lightingW, 'Final circuit 1.5 mm² · MCB 10 A B-curve'],
-            ['Small power sockets @ 25 W/m²', socketsW, 'Final circuit 2.5 mm² · MCB 16/20 A + 30 mA RCD'],
-            ['Cooker / hob (built-in)', cookerW, 'Dedicated 6 mm² + 32 A MCB'],
-            [`Water heaters (${Math.max(1, Math.ceil(beds/2))} units)`, wHeaterW, 'Dedicated 4 mm² + 25 A MCB + 30 mA RCD'],
-            [`Air-conditioning (${beds}×1.5 kW splits)`, acW, 'Dedicated 2.5 mm² + 16 A MCB per unit']
-        ];
-        const elecTbl = `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#fff3e0"><th style="padding:5px 8px;text-align:left">Load Description</th><th style="padding:5px 8px;text-align:right">Connected (W)</th><th style="padding:5px 8px;text-align:left">Circuit Protection</th></tr></thead><tbody>` +
-            elecRows.map(r=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fmt(r[1])}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px">${r[2]}</td></tr>`).join('') +
-            `<tr style="background:#ffe0b2;font-weight:600"><td style="padding:6px 8px">TOTAL CONNECTED LOAD</td><td style="padding:6px 8px;text-align:right">${fmt(totalW)} W</td><td style="padding:6px 8px">Diversity ${diversity.toFixed(2)}</td></tr>
-             <tr style="background:#e65100;color:#fff;font-weight:bold"><td style="padding:6px 8px">DESIGN MAXIMUM DEMAND</td><td style="padding:6px 8px;text-align:right">${fmt(designW)} W · ${fmt(designkVA)} kVA</td><td style="padding:6px 8px">Main switch ≥ ${fmt(Math.ceil(mainAmp/5)*5)} A, 1φ 230 V</td></tr></tbody></table>`;
-        // Plumbing fixture count (UPC/IPC indicative)
-        const fixCount = {
-            'Water Closet (WC)': Math.max(2, Math.ceil(beds/2)),
-            'Wash-Hand Basin (WHB)': Math.max(2, Math.ceil(beds/2)),
-            'Shower / Bath':   Math.max(2, Math.ceil(beds/2)),
-            'Kitchen Sink': 1,
-            'Laundry Sink': 1,
-            'External Bib Tap': 2
-        };
-        const fixRows = Object.entries(fixCount).map(([k,v])=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">${k}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${v}</td></tr>`).join('');
-        // Septic tank sizing (Kenya — NCC §B & EHS Guideline; 3-day retention, 180 L/person/day)
-        const dailyFlow_L = 180 * persons;
-        const septicVol_m3 = (dailyFlow_L * 3) / 1000;
-        const septicLen = 2.5;
-        const septicWid = 1.2;
-        const septicDep = septicVol_m3 / (septicLen * septicWid);
-        // Soak-pit sizing (porous soil): area = Q / 30 (L/m²/day in Kenya guideline)
-        const soakArea_m2 = dailyFlow_L / 30;
-        const soakDia = Math.sqrt(soakArea_m2 / Math.PI) * 2;
-        h += sec('15. MEP Detailed Design',
-            `<h3 style="font-size:13px;color:#e65100;margin:0 0 6px">15.1 Electrical Load Schedule (IEC 60364 / KS IEC 60364)</h3>${elecTbl}
-             <div style="font-size:10px;color:#666;margin-top:4px">Indicative loads from KS IEC 60364 Annex · diversity factor 0.65 typical for residential. Consult licensed electrical engineer for final SLD.</div>
-             <h3 style="font-size:13px;color:#e65100;margin:14px 0 6px">15.2 Electrical Single-Line Schematic</h3>
-             <pre style="background:#fafafa;border:1px solid #eee;padding:10px;font-size:10px;line-height:1.4;color:#333;overflow:auto">  KPLC Service —─ kWh Meter ── Main Isolator (${fmt(Math.ceil(mainAmp/5)*5)} A) ── Main DB (Type B SPD)
-                                                          │
-                              ┌─┬─┬─┬─┬─┬─┬─┬─┬─┬─┬─┐
-                              │ L1…Ln (Lighting circuits)        │
-                              │ P1…Pn (Socket circuits  + 30 mA RCD)
-                              │ C    (Cooker)              W   (Water heater)
-                              │ A1…An (AC dedicated)         G   (Garden / external)
-                              │ EA   (Earth busbar ⇒ earth-rod ≤ 1 Ω)</pre>
-             <h3 style="font-size:13px;color:#e65100;margin:14px 0 6px">15.3 Plumbing Fixture Schedule</h3>
-             <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#fff3e0"><th style="padding:5px 8px;text-align:left">Fixture</th><th style="padding:5px 8px;text-align:right">Qty</th></tr></thead><tbody>${fixRows}</tbody></table>
-             <h3 style="font-size:13px;color:#e65100;margin:14px 0 6px">15.4 Plumbing Isometric (schematic)</h3>
-             <pre style="background:#fafafa;border:1px solid #eee;padding:10px;font-size:10px;line-height:1.4;color:#333;overflow:auto">  Mains → Stop-cock → Storage Tank (1500 L roof) → Pressure pump (if &gt; G+1)
-           │
-      ┌────┼────────────┐
-     CW           HW (geyser/instant)        →   WC · WHB · Shower · Sink
-      │           │
-   Cold to all   Hot to bathrooms + kitchen sink only
-           Pipe sizes: ½" branches · ¾" risers · 1" main feed
-           Waste:  WHB 32 ø · Sink 40 ø · WC 100 ø · Floor gully 50 ø · Vent 75 ø</pre>
-             <h3 style="font-size:13px;color:#e65100;margin:14px 0 6px">15.5 Drainage &amp; Septic Tank Sizing</h3>
-             <table style="width:100%;border-collapse:collapse;font-size:12px">
-               <tr><td style="padding:6px 10px;border:1px solid #ddd;background:#fff3e0;width:46%"><strong>Design occupancy</strong> (BS 8233 · ${beds} bed × 2 persons)</td><td style="padding:6px 10px;border:1px solid #ddd">${persons} persons</td></tr>
-               <tr><td style="padding:6px 10px;border:1px solid #ddd;background:#fff3e0"><strong>Daily wastewater flow</strong> (180 L/p/d — NCC EHS guideline)</td><td style="padding:6px 10px;border:1px solid #ddd">${fmt(dailyFlow_L)} L/day</td></tr>
-               <tr><td style="padding:6px 10px;border:1px solid #ddd;background:#fff3e0"><strong>Septic tank volume</strong> (3-day retention)</td><td style="padding:6px 10px;border:1px solid #ddd"><strong>${fmt(septicVol_m3)} m³</strong> &mdash; suggested ${septicLen} × ${septicWid} × ${fmt(septicDep)} m (L×W×D)</td></tr>
-               <tr><td style="padding:6px 10px;border:1px solid #ddd;background:#fff3e0"><strong>Soak-pit area</strong> (porous soil, 30 L/m²/day)</td><td style="padding:6px 10px;border:1px solid #ddd"><strong>${fmt(soakArea_m2)} m²</strong> &mdash; circular &Oslash; ${fmt(soakDia)} m</td></tr>
-             </table>
-             <div style="font-size:10px;color:#7a4f01;background:#fff3cd;border-left:3px solid #ff9800;padding:6px 10px;margin-top:8px">⚠️ Septic and soak-pit sizing requires a percolation test on site. NEMA EIA / EA licence is required for systems &gt; 50 persons or near watercourses.</div>`,
-            '#e65100');
-    }
-
-    // ---------- 16. Reinforcement Drawings Register (RC details) ----------
-    {
-        const rc = extras.rcbeam || {};
-        const ok = rc && rc.success !== false;
-        const stories = Math.max(1, p.stories || 1);
-        const rcRows = [
-            ['BD-01', 'Typical Beam Reinforcement (300×500 mm)', 'EN 1992-1-1', ok ? `As,req ${fmt(rc.As_required_mm2 ?? rc.As_req)} mm² · 3ØT25 bottom + 2ØT16 top · R10 links @ 200 c/c (R10 @ 100 within d from supports)` : 'Run /eng/rc-beam to populate'],
-            ['CD-01', 'Typical Column Reinforcement (300×300 mm)', 'EN 1992-1-1', '4ØT16 main + R8 ties @ 200 c/c (200 mm splice length × 40d)'],
-            ['FD-01', 'Strip Footing Detail (B = 600 mm, Dₜ = 1200 mm)', 'EN 1997-1', (extras.geotech?.qa_kPa ?? extras.geotech?.qa_FS3_kPa) ? `Allowable bearing ${fmt(extras.geotech.qa_kPa ?? extras.geotech.qa_FS3_kPa)} kPa (FS = 3) · T12 @ 150 both ways bottom + T10 @ 200 top distribution` : 'Pending geotech bearing capacity'],
-            ['SD-01', 'Suspended Slab (one-way solid)', 'EN 1992-1-1', `${stories>1?`Slab thickness ${Math.ceil((Math.sqrt(p.area)*1.2*1000)/24/10)*10} mm (≈ L/24)`:'Single storey — ground slab on grade only'} · T10 @ 200 main + T8 @ 250 distribution · 25 mm cover`],
-            ['SS-01', 'Lintel Schedule', 'EN 1992-1-1', '150 × 230 mm precast or in-situ RC, 2ØT12 bottom + R8 links · minimum bearing 150 mm each end'],
-            ['SC-01', 'Staircase Reinforcement', 'EN 1992-1-1', stories>1 ? `Waist 150 mm · T12 @ 150 main + T10 @ 200 distribution · cover 25 mm` : 'N/A — single storey']
-        ];
-        const tbl = `<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#fbe9e7"><th style="padding:5px 8px;text-align:left">Sheet</th><th style="padding:5px 8px;text-align:left">Title</th><th style="padding:5px 8px;text-align:left">Code</th><th style="padding:5px 8px;text-align:left">Specification</th></tr></thead><tbody>` +
-            rcRows.map(r=>`<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;font-weight:600;color:#bf360c">${r[0]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee">${r[1]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px">${r[2]}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;font-size:10px">${r[3]}</td></tr>`).join('') + `</tbody></table>`;
-        h += sec('16. Reinforcement Drawings Register (R.C. Details)',
-            tbl + `<div style="font-size:10px;color:#666;margin-top:6px">Concrete grade C25/30, exposure class XC2 (above grade) / XC4 (foundations), characteristic steel f<sub>yk</sub> = 500 MPa, max bar spacing per Cl 9.3.1.1.</div>`,
-            '#bf360c');
+        const na = (t) => `<div class="rep-not-from-description" style="background:#fff3cd;border-left:4px solid #ff9800;padding:10px 12px;margin-bottom:8px;font-size:12px;color:#7a4f01">⚠️ ${t}</div>`;
+        h += sec('14. Architectural Schedules', na(REP_NOT_FROM_DESCRIPTION.schedules), '#3949ab');
+        h += sec('15. MEP Detailed Design', na(REP_NOT_FROM_DESCRIPTION.electrical) + na(REP_NOT_FROM_DESCRIPTION.drainage), '#e65100');
+        h += sec('16. Reinforcement Drawings Register (R.C. Details)', na(REP_NOT_FROM_DESCRIPTION.reinforcement), '#bf360c');
     }
 
     // ---------- 17. Geotechnical Report Status ----------
@@ -2149,7 +2012,7 @@ async function repSaveOverrides(){
 }
 
 async function repResetOverrides(){
-    if(!confirm('Reset all rate overrides back to auto-calculated KQS-2025 values?')) return;
+    if(!confirm('Remove all your rate overrides? The rates they replaced come from the server, which is not available online.')) return;
     window._repOverrides = {};
     localStorage.removeItem('eims_quote_overrides');
     try {
@@ -2174,10 +2037,10 @@ async function repDownloadPDF(){
     btns.forEach(b => b.disabled = true);
     try {
         const p = window._repData?.params || {
-            area: parseFloat(document.getElementById('rp-area')?.value || 220),
-            stories: parseInt(document.getElementById('rp-stories')?.value || 1),
-            units: parseInt(document.getElementById('rp-units')?.value || 1),
-            bedrooms: parseInt(document.getElementById('rp-beds')?.value || 4),
+            area: parseFloat(document.getElementById('rp-area')?.value), // no default (was || 220)
+            stories: parseInt(document.getElementById('rp-stories')?.value), // no default (was || 1)
+            units: parseInt(document.getElementById('rp-units')?.value), // no default (was || 1)
+            bedrooms: parseInt(document.getElementById('rp-beds')?.value), // no default (was || 4)
             location: document.getElementById('rp-loc')?.value || '',
             currency: document.getElementById('rp-cur')?.value || 'USD',
             style: document.getElementById('rp-style')?.value || 'modern',
@@ -2564,7 +2427,8 @@ function showBIM(){
 async function loadDraw(type,params){
     let vp=document.getElementById('drawVP');if(!vp)return;
     vp.innerHTML='<div style="padding:30px"><div class="spinner"></div></div>';
-    let body=Object.assign({units:+gv('p4_units')||3,bedrooms:+gv('p4_beds')||3,area:+gv('p1_area')||450,stories:+gv('p2_stories')||2,style:gv('p4_style')||'modern',location:gv('p1_location')||'',foundation_type:'strip'},params||{});
+    let body=Object.assign({units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern',location:gv('p1_location')||'',foundation_type:null},params||{});
+    if(wizStop(body)){vp.innerHTML='<div style="padding:30px;color:#ffb74d">Enter the project inputs in the wizard first. Nothing is assumed.</div>';return;}
     let url=API+'/drawings/'+type;
     try{
         let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -2591,7 +2455,8 @@ function downloadSVG(){if(!currentSVG)return alert('Generate first');let b=new B
 
 async function generateAllDrawings(){
     try{
-        let body={units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,area:+gv('p1_area')||450,style:gv('p4_style')||'modern',location:gv('p1_location')||''};
+        let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern',location:gv('p1_location')||''};
+        if(wizStop(body))return;
         let r=await fetch(API+'/drawings/all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
         if(d.success){drawings=d.drawings;alert(d.total_drawings+' drawings generated!');}
@@ -2610,8 +2475,8 @@ async function genFull3D(){
     const useBIM = !!pid;
     const url = useBIM ? API+'/bim/3d-model' : API+'/drawings/3d-model';
     const body = useBIM ? {project_id: pid}
-        : {units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,
-           area:+gv('p1_area')||450,style:gv('p4_style')||'modern'};
+        : {units:wizNum('p4_units'),stories:wizNum('p2_stories'),
+           area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
@@ -2656,7 +2521,8 @@ function bimTab(){
 async function generateIFC(){
     let out=document.getElementById('bimOut');if(out)out.innerHTML='<div class="spinner"></div>';
     try{
-        let body={name:gv('p13_name')||'EIMS Project',location:gv('p1_location')||'',gps_lat:+gv('p1_lat')||0,gps_lng:+gv('p1_lng')||0,stories:+gv('p2_stories')||2,area:+gv('p1_area')||450,units:+gv('p4_units')||3};
+        let body={name:gv('p13_name')||'EIMS Project',location:gv('p1_location')||'',gps_lat:wizNum('p1_lat'),gps_lng:wizNum('p1_lng'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),units:wizNum('p4_units')};
+        if(wizStop(body)){if(out)out.innerHTML='';return;}
         let r=await fetch(API+'/bim/generate-ifc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         let d=await r.json();
         if(!d.success){
@@ -2831,15 +2697,15 @@ async function runPhase(n){
     try{
         let proj={
             name:gv('p13_name')||'Project',location:gv('p1_location')||'',
-            gps_lat:+gv('p1_lat')||0,gps_lng:+gv('p1_lng')||0,
+            gps_lat:wizNum('p1_lat'),gps_lng:wizNum('p1_lng'),
             building_type:gv('p3_type')||'Residential',
-            units:+gv('p4_units')||3,stories:+gv('p2_stories')||2,
-            area:+gv('p1_area')||450,bedrooms:+gv('p4_beds')||3,
+            units:wizNum('p4_units'),stories:wizNum('p2_stories'),
+            area:wizNum('p1_area'),bedrooms:wizNum('p4_beds'),
             // Phase 1 inputs
-            site_area:+gv('p1_area')||500,plots:+gv('p1_plots')||1,
+            site_area:wizNum('p1_area'),plots:wizNum('p1_plots'),
             land_status:gv('p1_status')||'',description:gv('p1_desc')||'',constraints:gv('p1_constraints')||'',
             // Phase 2 inputs
-            soil_type:gv('p2_soil')||'clay_loam',water_table:+gv('p2_water')||5.2,
+            soil_type:gv('p2_soil')||'clay_loam',water_table:wizNum('p2_water'),
             seismic_design:document.getElementById('p2_seismic')?.checked??true,
             flood_risk:document.getElementById('p2_flood')?.checked??true,
             landslide_risk:document.getElementById('p2_landslide')?.checked??false,
@@ -2876,11 +2742,11 @@ async function runPhase(n){
             country:gv('p10_county')||'',title_type:gv('p10_title')||'Freehold',
             zoning:gv('p10_zoning')||'Residential (Low)',
             // Phase 12 inputs
-            budget:+gv('p12_budget')||100000,currency:gv('p12_currency')||'USD',
+            budget:wizNum('p12_budget'),currency:gv('p12_currency')||'USD',
             financing:gv('p12_financing')||'Cash (5% Discount)',
             purpose:gv('p12_purpose')||'Owner Occupier',
-            rent_per_unit:+gv('p12_rent')||500,occupancy_pct:+gv('p12_occupancy')||90,
-            interest_rate:+gv('p12_interest')||8,
+            rent_per_unit:wizNum('p12_rent'),occupancy_pct:wizNum('p12_occupancy'),
+            interest_rate:wizNum('p12_interest'),
             // Phase 13 inputs
             client_name:gv('p13_client')||'',client_email:gv('p13_email')||'',
             client_phone:gv('p13_phone')||'',start_date:gv('p13_start')||'',
@@ -2939,10 +2805,10 @@ function showResults(n,data){
 }
 
 /* ============ GLOBAL ACTIONS ============ */
-async function saveAllData(){saveInputs();try{await fetch(API+'/wizard/save-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project_name:D.p13_name||'Project',location:D.p1_location||'',total_area:+D.p1_area||450,units:+D.p4_units||3,bedrooms_per_unit:+D.p4_beds||3,budget:+D.p12_budget||100000,building_style:D.p4_style||'modern',all_inputs:D})});alert('Saved!');}catch(e){localStorage.setItem('eims',JSON.stringify(D));alert('Saved locally');}}
+async function saveAllData(){saveInputs();try{await fetch(API+'/wizard/save-project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project_name:D.p13_name||'Project',location:D.p1_location||'',total_area:wizNumOf(D.p1_area),units:wizNumOf(D.p4_units),bedrooms_per_unit:wizNumOf(D.p4_beds),budget:wizNumOf(D.p12_budget),building_style:D.p4_style||'modern',all_inputs:D})});alert('Saved!');}catch(e){localStorage.setItem('eims',JSON.stringify(D));alert('Saved locally');}}
 async function generateReport(){try{await runQuiet();window.open(API+'/export/pdf','_blank');}catch(e){alert('Run analysis first');}}
 async function exportExcel(){try{await runQuiet();window.open(API+'/export/excel','_blank');}catch(e){alert('Run analysis first');}}
-async function runQuiet(){await fetch(API+'/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:D.p13_name||'P',location:D.p1_location||'',gps_lat:+D.p1_lat||0,gps_lng:+D.p1_lng||0,building_type:D.p3_type||'Residential',units:+D.p4_units||3,stories:+D.p2_stories||2,area:+D.p1_area||450,bedrooms:+D.p4_beds||3,style:D.p4_style||'modern',soil_type:D.p2_soil||'clay_loam',water_table:+D.p2_water||5.2,foundation_type:D.p3_ftype||'auto',structure_type:D.p3_struct||'auto',material_quality:D.p7_quality||'standard',budget:+D.p12_budget||100000,currency:D.p12_currency||'USD',country:D.p10_county||'',all_inputs:D})});await fetch(API+'/execute-all-phases',{method:'POST'});}
+async function runQuiet(){await fetch(API+'/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:D.p13_name||'P',location:D.p1_location||'',gps_lat:wizNumOf(D.p1_lat),gps_lng:wizNumOf(D.p1_lng),building_type:D.p3_type||'Residential',units:wizNumOf(D.p4_units),stories:wizNumOf(D.p2_stories),area:wizNumOf(D.p1_area),bedrooms:wizNumOf(D.p4_beds),style:D.p4_style||'modern',soil_type:D.p2_soil||'clay_loam',water_table:wizNumOf(D.p2_water),foundation_type:D.p3_ftype||'auto',structure_type:D.p3_struct||'auto',material_quality:D.p7_quality||'standard',budget:wizNumOf(D.p12_budget),currency:D.p12_currency||'USD',country:D.p10_county||'',all_inputs:D})});await fetch(API+'/execute-all-phases',{method:'POST'});}
 function export3DOBJ(){if(!meshes3d.length)return alert('Generate 3D first');let lines=['# EIMS 3D Model'];let voff=1;meshes3d.forEach(m=>{lines.push('o '+(m.userData.name||'obj'));let pos=m.geometry.attributes.position;for(let i=0;i<pos.count;i++){let v=new THREE.Vector3().fromBufferAttribute(pos,i);v.applyMatrix4(m.matrixWorld);lines.push('v '+v.x.toFixed(4)+' '+v.y.toFixed(4)+' '+v.z.toFixed(4));}let idx=m.geometry.index;if(idx)for(let i=0;i<idx.count;i+=3)lines.push('f '+(idx.getX(i)+voff)+' '+(idx.getX(i+1)+voff)+' '+(idx.getX(i+2)+voff));voff+=pos.count;});let b=new Blob([lines.join('\n')],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.obj';a.click();}
 
 /* ============ DESCRIBE & GENERATE (NL → drawings + AI render) ============
@@ -3086,17 +2952,18 @@ async function dgRun(){
 
     const params = {
         name: 'DescribeMode_'+Date.now().toString(36),
-        building_type: ext.building_type || 'BUNGALOW',
-        location: (ext.location && ext.location.city) ? (ext.location.city + (ext.location.country ? (', ' + ext.location.country) : '')) : 'Nairobi, Kenya',
-        area:     num('dgArea', ext.area_m2 || 180),
-        bedrooms: num('dgBeds', ext.bedrooms || 3),
-        stories:  num('dgStories', ext.stories || 1),
-        units:    num('dgUnits', ext.units || 1),
+        building_type: ext.building_type || null,
+        location: (ext.location && ext.location.city) ? (ext.location.city + (ext.location.country ? (', ' + ext.location.country) : '')) : '',
+        area:     num('dgArea', ext.area_m2 ?? NaN),
+        bedrooms: num('dgBeds', ext.bedrooms ?? NaN),
+        stories:  num('dgStories', ext.stories ?? NaN),
+        units:    num('dgUnits', ext.units ?? NaN),
         style:    sel('dgStyle', (ext.styles && ext.styles[0]) || 'modern'),
-        gps_lat: -1.29, gps_lng: 36.82,
+        gps_lat: null, gps_lng: null, // no site coordinates in Describe mode (were Nairobi -1.29, 36.82)
         features: ext.features || [],
     };
     dgState.params = params;
+    if(wizStop({area:params.area, bedrooms:params.bedrooms, stories:params.stories, units:params.units})){ btn.disabled = false; btn.textContent = '🪄 Generate'; out.innerHTML = ''; return; }
 
     // Step 2: /api/generate
     out.innerHTML = `
@@ -3379,13 +3246,13 @@ function showBIMStudio(){
           </div>
           <div class="row r2">
             <div class="fg"><label class="fl">Area (m²)</label>
-              <input type="number" id="bimQArea" value="180"></div>
+              <input type="number" id="bimQArea" value=""></div>
             <div class="fg"><label class="fl">Bedrooms</label>
-              <input type="number" id="bimQBeds" value="3"></div>
+              <input type="number" id="bimQBeds" value=""></div>
           </div>
           <div class="row r2">
             <div class="fg"><label class="fl">Storeys</label>
-              <input type="number" id="bimQStories" value="1"></div>
+              <input type="number" id="bimQStories" value=""></div>
             <div class="fg"><label class="fl">Style</label>
               <select id="bimQStyle">
                 <option value="modern">Modern</option>
@@ -4348,11 +4215,11 @@ async function bimQuickBuild(){
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
                 name: 'BIM Quick',
-                area_m2:  +document.getElementById('bimQArea').value || 180,
-                bedrooms: +document.getElementById('bimQBeds').value || 3,
-                stories:  +document.getElementById('bimQStories').value || 1,
+                area_m2:  wizNum('bimQArea'),
+                bedrooms: wizNum('bimQBeds'),
+                stories:  wizNum('bimQStories'),
                 style:    document.getElementById('bimQStyle').value || 'modern',
-                building_type: 'BUNGALOW',
+                building_type: null, // not chosen in the quick build (was a hard-coded BUNGALOW)
             }),
         });
         const j = await r.json();
@@ -4777,7 +4644,7 @@ function showFloorEditor(){
 
     // Floor tabs
     h+='<div class="fpe-floor-tabs" id="fpeFloorTabs">';
-    for(let f=0;f<Math.max(fpe.floors,+(gv('p2_stories'))||2);f++){
+    for(let f=0;f<Math.max(fpe.floors,+(gv('p2_stories'))||2);f++){ // editor tabs only (online Floor Plan editor), not an engineering input
         h+='<div class="fpe-floor-tab'+(f===fpe.floor?' on':'')+'" onclick="fpeSetFloor('+f+')">F'+f+'</div>';
     }
     h+='<div class="fpe-floor-tab" onclick="fpeAddFloor()" title="Add floor">+</div>';
@@ -5575,7 +5442,7 @@ async function fpeAutoSolve(){
 }
 
 async function fpeExportDXF(){
-    let body={units:+(gv('p4_units'))||3,bedrooms:+(gv('p4_beds'))||3,area:+(gv('p1_area'))||450,stories:+(gv('p2_stories'))||2,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/dxf/floor-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_FloorPlan.dxf';a.click();}
@@ -5584,7 +5451,7 @@ async function fpeExportDXF(){
 
 // ---- EXPORT FUNCTIONS (DXF/FBX/NWD top bar) ----
 async function exportDXF(){
-    let body={units:+(gv('p4_units'))||3,bedrooms:+(gv('p4_beds'))||3,area:+(gv('p1_area'))||450,stories:+(gv('p2_stories'))||2,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),bedrooms:wizNum('p4_beds'),area:wizNum('p1_area'),stories:wizNum('p2_stories'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/dxf/floor-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_FloorPlan.dxf';a.click();}
@@ -5593,7 +5460,7 @@ async function exportDXF(){
 }
 
 async function exportFBX(){
-    let body={units:+(gv('p4_units'))||3,stories:+(gv('p2_stories'))||2,area:+(gv('p1_area'))||450,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/fbx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.fbx';a.click();}
@@ -5602,7 +5469,7 @@ async function exportFBX(){
 }
 
 async function exportNWD(){
-    let body={units:+(gv('p4_units'))||3,stories:+(gv('p2_stories'))||2,area:+(gv('p1_area'))||450,style:gv('p4_style')||'modern'};
+    let body={units:wizNum('p4_units'),stories:wizNum('p2_stories'),area:wizNum('p1_area'),style:gv('p4_style')||'modern'};
     try{
         let r=await fetch(API+'/export/nwd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         if(r.ok){let b=await r.blob();let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='EIMS_Model.nwd';a.click();}
@@ -5619,13 +5486,19 @@ function setCadTool(t){let c={wall:'#2d3436',room:'#0c2461',door:'#e74c3c',windo
 function drawGrid(){if(!cadCtx)return;cadCtx.strokeStyle='#eee';cadCtx.lineWidth=0.5;for(let x=0;x<=900;x+=20){cadCtx.beginPath();cadCtx.moveTo(x,0);cadCtx.lineTo(x,450);cadCtx.stroke();}for(let y=0;y<=450;y+=20){cadCtx.beginPath();cadCtx.moveTo(0,y);cadCtx.lineTo(900,y);cadCtx.stroke();}}
 function clearCad(){if(cadCtx){cadCtx.clearRect(0,0,900,450);drawGrid();}cadHistory=[];}
 function undoCad(){if(cadHistory.length){cadHistory.pop();cadCtx.clearRect(0,0,900,450);drawGrid();if(cadHistory.length){let img=new Image();img.onload=()=>cadCtx.drawImage(img,0,0);img.src=cadHistory[cadHistory.length-1];}}}
-async function saveCadSketch(){try{let r=await fetch(API+'/wizard/sketch-to-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sketch_data:document.getElementById('cadCanvas').toDataURL(),building_type:gv('p3_type')||'Residential',stories:+gv('p2_stories')||2,bedrooms:+gv('p4_beds')||3})});let d=await r.json();if(d.result){let det=d.result.detected_dimensions;alert('Analyzed! Rooms: '+det.rooms_detected+', Area: '+det.estimated_area+'m\u00B2, Stories: '+det.stories_detected);}else{alert('Analysis returned no results');}}catch(e){alert('Server unreachable - sketch saved locally only');}}
+async function saveCadSketch(){try{let r=await fetch(API+'/wizard/sketch-to-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sketch_data:document.getElementById('cadCanvas').toDataURL(),building_type:gv('p3_type')||'Residential',stories:wizNum('p2_stories'),bedrooms:wizNum('p4_beds')})});let d=await r.json();if(d.result){let det=d.result.detected_dimensions;alert('Analyzed! Rooms: '+det.rooms_detected+', Area: '+det.estimated_area+'m\u00B2, Stories: '+det.stories_detected);}else{alert('Analysis returned no results');}}catch(e){alert('Server unreachable - sketch saved locally only');}}
 
 /* ============ FILE UPLOADS ============ */
 function setupUploads(){document.querySelectorAll('input[type=file]').forEach(inp=>{inp.onchange=function(){let f=this.files[0];if(!f)return;let pid=this.id.replace('_img','_preview');let prev=document.getElementById(pid);if(prev&&f.type.startsWith('image/')){let rdr=new FileReader();rdr.onload=e=>{prev.innerHTML='<img src="'+e.target.result+'" class="img-preview">';};rdr.readAsDataURL(f);}let fd=new FormData();fd.append('file',f);fd.append('type',this.id);fetch(API+'/wizard/upload-image',{method:'POST',body:fd}).catch(()=>{});};});}
 
 /* ============ HELPERS ============ */
 function gv(id){let e=document.getElementById(id);return e?e.value:D[id]||'';}
+/* No silent defaults (review of 63d3c0bc, 2026-11-27): a blank or invalid wizard number is NaN
+   (sent as null), never 450 m², 3 units, 3 bedrooms, 2 storeys, lat/lon 0 or a 5.2 m water table. */
+function wizNumOf(v){const t=String(v??'').trim();if(t==='')return NaN;const x=Number(t);return Number.isFinite(x)?x:NaN;}
+function wizNum(id){return wizNumOf(gv(id));}
+/* Names the wizard fields left blank in a request and stops it: nothing is assumed. */
+function wizStop(obj){const m=Object.keys(obj||{}).filter(k=>typeof obj[k]==='number'&&Number.isNaN(obj[k]));if(!m.length)return false;alert('Enter '+m.join(', ')+' in the wizard first. Nothing is assumed.');return true;}
 function rb(l,v){return '<div class="rb"><div class="rl">'+l+'</div><div class="rv">'+v+'</div></div>';}
 function fCUR(v){let cur=gv('p12_currency')||'USD';let sym={'USD':'$','EUR':'\u20AC','GBP':'\u00A3','KES':'KES','ZAR':'R','NGN':'\u20A6','GHS':'GH\u20B5','AED':'AED','SAR':'SAR','INR':'\u20B9','AUD':'A$','CAD':'C$','BRL':'R$','CNY':'\u00A5','JPY':'\u00A5','SGD':'S$','MXN':'MX$','TRY':'\u20BA','TZS':'TSh','UGX':'USh','EGP':'E\u00A3','MAD':'MAD','ETB':'ETB','RWF':'RWF','COP':'COP','XAF':'XAF','XOF':'XOF','BWP':'BWP'};return (sym[cur]||cur)+' '+Number(v).toLocaleString();}
 function fKES(v){return fCUR(v);}
@@ -6137,19 +6010,22 @@ async function srSelectColumn(){
     }catch(e){el.innerHTML='<span style="color:#e74c3c">Error: '+e.message+'</span>';}
 }
 
+/* The steel / rebar server step answered no design: say so, show no figures (2026-11-27). */
+function srNoResult(d){const m=(d&&d.message)?String(d.message).replace(/[<>&]/g,''):'No design was returned.';return '<div style="color:#ffb74d;font-size:11px">'+m+' No figures are shown.</div>';}
 async function srConnection(){
     const el=document.getElementById('sr-conn-result');el.innerHTML='<span style="color:#42a5f5">Designing...</span>';
     try{
         const r=await fetch(API+'/steel/connection',{method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({connection_type:document.getElementById('sr-conn-type').value,shear_kn:+document.getElementById('sr-conn-shear').value,beam_section:'UB 406x178x74',column_section:'UC 254x254x89'})});
-        const d=await r.json();
+        const d=await r.json().catch(()=>null);
+        if(!d||d.success===false||!(d.connection||d.bolts)){el.innerHTML=srNoResult(d);return;}
         const c=d.connection||d;
         el.innerHTML=`<div style="background:#0d1b2a;border-radius:6px;padding:8px;border:1px solid #e74c3c;font-size:10px">
             <b style="color:#e74c3c">${c.type||document.getElementById('sr-conn-type').value} Connection</b><br>
-            Bolts: ${c.bolts?.count||c.bolts?.quantity||'-'}× M${c.bolts?.diameter_mm||c.bolts?.size||20} Grade ${c.bolts?.grade||'8.8'}<br>
+            Bolts: ${c.bolts?.count||c.bolts?.quantity||'-'}× M${c.bolts?.diameter_mm||c.bolts?.size||'-'} Grade ${c.bolts?.grade||'-'}<br>
             ${c.plate?.thickness_mm?'Plate: '+c.plate.thickness_mm+'mm thick<br>':''}
             ${c.welds?.size_mm?'Weld: '+c.welds.size_mm+'mm fillet<br>':''}
-            Utilization: ${c.utilization!==undefined?(c.utilization*100).toFixed(1)+'%':'OK'}
+            Utilization: ${c.utilization!==undefined?(c.utilization*100).toFixed(1)+'%':'not returned'}
         </div>`;
     }catch(e){el.innerHTML='<span style="color:#e74c3c">Error: '+e.message+'</span>';}
 }
@@ -6171,19 +6047,21 @@ async function srDesignRebar(){
         else if(type==='column'){url=API+'/rebar/column';body={width_mm:w,depth_mm:d,height_m:span,axial_kn:+document.getElementById('rb-axial').value,concrete_grade:conc};}
         else{url=API+'/rebar/slab';body={span_m:span,thickness_mm:d,load_kn_m2:load,concrete_grade:conc};}
         const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const data=await r.json();
+        const data=await r.json().catch(()=>null);
+        if(!data||data.success===false){el.innerHTML=srNoResult(data);draw.innerHTML='';return;}
         // Display results
         const rb=data.rebar||data;
         let html=`<div style="background:#0d1b2a;border-radius:6px;padding:10px;border:1px solid #27ae60">
             <div style="color:#27ae60;font-weight:bold;margin-bottom:6px">✅ ${type.toUpperCase()} REBAR DESIGN</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:10px">`;
         const rec=rb.recommended||(rb.main_bar_options&&rb.main_bar_options[0])||rb.main_bars||rb.main_reinforcement||{};
+        if(!rec.diameter_mm){el.innerHTML=srNoResult(data);draw.innerHTML='';return;}
         if(type==='beam'){
             html+=`<div>Main: ${rec.count||'-'}T${rec.diameter_mm||'-'}</div><div>As: ${rec.As_provided_mm2||rb.As_required_mm2||'-'} mm²</div>`;
-            if(rb.shear_links)html+=`<div>Links: T${rb.shear_links.diameter_mm||8}@${rb.shear_links.spacing_mm||'-'}mm</div><div>${rb.shear_links.arrangement||''}</div>`;
+            if(rb.shear_links)html+=`<div>Links: T${rb.shear_links.diameter_mm||'-'}@${rb.shear_links.spacing_mm||'-'}mm</div><div>${rb.shear_links.arrangement||''}</div>`;
         } else if(type==='column'){
             html+=`<div>Main: ${rec.count||'-'}T${rec.diameter_mm||'-'}</div><div>As: ${rec.As_provided_mm2||rb.As_required_mm2||'-'} mm²</div>`;
-            if(rb.links)html+=`<div>Links: T${rb.links.diameter_mm||8}@${rb.links.spacing_mm||'-'}mm</div><div>Weight: ${rb.links.weight_kg||'-'} kg</div>`;
+            if(rb.links)html+=`<div>Links: T${rb.links.diameter_mm||'-'}@${rb.links.spacing_mm||'-'}mm</div><div>Weight: ${rb.links.weight_kg||'-'} kg</div>`;
         } else {
             html+=`<div>Main: T${rec.diameter_mm||'-'}@${rec.spacing_mm||'-'}mm</div><div>As: ${rec.As_per_m_mm2||rb.As_required_mm2_per_m||'-'} mm²/m</div>`;
             if(rb.distribution_reinforcement)html+=`<div>Dist: T${rb.distribution_reinforcement.diameter_mm}@${rb.distribution_reinforcement.spacing_mm}mm</div>`;
@@ -6192,7 +6070,9 @@ async function srDesignRebar(){
         html+=`</div></div>`;
         el.innerHTML=html;
 
-        // SVG cross-section drawing
+        // SVG cross-section drawing: only of what the design returned (2026-11-27: it drew 4T16, 2 top bars and T8@200 when nothing came back).
+        const _lk=rb.shear_links||rb.links;
+        if(!(rec.count&&rec.diameter_mm&&_lk&&_lk.diameter_mm&&_lk.spacing_mm)){draw.innerHTML='<div style="color:#ffb74d;font-size:11px">No section drawing: the design did not return the bars and links.</div>';return;}
         const sw=300,sh=250,cx=sw/2,cy=sh/2;
         let svg=`<svg width="${sw}" height="${sh}" xmlns="http://www.w3.org/2000/svg" style="background:#0d1b2a;border-radius:6px">`;
         const scale=Math.min((sw-40)/w,(sh-60)/d);
@@ -6204,23 +6084,23 @@ async function srDesignRebar(){
         const cover_v=cover*scale;
         svg+=`<rect x="${rx+cover_v}" y="${ry+cover_v}" width="${rw-2*cover_v}" height="${rd-2*cover_v}" fill="none" stroke="#555" stroke-width="0.5" stroke-dasharray="4,4"/>`;
         // Main bars (bottom)
-        const nBars=rec.count||rec.quantity||4;
-        const dia=rec.diameter_mm||16;
+        const nBars=rec.count;
+        const dia=rec.diameter_mm;
         const barR=dia*scale/2*3; // exaggerated for visibility
         for(let i=0;i<Math.min(nBars,8);i++){
             const bx=rx+cover_v+barR+(rw-2*cover_v-2*barR)*i/Math.max(1,Math.min(nBars,8)-1);
             const by=ry+rd-cover_v;
             svg+=`<circle cx="${bx}" cy="${by}" r="${barR}" fill="#e74c3c" stroke="#fff" stroke-width="0.5"/>`;
         }
-        // Top bars (2)
-        for(let i=0;i<2;i++){
+        // Top bars: only when the design returns them (2 were always drawn)
+        for(let i=0;i<(rb.top_bars&&rb.top_bars.count||0);i++){
             const bx=rx+cover_v+barR+(rw-2*cover_v-2*barR)*i;
             svg+=`<circle cx="${bx}" cy="${ry+cover_v}" r="${barR*0.7}" fill="#e67e22" stroke="#fff" stroke-width="0.5"/>`;
         }
         // Stirrup
         svg+=`<rect x="${rx+cover_v-2}" y="${ry+cover_v-2}" width="${rw-2*cover_v+4}" height="${rd-2*cover_v+4}" fill="none" stroke="#27ae60" stroke-width="1.5" rx="3"/>`;
-        const linkDia=rb.shear_links?.diameter_mm||rb.links?.diameter_mm||8;
-        const linkSpacing=rb.shear_links?.spacing_mm||rb.links?.spacing_mm||200;
+        const linkDia=_lk.diameter_mm;
+        const linkSpacing=_lk.spacing_mm;
         svg+=`<text x="${cx}" y="${sh-5}" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="bold">${nBars}T${dia} + T${linkDia}@${linkSpacing} stirrups</text>`;
         svg+=`</svg>`;
         draw.innerHTML=svg;
@@ -6484,13 +6364,13 @@ function showCostReport(){
           <div><label style="font-size:10px;color:#5c6bc0;display:block">Currency</label>
             <select id="cr-currency" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></select></div>
           <div><label style="font-size:10px;color:#5c6bc0;display:block">Area (m²)</label>
-            <input type="number" id="cr-area" value="450" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
+            <input type="number" id="cr-area" value="" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
           <div><label style="font-size:10px;color:#5c6bc0;display:block">Stories</label>
-            <input type="number" id="cr-stories" value="2" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
+            <input type="number" id="cr-stories" value="" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
           <div><label style="font-size:10px;color:#5c6bc0;display:block">Units</label>
-            <input type="number" id="cr-units" value="3" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
+            <input type="number" id="cr-units" value="" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
           <div><label style="font-size:10px;color:#5c6bc0;display:block">Bedrooms</label>
-            <input type="number" id="cr-beds" value="3" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
+            <input type="number" id="cr-beds" value="" style="width:100%;padding:6px;background:#0a0f2e;color:#e0e0e0;border:1px solid #333;border-radius:4px;font-size:11px"></div>
         </div>
       </div>
       <div id="cr-content" style="min-height:300px"></div>
@@ -6526,10 +6406,10 @@ function crGetParams(){
     return {
         country: crCountry,
         currency: document.getElementById('cr-currency')?.value||crCurrency,
-        area: parseFloat(document.getElementById('cr-area')?.value||450),
-        stories: parseInt(document.getElementById('cr-stories')?.value||2),
-        units: parseInt(document.getElementById('cr-units')?.value||3),
-        bedrooms: parseInt(document.getElementById('cr-beds')?.value||3),
+        area: parseFloat(document.getElementById('cr-area')?.value), // no silent defaults (were 450 m², 2 storeys, 3 units, 3 bedrooms; 2026-11-26)
+        stories: parseInt(document.getElementById('cr-stories')?.value),
+        units: parseInt(document.getElementById('cr-units')?.value),
+        bedrooms: parseInt(document.getElementById('cr-beds')?.value),
         building_type: 'residential',
         location: crCountry,
     };
@@ -7259,6 +7139,14 @@ const PRO_CATALOG = [
       {k:'surfaces',type:'textarea',
         def:'[\n  {"description":"ceiling","area_m2":80,"alpha":0.04},\n  {"description":"floor","area_m2":80,"alpha":0.30},\n  {"description":"walls","area_m2":40,"alpha":0.10}\n]',l:'Surfaces (JSON array)'},
     ]},
+  {id:'ph_snd', grp:'Physics', title:'Airborne sound insulation, single wall (EN 12354-1 Annex B)',
+    ep:'/api/arch/acoustics/airborne', mth:'POST',
+    refs:['EN 12354-1:2000 Annex B (mass law, m′ ≥ 150 kg/m²); flanking not included'],
+    f:[
+      {k:'layers',type:'textarea',
+        def:'[\n  {"description":"200 mm dense concrete block","thickness_m":0.2,"density_kg_m3":2000},\n  {"description":"13 mm plaster, side 1","thickness_m":0.013,"density_kg_m3":1300},\n  {"description":"13 mm plaster, side 2","thickness_m":0.013,"density_kg_m3":1300}\n]',l:'Layers (JSON array: thickness m, density kg/m³)'},
+      {k:'target_Rw_dB',type:'number',def:'',l:'Target Rw from the specification (dB; blank = none)'},
+    ]},
   {id:'ph_uv', grp:'Physics', title:'U-value (BS EN ISO 6946)',
     ep:'/api/arch/uvalue', mth:'POST',
     refs:['BS EN ISO 6946','BS EN ISO 10456'],
@@ -7455,6 +7343,18 @@ const PRO_CATALOG = [
       {k:'Asw_mm2',type:'number',def:157,l:'Link legs area Asw (mm²; blank = none)'},
       {k:'s_mm',type:'number',def:200,l:'Link spacing s (mm)'},
       {k:'fywk_MPa',type:'number',def:500,l:'Link steel fywk (MPa)'},
+    ]},
+  {id:'en_col', grp:'Engineering+', title:'RC column, axial (EN 1992-1-1 §6.1, §5.8.3.1)',
+    ep:'/api/rc/column/axial', mth:'POST',
+    refs:['EN 1992-1-1:2004 §6.1(5), §5.8.3.1, §9.5.2'],
+    f:[
+      {k:'b_mm',type:'number',def:400,l:'Width b (mm)'},
+      {k:'h_mm',type:'number',def:400,l:'Depth h (mm)'},
+      {k:'As_mm2',type:'number',def:'',l:'Longitudinal steel As, total (mm²)'},
+      {k:'fck_MPa',type:'number',def:30,l:'fck (MPa)'},
+      {k:'fyk_MPa',type:'number',def:500,l:'fyk (MPa)'},
+      {k:'NEd_kN',type:'number',def:'',l:'Design axial load N_Ed (kN)'},
+      {k:'l0_m',type:'number',def:'',l:'Effective length l0 (m)'},
     ]},
   {id:'en_defl', grp:'Engineering+', title:'Deflection, span/depth (EN 1992-1-1 §7.4.2)',
     ep:'/api/rc/deflection/span-depth', mth:'POST',
@@ -8611,8 +8511,8 @@ function proBuildExteriorPrompt(p){
   return [
     'architectural photography',
     base,
-    (p.bedrooms||4)+' bedroom, '+(p.levels||2)+' storey',
-    'setting: ' + (p.setting||'Mediterranean coast'),
+    (p.bedrooms ? p.bedrooms+' bedroom' : '')+(p.bedrooms && p.levels ? ', ' : '')+(p.levels ? p.levels+' storey' : ''),
+    p.setting ? 'setting: ' + p.setting : '',
     p.features ? 'featuring '+p.features : '',
     'lit by '+(p.time_of_day||'golden hour'),
     'professional architectural photograph, wide angle, ultra realistic, award winning, 8k, dramatic atmosphere, no people'

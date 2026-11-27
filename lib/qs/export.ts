@@ -105,7 +105,7 @@ function writeBuildUps(wb: ExcelJS.Workbook, boq: Boq, project: string): Map<str
   bs.columns = [{ width: 10 }, { width: 10 }, { width: 44 }, { width: 8 }, { width: 14 }, { width: 14 }, { width: 9 }, { width: 16 }, { width: 50 }, { width: 12 }];
   bs.addRow([`${project} · revision ${boq.revision} · rate build-ups`]).font = { bold: true };
   bs.addRow([DRAFT_NOTICE]).font = { bold: true, color: { argb: 'FFB45309' } };
-  bs.addRow([null, null, 'Material amount = quantity per BOQ unit × price × (1 + waste % / 100); labour and plant = hours × rate per hour; each rounded to 0.01. Unit rate = net + overheads & profit.']);
+  bs.addRow([null, null, 'Material amount = quantity per BOQ unit × price × (1 + waste % / 100); labour and plant = hours × rate per hour; transport = transport units × price per unit; each rounded to 0.01. Unit rate = net + overheads & profit.']);
   bs.addRow(['Item', 'Kind', 'Description', 'Unit', 'Qty / BOQ unit', 'Price (KES)', 'Waste %', 'Amount (KES)', 'Price source', 'Price date', 'Price status']).font = { bold: true };
   for (const l of lines) {
     const b = l.buildUp!;
@@ -121,7 +121,7 @@ function writeBuildUps(wb: ExcelJS.Workbook, boq: Boq, project: string): Map<str
       continue;
     }
     const sub = (label: string, kind: string, result: number) => { const row = bs.addRow([null, null, label]); row.getCell(8).value = { formula: `ROUND(SUMIF(B${first}:B${last},"${kind}",H${first}:H${last}),2)`, result }; };
-    sub('Materials', 'material', b.materials); sub('Labour', 'labour', b.labour); sub('Plant', 'plant', b.plant);
+    sub('Materials', 'material', b.materials); sub('Labour', 'labour', b.labour); sub('Plant', 'plant', b.plant); sub('Transport', 'transport', b.transport);
     const net = bs.addRow([null, null, 'Net unit rate']); net.getCell(8).value = { formula: `ROUND(SUM(H${first}:H${last}),2)`, result: b.net };
     const ohp = bs.addRow([null, null, `Overheads & profit ${b.ohpPct} % (${b.ohpSource})`]); ohp.getCell(8).value = { formula: `ROUND(H${net.number}*${b.ohpPct}/100,2)`, result: b.ohp };
     const rate = bs.addRow([null, null, `Unit rate per ${l.unit} (to BOQ) — ${TIER_SHORT[b.tier!]}`]); rate.getCell(8).value = { formula: `ROUND(H${net.number}+H${ohp.number},2)`, result: b.rate };

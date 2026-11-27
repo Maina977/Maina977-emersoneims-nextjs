@@ -80,7 +80,7 @@ export function boqToPdf(boq: Boq, meta: { project: string; preparedBy: string; 
     const totals = b.rate === null
       ? [[{ content: pdfSafe(`Build-up incomplete — rate required: ${[...b.errors, ...b.missing].join('; ')}`), colSpan: 5, styles: { fontStyle: 'bold' as const, textColor: [185, 28, 28] as [number, number, number] } }]]
       : [
-        ...([['Materials', b.materials], ['Labour', b.labour], ['Plant', b.plant], ['Net unit rate', b.net], [`Overheads & profit ${b.ohpPct} % (${b.ohpSource})`, b.ohp]] as Array<[string, number | null]>)
+        ...([['Materials', b.materials], ['Labour', b.labour], ['Plant', b.plant], ['Transport', b.transport], ['Net unit rate', b.net], [`Overheads & profit ${b.ohpPct} % (${b.ohpSource})`, b.ohp]] as Array<[string, number | null]>)
           .map(([t, v]) => [{ content: pdfSafe(t), colSpan: 4 }, num(v)]),
         [{ content: pdfSafe(`Unit rate per ${l.unit} (to the BOQ) — ${TIER_SHORT[b.tier!]}`), colSpan: 4, styles: { fontStyle: 'bold' as const } }, { content: num(b.rate), styles: { fontStyle: 'bold' as const } }],
       ];

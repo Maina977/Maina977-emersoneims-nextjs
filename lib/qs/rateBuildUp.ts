@@ -6,7 +6,9 @@
  *   material line = quantity per BOQ unit × price × (1 + waste % / 100)
  *   labour line   = hours per BOQ unit × rate per hour
  *   plant line    = hours per BOQ unit × rate per hour
- *   net rate      = Σ material + Σ labour + Σ plant
+ *   transport     = transport units per BOQ unit (t, trip, t·km …) × price per unit
+ *                   (R-24, 2026-11-27: delivery to site priced on its own line, never as a default)
+ *   net rate      = Σ material + Σ labour + Σ plant + Σ transport
  *   O&P           = net rate × overheads & profit % / 100
  *   unit rate     = net rate + O&P
  *
@@ -26,10 +28,10 @@
  * No price is built into this module. Prices are typed by the user or taken
  * from a rates dataset (data/building/rates/*.json) that cites each value.
  */
-export const BUILDUP_ENGINE_VERSION = 'qs-buildup 1.1.0 (2026-11-25: price status)';
+export const BUILDUP_ENGINE_VERSION = 'qs-buildup 1.2.0 (2026-11-27: transport component)';
 
-export type ResourceKind = 'material' | 'labour' | 'plant';
-export const RESOURCE_LABELS: Record<ResourceKind, string> = { material: 'Material', labour: 'Labour', plant: 'Plant' };
+export type ResourceKind = 'material' | 'labour' | 'plant' | 'transport';
+export const RESOURCE_LABELS: Record<ResourceKind, string> = { material: 'Material', labour: 'Labour', plant: 'Plant', transport: 'Transport' };
 
 /** Status of a price used to price work. 'unverified' is never priced. */
 export type PriceTier = 'verified' | 'indicative';
@@ -42,7 +44,7 @@ export const TIER_SHORT: Record<PriceTier | 'unpriced', string> = { verified: 'V
 export interface Resource {
   kind: ResourceKind;
   description: string;
-  /** Unit of the resource (bag, m, No for materials; h for labour and plant). */
+  /** Unit of the resource (bag, m, No for materials; h for labour and plant; t, trip or t·km for transport). */
   unit: string;
   /** Quantity of the resource per one BOQ unit (hours for labour and plant). */
   quantity: number;
@@ -50,7 +52,7 @@ export interface Resource {
   price: number | null;
   /** Status of the price; required whenever a price is given. */
   tier: PriceTier | null;
-  /** Materials only; 0 for labour and plant. */
+  /** Materials only; 0 for labour, plant and transport. */
   wastePct: number;
   source: string;
   date: string;
@@ -59,7 +61,7 @@ export interface BuildUp { resources: Resource[]; ohpPct: number; ohpSource: str
 export interface BuildUpLineResult extends Resource { amount: number | null; formula: string }
 export interface BuildUpResult {
   lines: BuildUpLineResult[];
-  materials: number; labour: number; plant: number;
+  materials: number; labour: number; plant: number; transport: number;
   net: number | null; ohp: number | null; rate: number | null;
   ohpPct: number; ohpSource: string;
   /** Weakest status of the priced inputs (indicative if any input is), null while incomplete. */
@@ -91,16 +93,16 @@ const isTier = (t: unknown): t is PriceTier => t === 'verified' || t === 'indica
 export function computeBuildUp(b: BuildUp, boqUnit: string): BuildUpResult {
   const errors: string[] = [];
   const missing: string[] = [];
-  if (!b.resources.length) errors.push('a build-up needs at least one material, labour or plant line');
+  if (!b.resources.length) errors.push('a build-up needs at least one material, labour, plant or transport line');
   const lines: BuildUpLineResult[] = b.resources.map((r, i) => {
     const n = `build-up line ${i + 1}${r.description.trim() ? ` (${r.description.trim()})` : ''}`;
-    if (!Object.prototype.hasOwnProperty.call(RESOURCE_LABELS, r.kind)) errors.push(`${n}: choose material, labour or plant`);
+    if (!Object.prototype.hasOwnProperty.call(RESOURCE_LABELS, r.kind)) errors.push(`${n}: choose material, labour, plant or transport`);
     if (!r.description.trim()) errors.push(`${n}: description is required`);
     if (!r.unit.trim()) errors.push(`${n}: unit is required`);
     if (!(Number.isFinite(r.quantity) && r.quantity > 0)) errors.push(`${n}: quantity per ${boqUnit} must be a number greater than 0`);
     if (r.kind === 'material') { if (!(Number.isFinite(r.wastePct) && r.wastePct >= 0 && r.wastePct <= 50)) errors.push(`${n}: waste must be 0–50 %`); }
     else if (r.wastePct !== 0) errors.push(`${n}: waste applies to materials only (enter 0 or leave blank)`);
-    const formula = r.kind === 'material' ? `${r.quantity} ${r.unit} × ${r.price ?? '?'} × (1 + ${r.wastePct} %)` : `${r.quantity} h × ${r.price ?? '?'} /h`;
+    const formula = r.kind === 'material' ? `${r.quantity} ${r.unit} × ${r.price ?? '?'} × (1 + ${r.wastePct} %)` : r.kind === 'transport' ? `${r.quantity} ${r.unit} × ${r.price ?? '?'} /${r.unit}` : `${r.quantity} h × ${r.price ?? '?'} /h`;
     if (r.price === null) { missing.push(`${n}: price required (quotation required)`); return { ...r, amount: null, formula }; }
     if (!(Number.isFinite(r.price) && r.price >= 0)) { errors.push(`${n}: price must be a number ≥ 0 (KES)`); return { ...r, amount: null, formula }; }
     if (!isTier(r.tier)) errors.push(`${n}: choose the price status (verified EmersonEIMS rate/supplier quotation, or indicative market rate)`);
@@ -111,20 +113,20 @@ export function computeBuildUp(b: BuildUp, boqUnit: string): BuildUpResult {
   if (!(Number.isFinite(b.ohpPct) && b.ohpPct >= 0 && b.ohpPct <= 100)) errors.push('build-up overheads & profit must be 0–100 %');
   else if (!b.ohpSource.trim()) errors.push('build-up overheads & profit: state its basis (e.g. company policy, tender instruction)');
   const sum = (k: ResourceKind) => money(lines.filter((l) => l.kind === k).reduce((a, l) => a + (l.amount ?? 0), 0));
-  const materials = sum('material'), labour = sum('labour'), plant = sum('plant');
+  const materials = sum('material'), labour = sum('labour'), plant = sum('plant'), transport = sum('transport');
   const dates = lines.filter((l) => l.price !== null && isIsoDate(l.date)).map((l) => l.date).sort();
   const priceDate = dates[0] ?? null;
-  const common = { lines, materials, labour, plant, ohpPct: b.ohpPct, ohpSource: b.ohpSource.trim(), priceDate, missing, errors };
+  const common = { lines, materials, labour, plant, transport, ohpPct: b.ohpPct, ohpSource: b.ohpSource.trim(), priceDate, missing, errors };
   if (errors.length || missing.length) {
     return { ...common, net: null, ohp: null, rate: null, tier: null, basis: `Build-up incomplete: ${[...errors, ...missing].join('; ')}` };
   }
-  const net = money(materials + labour + plant);
+  const net = money(materials + labour + plant + transport);
   const ohp = money(net * b.ohpPct / 100);
   const rate = money(net + ohp);
   const tier: PriceTier = lines.some((l) => l.tier === 'indicative') ? 'indicative' : 'verified';
   return {
     ...common, net, ohp, rate, tier,
-    basis: `Rate build-up per ${boqUnit}: materials ${materials} + labour ${labour} + plant ${plant} = net ${net}; O&P ${b.ohpPct} % (${b.ohpSource.trim()}) = ${ohp}; unit rate ${rate} KES. ${TIER_SHORT[tier]} (weakest input). Prices dated from ${priceDate}${b.location.trim() ? `, ${b.location.trim()}` : ''}.`,
+    basis: `Rate build-up per ${boqUnit}: materials ${materials} + labour ${labour} + plant ${plant} + transport ${transport} = net ${net}; O&P ${b.ohpPct} % (${b.ohpSource.trim()}) = ${ohp}; unit rate ${rate} KES. ${TIER_SHORT[tier]} (weakest input). Prices dated from ${priceDate}${b.location.trim() ? `, ${b.location.trim()}` : ''}.`,
   };
 }
 
@@ -162,7 +164,7 @@ export interface RateRecord {
   geography: string;
   vat: 'inclusive' | 'exclusive' | 'not stated';
   delivery: string;
-  basis: 'materials-only' | 'installed' | 'labour' | 'plant';
+  basis: 'materials-only' | 'installed' | 'labour' | 'plant' | 'transport';
   confidence: 'high' | 'medium' | 'low';
   status: RecordStatus;
   note?: string;
@@ -171,7 +173,7 @@ export interface RatesFile { format: typeof RATES_FILE_FORMAT; version: 2; datas
 export class RatesFileError extends Error {}
 
 const ONE_OF = {
-  kind: ['material', 'labour', 'plant'], vat: ['inclusive', 'exclusive', 'not stated'], basis: ['materials-only', 'installed', 'labour', 'plant'],
+  kind: ['material', 'labour', 'plant', 'transport'], vat: ['inclusive', 'exclusive', 'not stated'], basis: ['materials-only', 'installed', 'labour', 'plant', 'transport'],
   confidence: ['high', 'medium', 'low'], status: ['verified', 'indicative', 'unverified'],
 } as const;
 

@@ -32,7 +32,7 @@ export default function BuildUpEditor({ item, unit, draft, result, rates, onChan
   return (
     <div className="space-y-2 rounded border border-sky-700/60 p-2 text-xs">
       <div className="font-semibold">Rate build-up for {item}, per {unit}</div>
-      <p className="text-slate-400">Material = quantity per {unit} × price × (1 + waste %); labour and plant = hours per {unit} × rate per hour. Net + overheads &amp; profit = unit rate. A line with no price leaves the rate as “rate required”.</p>
+      <p className="text-slate-400">Material = quantity per {unit} × price × (1 + waste %); labour and plant = hours per {unit} × rate per hour; transport = transport units (t, trip, t·km) per {unit} × price per unit. Net + overheads &amp; profit = unit rate. A line with no price leaves the rate as “rate required”.</p>
       {/* relative: the sr-only cells inside are position:absolute; without a positioned scroll box they escape it and widen the page (390 px overflow, 2026-11-25). */}
       <div className="relative overflow-x-auto" role="region" aria-label={`Rate build-up lines for ${item}, scrolls sideways`} tabIndex={0}><table className="w-full min-w-[56rem]">
         <caption className="sr-only">{`Rate build-up lines for ${item}`}</caption>
@@ -83,7 +83,7 @@ export default function BuildUpEditor({ item, unit, draft, result, rates, onChan
       {result && (
         result.rate === null
           ? <p className="text-amber-300">Rate required: {[...result.errors, ...result.missing].join('; ') || 'complete the build-up'}.</p>
-          : <p className={result.tier === 'indicative' ? 'text-amber-300' : 'text-emerald-300'}>Materials {fmt(result.materials)} + labour {fmt(result.labour)} + plant {fmt(result.plant)} = net {fmt(result.net)}; O&amp;P {result.ohpPct} % = {fmt(result.ohp)}; unit rate <strong>KES {fmt(result.rate)}</strong> per {unit}. Price status: <strong>{TIER_SHORT[result.tier!]}</strong>{result.tier === 'indicative' ? ' (preliminary budget only, not a quotation)' : ''}. Prices dated from {result.priceDate}.</p>
+          : <p className={result.tier === 'indicative' ? 'text-amber-300' : 'text-emerald-300'}>Materials {fmt(result.materials)} + labour {fmt(result.labour)} + plant {fmt(result.plant)} + transport {fmt(result.transport)} = net {fmt(result.net)}; O&amp;P {result.ohpPct} % = {fmt(result.ohp)}; unit rate <strong>KES {fmt(result.rate)}</strong> per {unit}. Price status: <strong>{TIER_SHORT[result.tier!]}</strong>{result.tier === 'indicative' ? ' (preliminary budget only, not a quotation)' : ''}. Prices dated from {result.priceDate}.</p>
       )}
     </div>
   );

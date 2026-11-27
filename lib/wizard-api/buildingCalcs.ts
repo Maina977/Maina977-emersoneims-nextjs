@@ -210,6 +210,13 @@ export function egress(b: Body) {
  * (Eq. 6.2.2.2). Rp, Ra and default occupant densities from the SI version
  * of Table 6.2.2.1; Ez from Table 6.2.2.2. Single zone only: a multi-zone
  * system also needs the system ventilation efficiency (§6.2.4).
+ *
+ * Edition (review W2, 2026-11-27): kept as "edition not stated". The equation
+ * and table numbers (6.2.2.1 / 6.2.2.2) are those of the 2016 and earlier
+ * editions, but the Rp / Ra values used here (office 2.5 L/s·person +
+ * 0.3 L/s·m², classroom 5 + 0.6, retail 3.8 + 0.6 …) are the same in several
+ * editions, so the values alone cannot identify one, and no copy of the
+ * standard is in this repository to confirm it. Naming a year would be a guess.
  */
 const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; density: number }> = {
   office: { label: 'Office space', Rp: 2.5, Ra: 0.3, density: 5 },
@@ -267,7 +274,7 @@ export function ventilation(b: Body) {
       'One zone only. A system serving several zones also needs the system ventilation efficiency (§6.2.4). Exhaust (toilets, kitchens) is separate (Table 6.5).',
       'Kenya: confirm against the Building Code 2024 and the project mechanical engineer before submission',
     ],
-    method: 'ASHRAE 62.1 Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
+    method: 'ASHRAE 62.1 (edition not stated) Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2',
   };
 }
 
@@ -401,7 +408,43 @@ export function daylightAdf(b: Body) {
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
     assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
-    method: 'Average daylight factor, BRE Digest 309 / BS 8206-2 formula',
+    method: 'Average daylight factor, BRE Digest 309 (1986) / BS 8206-2:2008 (superseded 2022-01-31) formula',
+  };
+}
+
+/**
+ * Airborne sound insulation of a single homogeneous wall or floor
+ * (register R-39, 2026-11-27): the empirical mass law of EN 12354-1:2000
+ * Annex B, Rw = 37.5·lg(m′/m′0) − 42 dB, m′0 = 1 kg/m², valid for
+ * m′ ≥ 150 kg/m² (heavier, monolithic constructions). m′ = Σ thickness ×
+ * density of the layers (plaster included). A laboratory-type single-leaf
+ * estimate: in-situ R′w is lower by flanking transmission, which is not
+ * computed, nor are cavity, lightweight or multi-leaf constructions.
+ */
+export function soundInsulation(b: Body) {
+  const layers = parseArray(b.layers);
+  if (!layers || !layers.length) return bad('layers must be a list of {description, thickness_m, density_kg_m3}');
+  let m = 0;
+  const rows: Array<{ description: string; thickness_m: number; density_kg_m3: number; mass_kg_m2: number }> = [];
+  for (const [i, l] of layers.entries()) {
+    const t = n(l.thickness_m), rho = n(l.density_kg_m3);
+    if (t === undefined || rho === undefined) return bad(`layers[${i}] needs thickness_m and density_kg_m3`);
+    if (!(t > 0 && t <= 1)) return bad(`layers[${i}] thickness_m must be between 0 and 1 m`);
+    if (!(rho >= 100 && rho <= 3000)) return bad(`layers[${i}] density_kg_m3 must be between 100 and 3,000 kg/m³ (homogeneous building materials)`);
+    m += t * rho;
+    rows.push({ description: String(l.description ?? `Layer ${i + 1}`), thickness_m: t, density_kg_m3: rho, mass_kg_m2: r(t * rho, 1) });
+  }
+  if (m < 150) return bad(`The mass per unit area is ${r(m, 1)} kg/m²: the EN 12354-1 Annex B mass law used here is valid from 150 kg/m². Lighter, cavity or multi-leaf constructions need tested values or a specialist.`);
+  if (m > 1500) return bad(`The mass per unit area is ${r(m, 1)} kg/m², above this tool's own upper limit of 1,500 kg/m² (not a limit of EN 12354-1 Annex B): check the layers.`);
+  const Rw = 37.5 * Math.log10(m) - 42;
+  const target = optN(b, 'target_Rw_dB');
+  return {
+    basis: 'Estimate: EN 12354-1 Annex B empirical mass law, not a tested or in-situ value',
+    mass_kg_m2: r(m, 1), Rw_dB: r(Rw, 1), layers: rows,
+    ...(target !== undefined ? { checks: [{ check: 'Rw ≥ target Rw (laboratory-type estimate)', value: `${r(Rw, 1)} ≥ ${target} dB`, pass: Rw >= target }] } : {}),
+    not_checked: ['flanking transmission: the in-situ R′w (and DnT,w) is lower and needs EN 12354-1 with the junctions, or a site test', 'impact sound of floors'],
+    assumptions: ['Single homogeneous leaf (layers bonded, no cavity)', 'Mass law of EN 12354-1:2000 Annex B, valid for m′ ≥ 150 kg/m²'],
+    method: 'EN 12354-1:2000 Annex B: Rw = 37.5·lg(m′) − 42 dB (EN 12354-1:2000 is superseded by EN ISO 12354-1:2017; the single-leaf mass-law estimate used here is kept as stated)',
   };
 }
 
@@ -495,7 +538,7 @@ export function uValue(b: Body) {
     R_total_m2K_W: r(R, 3),
     surface_resistances: { Rsi: rsi, Rse: rse, heat_flow: flow },
     layers: rows,
-    method: 'BS EN ISO 6946 (no correction for air gaps, fixings or thermal bridges)',
+    method: 'BS EN ISO 6946:2017 (no correction for air gaps, fixings or thermal bridges)',
   };
 }
 
@@ -646,7 +689,7 @@ export function windEurocode(b: Body) {
     vb_ms: r(vb), vm_ms: r(vm), Iv: r(Iv, 3), cr: r(cr, 3), kr: r(kr, 3),
     rho_kg_m3: rho, co, z_used_m: zEff,
     assumptions,
-    method: 'EN 1991-1-4 §4.2–4.5 (recommended values; check the National Annex)',
+    method: 'EN 1991-1-4:2005 §4.2–4.5 (recommended values; check the National Annex)',
   };
 }
 
@@ -789,7 +832,7 @@ export function rcBeam(b: Body) {
     checks,
     ...(Med === undefined ? { not_checked: ['M_Ed not given, so the moment demand was not checked'] } : {}),
     assumptions: ['Singly reinforced; compression steel ignored', 'αcc = 0.85 (UK/Kenya practice; recommended value is 1.0)', 'Shear and deflection are separate checks (EC2 shear, span/depth); crack width not checked'],
-    method: 'EN 1992-1-1 §3.1.7 rectangular stress block, §6.1',
+    method: 'EN 1992-1-1:2004 §3.1.7 rectangular stress block, §6.1',
   };
 }
 
@@ -816,7 +859,7 @@ export function steelBolt(b: Body) {
     if (grade !== null && Math.round(Number(grade.split('.')[0]) * 100) !== Math.round(fub!)) return bad(`grade ${grade} has fub = ${Number(grade.split('.')[0]) * 100} MPa, not ${fub} MPa`);
     const av = optN(b, 'alpha_v') ?? (grade ? (['4.6', '5.6', '8.8'].includes(grade) ? 0.6 : 0.5) : fub === 800 ? 0.6 : 0.5);
     if (av !== 0.5 && av !== 0.6) return bad('alpha_v must be 0.5 or 0.6 (EN 1993-1-8 Table 3.4)');
-    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8 Table 3.4, one shear plane' };
+    return { Fv_Rd_kN: r((av * fub! * As!) / gM2 / 1000), alpha_v: av, method: 'EN 1993-1-8:2005 Table 3.4, one shear plane' };
   }
   const desig = String(b.designation ?? '').toUpperCase();
   const grade = String(b.grade ?? '');
@@ -934,7 +977,7 @@ export function steelBolt(b: Body) {
     FvEd !== undefined && out.Fb_Rd_kN === undefined ? 'plate bearing (give t_ply_mm, fu_ply_MPa and e1_mm)' : null,
     FtEd === undefined ? 'Ft,Ed not given, so tension demand was not checked' : null,
   ].filter(Boolean);
-  return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8 Table 3.4 (γM2 = 1.25)' };
+  return { ...out, checks, ...(notChecked.length ? { not_checked: notChecked } : {}), assumptions, method: 'EN 1993-1-8:2005 Table 3.4 (γM2 = 1.25)' };
 }
 
 // ───────────────────────────── Geotechnics ──────────────────────────────
@@ -1139,7 +1182,7 @@ export function bearingEc7(b: Body) {
     combinations: results,
     checks,
     assumptions,
-    method: 'EN 1997-1 Annex D bearing resistance, Design Approach 1',
+    method: 'EN 1997-1:2004 Annex D bearing resistance, Design Approach 1',
   };
 }
 
@@ -1234,7 +1277,7 @@ export function ec2Shear(b: Body) {
     const X = (bw! * z * nu1 * fcd) / (VEd * 1000);
     if (X < 2) {
       checks.push({ check: 'V_Ed ≤ V_Rd,max at θ = 45° (strut crushing)', value: `${VEd} ≤ ${r(VRdmax(1), 1)} kN`, pass: false });
-      return { ...out, V_Rd_max_kN: r(VRdmax(1), 1), checks, warning: 'The concrete struts crush even at θ = 45°: enlarge the section or raise fck.', method: 'EN 1992-1-1 §6.2.2 and §6.2.3' };
+      return { ...out, V_Rd_max_kN: r(VRdmax(1), 1), checks, warning: 'The concrete struts crush even at θ = 45°: enlarge the section or raise fck.', method: 'EN 1992-1-1:2004 §6.2.2 and §6.2.3' };
     }
     cot = Math.min(2.5, (X + Math.sqrt(X * X - 4)) / 2);
     out.cot_theta = r(cot, 3);
@@ -1276,7 +1319,52 @@ export function ec2Shear(b: Body) {
       VEd !== undefined ? `cot θ = ${r(cot, 3)}: the flattest strut (≤ 2.5) for which V_Rd,max ≥ V_Ed` : 'No V_Ed given: cot θ = 2.5',
       'Beams need at least the minimum links even where V_Ed ≤ V_Rd,c (§6.2.1(4), §9.2.2)',
     ],
-    method: 'EN 1992-1-1 §6.2.2 (members without shear reinforcement) and §6.2.3 (variable strut inclination)',
+    method: 'EN 1992-1-1:2004 §6.2.2 (members without shear reinforcement) and §6.2.3 (variable strut inclination)',
+  };
+}
+
+/**
+ * RC column, axial (register R-31, 2026-11-27). EN 1992-1-1:2004:
+ *  - concentric resistance N_Rd = fcd·(Ac − As) + σs·As, with the mean strain
+ *    limited to εc2 = 0.002 (§6.1(5), Table 3.1): σs = min(fyd, Es·εc2 = 400 MPa);
+ *    fcd = αcc·fck/γc, αcc = 0.85 (UK NA, as the beam check), γc 1.5, γs 1.15;
+ *  - slenderness §5.8.3.1: λ = l0/i, i = h/√12 (smaller side), λlim = 20·A·B·C/√n,
+ *    n = N_Ed/(Ac·fcd), A = 0.7, B = 1.1, C = 0.7 (the values to use when φef, ω, rm
+ *    are not known);
+ *  - longitudinal steel §9.5.2: As,min = max(0.10·N_Ed/fyd, 0.002·Ac); As,max = 0.04·Ac.
+ * Bending (minimum eccentricity e0 = max(h/30, 20 mm), §6.1(4)) and second-order
+ * effects of a slender column are NOT checked: the result says so (PARTIAL).
+ */
+export function rcColumn(b: Body) {
+  const bw = pick(b, 'b_mm'), h = pick(b, 'h_mm'), As = pick(b, 'As_mm2'), fck = pick(b, 'fck_MPa'), fyk = pick(b, 'fyk_MPa'), N = pick(b, 'NEd_kN'), l0 = pick(b, 'l0_m');
+  const err = missing({ b_mm: bw, h_mm: h, As_mm2: As, fck_MPa: fck, fyk_MPa: fyk, NEd_kN: N, l0_m: l0 });
+  if (err) return err;
+  if (!(bw! >= 150 && bw! <= 3000 && h! >= 150 && h! <= 3000)) return bad('b_mm and h_mm must be between 150 and 3,000 mm (this tool\'s range for a column section, not an EN 1992-1-1 clause)');
+  if (!(fck! >= 12 && fck! <= 50)) return bad('fck_MPa must be between 12 and 50 MPa');
+  if (!(fyk! >= 400 && fyk! <= 600)) return bad('fyk_MPa must be between 400 and 600 MPa');
+  if (!(N! > 0 && N! <= 1e5)) return bad('NEd_kN must be a compressive design load greater than 0 (kN)');
+  if (!(l0! > 0 && l0! <= 50)) return bad('l0_m (effective length) must be between 0 and 50 m');
+  const Ac = bw! * h!;
+  if (!(As! > 0 && As! < Ac)) return bad('As_mm2 must be greater than 0 and smaller than the section area');
+  const fcd = (0.85 * fck!) / 1.5, fyd = fyk! / 1.15, sigmaS = Math.min(fyd, 200000 * 0.002);
+  const NRd = (fcd * (Ac - As!) + sigmaS * As!) / 1000;
+  const i = Math.min(bw!, h!) / Math.sqrt(12);
+  const lambda = (l0! * 1000) / i;
+  const n = (N! * 1000) / (Ac * fcd);
+  const lambdaLim = (20 * 0.7 * 1.1 * 0.7) / Math.sqrt(n);
+  const AsMin = Math.max((0.1 * N! * 1000) / fyd, 0.002 * Ac), AsMax = 0.04 * Ac;
+  return {
+    N_Rd_kN: r(NRd, 1), utilisation: r(N! / NRd, 3), sigma_s_MPa: r(sigmaS, 1), fcd_MPa: r(fcd), lambda: r(lambda, 1), lambda_lim: r(lambdaLim, 1), n: r(n, 3),
+    As_min_mm2: Math.ceil(AsMin), As_max_mm2: Math.floor(AsMax),
+    checks: [
+      { check: 'N_Ed ≤ N_Rd (concentric, §6.1)', value: `${N} ≤ ${r(NRd, 1)} kN`, pass: N! <= NRd },
+      { check: 'Short column: λ ≤ λlim, second-order effects may be ignored (§5.8.3.1)', value: `${r(lambda, 1)} ≤ ${r(lambdaLim, 1)}`, pass: lambda <= lambdaLim },
+      { check: 'As ≥ As,min (§9.5.2(2))', value: `${As} ≥ ${Math.ceil(AsMin)} mm²`, pass: As! >= AsMin },
+      { check: 'As ≤ As,max = 0.04·Ac (§9.5.2(3), outside laps)', value: `${As} ≤ ${Math.floor(AsMax)} mm²`, pass: As! <= AsMax },
+    ],
+    not_checked: ['bending from the minimum eccentricity e0 = max(h/30, 20 mm) (§6.1(4)) and any applied moment', ...(lambda > lambdaLim ? ['second-order effects of a slender column (§5.8.5-5.8.8)'] : []), 'bar diameter, spacing and links (§9.5.2, §9.5.3)'],
+    assumptions: ['Braced column, rectangular section, bars symmetrically placed', 'αcc = 0.85 (UK/Kenya practice; recommended value is 1.0)', 'λlim with A = 0.7, B = 1.1, C = 0.7 (EN 1992-1-1 §5.8.3.1(1) values when φef, ω and rm are not known)'],
+    method: 'EN 1992-1-1:2004 §6.1, §5.8.3.1, §9.5.2 (axial resistance, slenderness, steel limits)',
   };
 }
 
@@ -1348,7 +1436,7 @@ export function ec2Deflection(b: Body) {
       'Span over 7 m (8.5 m for flat slabs) × 7/leff; flanged with beff/bw > 3 × 0.8',
       'A span/depth check, not a calculated deflection: brittle finishes or long-term creep may need §7.4.3',
     ],
-    method: 'EN 1992-1-1 §7.4.2 limiting span/depth ratio',
+    method: 'EN 1992-1-1:2004 §7.4.2 limiting span/depth ratio',
   };
 }
 
@@ -1457,7 +1545,7 @@ export function padFooting(b: Body) {
       method: 'Plan size from allowable bearing',
     };
   }
-  return { ...out, checks, assumptions, method: 'Plan size from allowable bearing; EN 1992-1-1 §6.1, §6.2.2 and §6.4 (punching)' };
+  return { ...out, checks, assumptions, method: 'Plan size from allowable bearing; EN 1992-1-1:2004 §6.1, §6.2.2 and §6.4 (punching)' };
 }
 
 /** EN 1998-1 §4.3.3.2 lateral force method with the §3.2.2.5 design spectrum
@@ -1546,7 +1634,7 @@ export function seismicEc8(b: Body) {
       'Recommended spectrum values (EN 1998-1 Tables 3.2/3.3) and β = 0.2: a National Annex may differ. agR comes from the national seismic hazard map',
       'Regular in elevation assumed; force distribution over the height (§4.3.3.2.3) and torsion (§4.3.3.2.4) not computed',
     ],
-    method: 'EN 1998-1 §4.3.3.2 lateral force method, §3.2.2.5 design spectrum',
+    method: 'EN 1998-1:2004 §4.3.3.2 lateral force method, §3.2.2.5 design spectrum',
   };
 }
 

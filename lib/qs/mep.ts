@@ -192,6 +192,6 @@ export const MEP_NOT_MEASURED = [
   'Builder’s work in connection (chases, holes, sleeves, making good)',
   'Main incoming supply, meter and service cable (utility works)',
   'Hot-water generation (cylinders, solar water heating), pumps and storage tanks',
-  'Below-ground drainage (manholes, trenches, septic tanks, soakaways)',
+  'Below-ground drainage: measured in the Below-ground drainage trade',
   'Fittings counted individually from an isometric: here only by a stated allowance',
 ];
