@@ -74,6 +74,14 @@ export interface CableRun {
   /** Correction factors from the same standard. */
   ambientFactor: number; groupingFactor: number;
   maxDropPct: number;
+  /**
+   * What the cable carries (review G3): 'dc-pv' = PV strings into an MPPT,
+   * 'dc-battery', or 'ac'. Not stated is treated as a PV cable, so its
+   * design current is never below the string current it may carry.
+   */
+  kind?: 'dc-pv' | 'dc-battery' | 'ac';
+  /** For a PV cable: the MPPT (1-based) it serves; absent = the most heavily loaded MPPT. */
+  mppt?: number;
 }
 
 export type Verdict = 'PASS' | 'WARN' | 'REFUSE';
@@ -203,6 +211,33 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
   };
 }
 
+/**
+ * Review G3: a PV cable's design current is tied to the strings it carries.
+ * IEC 62548-1 sizes PV string/array cable for 1.25 × Isc per string, so the
+ * entered design current must be at least strings × Isc × 1.25 of the MPPT it
+ * serves (the most heavily loaded MPPT when not stated). Below that the
+ * cable is REFUSED: the ampacity check would otherwise use a figure the
+ * array can exceed. AC and battery cables are not tied to the strings.
+ */
+export function cableStringCurrentCheck(c: CableRun, module: Module, design: ArrayDesign): Check | null {
+  if (c.kind === 'ac' || c.kind === 'dc-battery') return null;
+  const per = design.stringsPerMppt;
+  if (!per.length || !(module.iscA > 0)) return null;
+  const mpptStated = c.mppt !== undefined;
+  const strings = mpptStated ? per[(c.mppt as number) - 1] : Math.max(...per);
+  if (!(Number.isInteger(strings) && strings >= 1)) {
+    return { id: `cable-current-${c.name}`, title: `${c.name}: MPPT served`, verdict: 'REFUSE', value: NaN, limit: per.length, unit: '', marginPct: -100, formula: 'mppt must name an MPPT of the design', reference: 'Design input', note: `MPPT ${c.mppt} is not in the design (1–${per.length})` };
+  }
+  const required = strings * module.iscA * 1.25;
+  const ok = c.designCurrentA >= required * (1 - 1e-9);
+  return {
+    id: `cable-current-${c.name}`, title: `${c.name}: design current covers the strings it carries`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
+    formula: `strings × Isc × 1.25 = ${strings} × ${module.iscA} × 1.25 = ${r2(required)} A (${mpptStated ? `MPPT ${c.mppt}` : 'largest MPPT; state the MPPT or kind to narrow it'})`,
+    reference: 'IEC 62548-1 (PV cable current 1.25 × Isc per string)',
+    ...(ok ? {} : { note: 'The entered design current is below what the strings can deliver: size the cable for the string current' }),
+  };
+}
+
 /** Battery sizing and C-rate. usableAcKwh is the energy the loads need from the battery per cycle. */
 export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: number, units: number): { checks: Check[]; errors: string[]; requiredNominalKwh: number } {
   const errors: string[] = [];
@@ -216,25 +251,29 @@ export function checkBattery(battery: Battery, inverter: Inverter, usableAcKwh: 
   const required = usableAcKwh / (battery.usableDoD * battery.dischargeEfficiency);
   const installed = battery.nominalKwh * units;
   const checks: Check[] = [
-    { id: 'battery-energy', title: 'Installed battery energy', verdict: installed >= required ? 'PASS' : 'REFUSE', value: r2(installed), limit: r2(required), unit: 'kWh', marginPct: margin(installed, required, false),
+    // Review G4: 8.55 ÷ (0.9 × 0.95) = 10.000000000000002 refused an exactly-sized
+    // 10 kWh bank; a 1e-9 relative tolerance absorbs float rounding only.
+    { id: 'battery-energy', title: 'Installed battery energy', verdict: installed >= required * (1 - 1e-9) ? 'PASS' : 'REFUSE', value: r2(installed), limit: r2(required), unit: 'kWh', marginPct: margin(installed, required, false),
       formula: `required nominal = usable AC ÷ (DoD × η_discharge) = ${usableAcKwh} ÷ (${battery.usableDoD} × ${battery.dischargeEfficiency})`, reference: 'Energy balance; battery datasheet DoD and efficiency' },
   ];
   // CA-32 (2026-11-26): without the inverter's battery power the C-rate was
   // simply not checked and the design passed. Missing data is never assumed
   // compliant: the check is refused until the datasheet value is entered.
-  if (inverter.batteryMaxDischargeKw === undefined || !Number.isFinite(inverter.batteryMaxDischargeKw)) {
+  // Review G1: 0 kW or a negative power gave 0 C or −0.25 C, a "pass". Anything
+  // not > 0 is treated as not given.
+  if (!(typeof inverter.batteryMaxDischargeKw === 'number' && inverter.batteryMaxDischargeKw > 0)) {
     checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: 'REFUSE', value: NaN, limit: battery.maxDischargeC, unit: 'C', marginPct: -100,
-      formula: 'inverter battery discharge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous discharge rate', note: 'Inverter battery discharge power not entered: the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+      formula: 'inverter battery discharge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous discharge rate', note: 'Inverter battery discharge power not entered (or not above 0 kW): the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
   } else {
-    const c = inverter.batteryMaxDischargeKw / installed;
+    const c = (inverter.batteryMaxDischargeKw as number) / installed;
     checks.push({ id: 'battery-discharge-c', title: 'Discharge C-rate at full inverter battery power', verdict: c <= battery.maxDischargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxDischargeC, unit: 'C', marginPct: margin(c, battery.maxDischargeC, true),
       formula: `inverter battery kW ÷ installed kWh = ${inverter.batteryMaxDischargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous discharge rate' });
   }
-  if (inverter.batteryMaxChargeKw === undefined || !Number.isFinite(inverter.batteryMaxChargeKw)) {
+  if (!(typeof inverter.batteryMaxChargeKw === 'number' && inverter.batteryMaxChargeKw > 0)) {
     checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: 'REFUSE', value: NaN, limit: battery.maxChargeC, unit: 'C', marginPct: -100,
-      formula: 'inverter charge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous charge rate', note: 'Inverter battery charge power not entered: the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
+      formula: 'inverter charge kW ÷ installed kWh', reference: 'Battery datasheet maximum continuous charge rate', note: 'Inverter battery charge power not entered (or not above 0 kW): the C-rate cannot be checked, so the design is refused until the inverter datasheet value is given' });
   } else {
-    const c = inverter.batteryMaxChargeKw / installed;
+    const c = (inverter.batteryMaxChargeKw as number) / installed;
     checks.push({ id: 'battery-charge-c', title: 'Charge C-rate at full inverter charge power', verdict: c <= battery.maxChargeC ? 'PASS' : 'REFUSE', value: r2(c), limit: battery.maxChargeC, unit: 'C', marginPct: margin(c, battery.maxChargeC, true),
       formula: `inverter charge kW ÷ installed kWh = ${inverter.batteryMaxChargeKw} ÷ ${r2(installed)}`, reference: 'Battery datasheet maximum continuous charge rate' });
   }
@@ -280,9 +319,13 @@ export function generatorConnectionChecks(inverter: Inverter, conn: GeneratorCon
 export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMinLoadPct?: number }, minSiteLoadKw: number, pvCanBackfeed: boolean): Check[] {
   const minPct = gen.oemMinLoadPct ?? 30;
   const minKw = (gen.ratedKw * minPct) / 100;
+  const compat = (inverter.generatorCompatibility ?? '').trim();
   const checks: Check[] = [
-    { id: 'gen-compat', title: 'Inverter listed as generator-compatible', verdict: inverter.generatorCompatibility ? 'PASS' : 'REFUSE', value: inverter.generatorCompatibility ? 1 : 0, limit: 1, unit: '', marginPct: inverter.generatorCompatibility ? 0 : -100,
-      formula: 'manufacturer statement required', reference: 'Inverter manufacturer documentation', note: inverter.generatorCompatibility ?? 'No manufacturer statement: generator connection refused' },
+    // Review G2: a statement of only spaces counted; it is trimmed first. The
+    // text itself ("supported" vs "NOT supported") is the engineer's, checked
+    // by the second-person datasheet verification, not by code.
+    { id: 'gen-compat', title: 'Inverter listed as generator-compatible', verdict: compat ? 'PASS' : 'REFUSE', value: compat ? 1 : 0, limit: 1, unit: '', marginPct: compat ? 0 : -100,
+      formula: 'manufacturer statement required', reference: 'Inverter manufacturer documentation', note: compat ? `${compat} (the statement's wording is confirmed by the second-person datasheet check)` : 'No manufacturer statement: generator connection refused' },
     { id: 'gen-min-load', title: 'Generator minimum loading', verdict: minSiteLoadKw >= minKw ? 'PASS' : 'WARN', value: r2(minSiteLoadKw), limit: r2(minKw), unit: 'kW', marginPct: margin(minSiteLoadKw, minKw, false),
       formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: gen.oemMinLoadPct !== undefined ? 'Generator OEM minimum load' : 'Common diesel practice (30 %) until the OEM figure is entered',
       note: minSiteLoadKw < minKw ? 'Light loading: wet stacking risk; schedule load banks or reduce PV while the generator runs' : undefined },

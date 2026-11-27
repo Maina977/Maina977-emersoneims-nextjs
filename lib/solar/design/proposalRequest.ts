@@ -40,6 +40,7 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   const t = i.temps;
   if (!isObj(t) || !isNum(t.recordLowC) || !isNum(t.maxAmbientC) || !isStr(t.source)) e.push('temps { recordLowC, maxAmbientC, source } is required');
   if (!Array.isArray(i.cables) || !(i.cables as unknown[]).every(isObj)) e.push('cables must be an array (may be empty)');
+  else if (!(i.cables as Record<string, unknown>[]).every((k) => (k.kind === undefined || k.kind === 'dc-pv' || k.kind === 'dc-battery' || k.kind === 'ac') && (k.mppt === undefined || (isNum(k.mppt) && Number.isInteger(k.mppt) && (k.mppt as number) >= 1)))) e.push('cable kind must be dc-pv, dc-battery or ac, and mppt a whole number ≥ 1');
   const p = i.production;
   if (!isObj(p) || !isNum(p.annualKwh) || !isNum(p.clippedKwh) || !isNum(p.specificYieldKwhPerKwp) || !isNum(p.performanceRatio) || !Array.isArray(p.assumptions) || !isStr(p.engineVersion)) e.push('production (hourly simulation result) is required');
   if (isObj(p) && p.shading !== undefined) {

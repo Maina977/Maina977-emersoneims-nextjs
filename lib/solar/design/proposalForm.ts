@@ -194,7 +194,7 @@ export function sldPreviewFromForm(f: ProposalForm): { model: SldModel | null; e
   errors.push(...eErr);
   if (errors.length || !module || !inverter) return { model: null, errors };
   const cables: CableRun[] = anyFilled(f, 'k.') && CABLE_KEYS.every((k) => !blank(f, `k.${k}`))
-    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct') }]
+    ? [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }]
     : [];
   const conn = connectionsFromForm(f);
   const units = num(f, 'b.units'), need = num(f, 'b.requiredUsableAcKwh');
@@ -240,6 +240,13 @@ export function buildHybridInput(f: ProposalForm, pvAcKwh: number[], loadKwh: nu
   };
 }
 
+/** Review G3: what the cable carries and which MPPT; blank = treated as a PV cable on the largest MPPT. */
+export function cableKindFromForm(f: ProposalForm): Pick<CableRun, 'kind' | 'mppt'> {
+  const k = str(f, 'k.kind').toLowerCase();
+  const kind = k === 'ac' || k === 'dc-battery' || k === 'dc-pv' ? k : undefined;
+  const m = num(f, 'k.mppt');
+  return { ...(kind ? { kind } : {}), ...(Number.isInteger(m) && m >= 1 ? { mppt: m } : {}) };
+}
 const CABLE_KEYS = ['name', 'lengthM', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
 
 /** Bill of materials rows: an empty rate means "rate required" (null); a given rate needs its source and date. */
@@ -296,7 +303,7 @@ export function formToProposalInput(f: ProposalForm, bomRows: BomRow[], producti
   let cables: CableRun[] = [];
   if (anyFilled(f, 'k.')) {
     for (const k of CABLE_KEYS) if (blank(f, `k.${k}`)) errors.push(`Cable run: ${k} is required (or clear the cable section)`);
-    cables = [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct') }];
+    cables = [{ name: str(f, 'k.name'), lengthM: num(f, 'k.lengthM'), csaMm2: num(f, 'k.csaMm2'), designCurrentA: num(f, 'k.designCurrentA'), systemV: num(f, 'k.systemV'), tabulatedAmpacityA: num(f, 'k.tabulatedAmpacityA'), ambientFactor: num(f, 'k.ambientFactor'), groupingFactor: num(f, 'k.groupingFactor'), maxDropPct: num(f, 'k.maxDropPct'), ...cableKindFromForm(f) }];
   }
   const bom = buildBom(bomRows, errors);
 

@@ -15,7 +15,7 @@
  * One layout model feeds every output: sldToSvg (screen) and the PDF and
  * Excel exports (proposalExport.ts), so they cannot disagree.
  */
-import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, generatorConnectionChecks } from './validate';
+import { validateStrings, checkCable, checkBattery, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check, generatorConnectionChecks, cableStringCurrentCheck } from './validate';
 
 export const SLD_ENGINE_VERSION = 'solar-sld 1.0.0 (2026-11-25)';
 export const TBS = 'to be specified by the engineer';
@@ -81,7 +81,7 @@ export function buildSld(i: SldInput): SldModel {
   const str = validateStrings(i.module, i.inverter, i.design, i.temps);
   const checks = [...str.checks];
   const cableResults = i.cables.map((c) => ({ c, r: checkCable(c) }));
-  cableResults.forEach(({ r }) => checks.push(...r.checks));
+  cableResults.forEach(({ c, r }) => { checks.push(...r.checks); const sc = cableStringCurrentCheck(c, i.module, i.design); if (sc) checks.push(sc); });
   const bat = i.battery && i.battery.requiredUsableAcKwh !== undefined ? checkBattery(i.battery.data, i.inverter, i.battery.requiredUsableAcKwh, i.battery.units) : null;
   if (bat) checks.push(...bat.checks);
   // A connected generator is checked as the proposal checks it (CA-32).

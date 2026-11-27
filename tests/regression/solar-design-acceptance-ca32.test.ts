@@ -164,3 +164,46 @@ describe('CA-32: the proposal form carries the generator answers to the engine',
     expect(() => buildProposal(design({ connections: { grid: null, generator: true, pvCanBackfeedGenerator: 'maybe' as unknown as boolean } }))).toThrow(/pvCanBackfeedGenerator/);
   });
 });
+
+// ── Review of ccdb2404 (REVIEW-SOLAR-CA32.md): G1–G4 ─────────────────────
+const MORE: Case[] = [
+  { id: 'U17', type: 'O', title: 'G1: inverter battery power 0 kW (0 ÷ 20 kWh = 0 C "passed") → C-rate not checkable → refused',
+    input: design({ inv: { batteryMaxDischargeKw: 0, batteryMaxChargeKw: 0 }, battery: battery(4, 10) }), refuse: ['battery-discharge-c', 'battery-charge-c'] },
+  { id: 'U18', type: 'O', title: 'G1: inverter battery power −5 kW (−0.25 C "passed") → refused',
+    input: design({ inv: { batteryMaxDischargeKw: -5, batteryMaxChargeKw: -5 }, battery: battery(4, 10) }), refuse: ['battery-discharge-c', 'battery-charge-c'] },
+  { id: 'U19', type: 'G', title: 'G2: a generator-compatibility "statement" of only spaces is no statement → refused',
+    input: design({ inv: { generatorCompatibility: '   ' }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8, pvCanBackfeedGenerator: false } }), refuse: ['gen-compat'] },
+  { id: 'U20', type: 'C', title: 'G3: 4 mm² DC cable entered at 20 A on a 3-string MPPT: 3 × 13.9 × 1.25 = 52.1 A > 20 A entered → refused',
+    input: design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'DC', lengthM: 10, csaMm2: 4, designCurrentA: 20, systemV: 600, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3 }] }), refuse: ['cable-current-DC'] },
+  { id: 'C6', type: 'O', title: 'G4 control: need 8.55 kWh usable → 8.55 ÷ (0.9 × 0.95) = 10.000 kWh nominal on exactly 2 × 5 kWh passes',
+    input: design({ inv: { batteryMaxDischargeKw: 5, batteryMaxChargeKw: 5 }, battery: battery(2, 8.55) }), refuse: null },
+  { id: 'U21', type: 'O', title: 'G4 still refuses a genuinely short bank: need 8.56 kWh → 10.012 kWh > 10 kWh',
+    input: design({ inv: { batteryMaxDischargeKw: 5, batteryMaxChargeKw: 5 }, battery: battery(2, 8.56) }), refuse: ['battery-energy'] },
+  { id: 'C7', type: 'C', title: 'G3 control: the same cable entered at 52.2 A, 16 mm² (It 76 A) on MPPT 1 → passes',
+    input: design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'DC', lengthM: 10, csaMm2: 16, designCurrentA: 52.2, systemV: 600, tabulatedAmpacityA: 76, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'dc-pv', mppt: 1 }] }), refuse: null },
+  { id: 'C8', type: 'C', title: 'G3 control: an AC cable is not tied to the strings (20 A AC on a 3-string design passes)',
+    input: design({ inv: { maxInputA: 45, maxIscA: 60 }, design: { modulesPerString: 16, stringsPerMppt: [3, 1] }, cables: [{ name: 'AC', lengthM: 10, csaMm2: 4, designCurrentA: 20, systemV: 400, tabulatedAmpacityA: 32, ambientFactor: 1, groupingFactor: 1, maxDropPct: 3, kind: 'ac' }] }), refuse: null },
+];
+
+describe('CA-32 review G1–G4: further designs', () => {
+  for (const c of MORE) {
+    it(`${c.id} [${c.type}] ${c.title}`, () => {
+      const p = buildProposal(c.input);
+      const refusedIds = p.checks.filter((k) => k.verdict === 'REFUSE').map((k) => k.id);
+      if (c.refuse === null) {
+        expect(refusedIds, `${c.id} must not be refused`).toEqual([]);
+        expect(p.status).not.toBe('REFUSED');
+        expect(p.sld.designValid).toBe(true);
+      } else {
+        expect(p.status, `${c.id} must be REFUSED`).toBe('REFUSED');
+        for (const id of c.refuse) expect(refusedIds, `${c.id} must refuse ${id}`).toContain(id);
+        expect(p.sld.designValid).toBe(false);
+      }
+    });
+  }
+  it('G2 also in the datasheet import: spaces are stored as no statement', async () => {
+    const { importInverter } = await import('@/lib/solar/design/datasheet');
+    const r = importInverter({ manufacturer: 'TEST', datasheetUrl: 'https://example.com/t.pdf', datasheetRevision: 'A', datasheetDate: '2026-01-01', enteredBy: 'a', enteredOn: '2026-11-20', model: 'T', acKw: '15', maxDcV: '1000', mpptMinV: '200', mpptMaxV: '850', mpptCount: '2', maxInputA: '26', maxIscA: '40', batteryMaxDischargeKw: '', batteryMaxChargeKw: '', generatorCompatibility: '   ' } as never);
+    expect(r.entry?.data.generatorCompatibility).toBeNull();
+  });
+});

@@ -103,7 +103,7 @@ export function importInverter(r: Record<string, string>): ImportResult<Inverter
     if (n.acKw > 500) warnings.push('AC rating above 500 kW: check kW vs W');
   }
   const opt = (k: string) => (r[k] ? Number(r[k]) : undefined);
-  const extra = { batteryMaxDischargeKw: opt('batteryMaxDischargeKw'), batteryMaxChargeKw: opt('batteryMaxChargeKw'), generatorCompatibility: r.generatorCompatibility || null };
+  const extra = { batteryMaxDischargeKw: opt('batteryMaxDischargeKw'), batteryMaxChargeKw: opt('batteryMaxChargeKw'), generatorCompatibility: (r.generatorCompatibility ?? '').trim() || null }; // review G2: spaces are not a statement
   for (const [k, v] of Object.entries(extra)) if (typeof v === 'number' && !(v > 0)) errors.push(`${k} must be positive when given`);
   if (errors.length) return { entry: null, errors };
   if (!extra.generatorCompatibility) warnings.push('No generator compatibility statement: hybrid designs with a generator will be refused');

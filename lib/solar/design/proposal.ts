@@ -23,7 +23,7 @@
  *   the designer's, each with a source. Nothing is assumed.
  * - Uncertainty disclosures are always included.
  */
-import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
+import { validateStrings, checkCable, checkBattery, generatorConnectionChecks, cableStringCurrentCheck, type Module, type Inverter, type Battery, type ArrayDesign, type SiteTemps, type CableRun, type Check } from './validate';
 import type { LibraryEntry } from './datasheet';
 import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
@@ -194,7 +194,10 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
   const str = validateStrings(i.module.data, i.inverter.data, i.design, i.temps);
   const checks: Check[] = [...str.checks];
   if (str.errors.length) reasons.push(...str.errors.map((e) => `Design: ${e}`));
-  for (const c of i.cables) { const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`)); }
+  for (const c of i.cables) {
+    const r = checkCable(c); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Cable ${c.name}: ${e}`));
+    const sc = cableStringCurrentCheck(c, i.module.data, i.design); if (sc) checks.push(sc);
+  }
   if (i.battery) { const r = checkBattery(i.battery.entry.data, i.inverter.data, i.battery.requiredUsableAcKwh, i.battery.units); checks.push(...r.checks); reasons.push(...r.errors.map((e) => `Battery: ${e}`)); }
   // Generator (CA-32, 2026-11-26): checkGenerator was never run here, so an
   // inverter without a generator-compatibility statement, or PV able to
