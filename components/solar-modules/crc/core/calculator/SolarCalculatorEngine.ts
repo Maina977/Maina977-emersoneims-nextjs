@@ -211,7 +211,7 @@ export class SolarCalculatorEngine {
     // Breaker first, then a cable that carries it (In ≤ Iz) within the drop
     // limit (2026-10-30 re-audit: 50 A MCB on 6 mm², Iz 46 A).
     const stringA = 14 * 1.25;
-    // IEC 62548: string fuse at least 1.5 × Isc (21 A for Isc 14 A) and not
+    // IEC 62548 (rule to be confirmed against the purchased standard): string fuse at least 1.5 × Isc (21 A for Isc 14 A) and not
     // above the module's maximum series fuse (typically 25-30 A).
     const stringFuse = BREAKERS_A.find((b) => b >= 14 * 1.5) ?? 25;
     const pv = sizeConductor(Math.max(stringA, stringFuse), 25, perString * 41.6, 1.5);

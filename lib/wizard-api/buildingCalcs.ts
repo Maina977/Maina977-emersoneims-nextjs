@@ -212,11 +212,13 @@ export function egress(b: Body) {
  * system also needs the system ventilation efficiency.
  *
  * Edition (standards-access report, 2026-11-27): ASHRAE 62.1-2022, Table 6-1.
- * All nine Rp / Ra pairs and default densities below equal the 2022 Table 6-1
+ * All nine Rp / Ra pairs and the default densities below equal the 2022 Table 6-1
  * rows as reprinted in the free official Addendum w to 62.1-2022 (2025-09-30).
  * "Table 6.2.2.1" (used here before) is the 2016-and-earlier numbering. The 2022
  * equation numbers and the Ez table number were not seen, so none is cited.
- * Addendum w lowers the restaurant and health-club densities; not applied here.
+ * Addendum w lowers the restaurant and health-club densities (70 / 40 here), and the
+ * reprint does not show which value is struck through: those two defaults are
+ * labelled "not verified" in the output (review 328c44aa, M1). Numbers unchanged.
  */
 const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; density: number }> = {
   office: { label: 'Office space', Rp: 2.5, Ra: 0.3, density: 5 },
@@ -225,9 +227,9 @@ const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; den
   classroom: { label: 'Classroom (age 9 plus)', Rp: 5, Ra: 0.6, density: 35 },
   lecture: { label: 'Lecture classroom', Rp: 3.8, Ra: 0.3, density: 65 },
   retail: { label: 'Retail sales', Rp: 3.8, Ra: 0.6, density: 15 },
-  restaurant: { label: 'Restaurant dining room', Rp: 3.8, Ra: 0.9, density: 70 },
+  restaurant: { label: 'Restaurant dining room (default 70 per 100 m²: ASHRAE 62.1-2022 default density, before Addendum w (2025); not verified, so enter the design occupancy)', Rp: 3.8, Ra: 0.9, density: 70 },
   hotel_bedroom: { label: 'Hotel bedroom / living room', Rp: 2.5, Ra: 0.3, density: 10 },
-  gym: { label: 'Health club / aerobics room', Rp: 10, Ra: 0.3, density: 40 },
+  gym: { label: 'Health club / aerobics room (default 40 per 100 m²: ASHRAE 62.1-2022 default density, before Addendum w (2025); not verified, so enter the design occupancy)', Rp: 10, Ra: 0.3, density: 40 },
 };
 const EZ: Record<string, { Ez: number; label: string }> = {
   ceiling_supply_cool: { Ez: 1.0, label: 'Ceiling supply of cool air' },
@@ -268,13 +270,13 @@ export function ventilation(b: Body) {
     checks,
     ...(notChecked.length ? { not_checked: notChecked } : {}),
     assumptions: [
-      `${t.label}: Rp ${t.Rp} L/s per person, Ra ${t.Ra} L/s per m² (ASHRAE 62.1-2022, Table 6-1 (values checked against the free Addendum w reprint), SI)`,
+      `${t.label}: Rp ${t.Rp} L/s per person, Ra ${t.Ra} L/s per m² (ASHRAE 62.1-2022, Table 6-1, SI; the Rp and Ra values were checked against the free Addendum w reprint)`,
       pGiven === undefined ? `Occupants from the table's default density, ${t.density} per 100 m²: enter the design occupancy if known` : 'Occupants as entered',
       `${e.label}: Ez = ${e.Ez} (ASHRAE 62.1-2022 zone air distribution effectiveness; table number to be confirmed against the purchased standard)`,
       'One zone only. A system serving several zones also needs the system ventilation efficiency (ASHRAE 62.1 multiple-zone procedure; section number to be confirmed). Exhaust (toilets, kitchens) is separate (ASHRAE 62.1 minimum exhaust rates; table number to be confirmed).',
       'Kenya: confirm against the Building Code 2024 and the project mechanical engineer before submission',
     ],
-    method: 'ASHRAE 62.1-2022 Ventilation Rate Procedure: Vbz = Rp·Pz + Ra·Az, Voz = Vbz / Ez; Rp, Ra and default densities from Table 6-1 (values checked against the free Addendum w reprint); equation numbers to be confirmed against the purchased standard',
+    method: 'ASHRAE 62.1-2022 Ventilation Rate Procedure: Vbz = Rp·Pz + Ra·Az, Voz = Vbz / Ez; Rp and Ra from Table 6-1 (checked against the free Addendum w reprint); default densities from Table 6-1, the restaurant and health-club defaults not verified (Addendum w (2025) lowers them); equation numbers to be confirmed against the purchased standard',
   };
 }
 

@@ -308,7 +308,7 @@ function stringConfig({
     stringsPerMppt,
     totalMaxPanels: maxPanelsPerString * stringsPerMppt * inverterMpptCount,
     voltages: { vocCold: round2(vocCold), vmppHot: round2(vmppHot) },
-    source: 'IEC 62548 string sizing rules; manufacturer datasheet temperature coefficients'
+    source: 'IEC 62548 string sizing rules (rule to be confirmed against the purchased standard); manufacturer datasheet temperature coefficients'
   };
 }
 
@@ -403,7 +403,7 @@ const ALPHA_PER_C    = { copper: 0.00393, aluminium: 0.00403 };
  *   A   = conductor cross-section, mm²
  *   L   = one-way length, m
  *
- * Source: IEC 60364-5-52:2020 §G; NEC 2023 informational note 690.8(B)(2).
+ * Source: IEC 60364-5-52:2009 Annex G (informative), voltage drop in consumers' installations; NEC 2023 informational note 690.8(B)(2).
  */
 function voltageDrop({ systemType, currentA, voltageV, oneWayLengthM,
                        csaMm2, conductorMaterial = 'copper', ambientTempC = 30 }) {

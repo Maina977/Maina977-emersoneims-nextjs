@@ -192,7 +192,7 @@ export default function SolarDesignStudioPro() {
   const panelVoc = panelWatts >= 400 ? 49.5 : 41;
   const panelIsc = (panelWatts / panelVmp) * 1.06;
   const stringVoc = stringConfig.series * panelVoc;
-  const stringDesignA = 1.25 * panelIsc;               // per string (IEC 62548)
+  const stringDesignA = 1.25 * panelIsc;               // per string (IEC 62548; rule to be confirmed against the purchased standard)
   const arrayDesignA = stringDesignA * Math.max(1, stringConfig.parallel);
   const systemCurrent = panelIsc * Math.max(1, stringConfig.parallel);
   // Nothing fits: say so, never the largest size (audit 2026-10-31: 334 A on 35 mm²).

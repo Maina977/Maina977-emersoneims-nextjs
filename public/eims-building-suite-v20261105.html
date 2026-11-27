@@ -7169,7 +7169,7 @@ const PRO_CATALOG = [
     ]},
   {id:'ph_vent', grp:'Physics', title:'Ventilation, outdoor air (ASHRAE 62.1)',
     ep:'/api/arch/ventilation', mth:'POST',
-    refs:['ASHRAE 62.1-2022 Table 6-1 (values checked against the free Addendum w reprint)'],
+    refs:['ASHRAE 62.1-2022 Table 6-1 (Rp, Ra checked against the free Addendum w reprint; restaurant and health-club default densities not verified, before Addendum w (2025))'],
     f:[
       {k:'space_type',type:'select',opts:['office','conference','reception','classroom','lecture','retail','restaurant','hotel_bedroom','gym'],def:'office',l:'Space type'},
       {k:'floor_area_m2',type:'number',def:200,l:'Floor area (m²)'},
