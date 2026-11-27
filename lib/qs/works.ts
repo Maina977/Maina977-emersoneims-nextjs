@@ -242,7 +242,8 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
     const extra: string[] = [];
     if ((q.kind === 'area' || q.kind === 'volume') && q.holes.length) {
       // The small-void rule, as everywhere else: voids ≤ the threshold are not deducted.
-      const t = need('Voids not deducted up to', i.voidRule, 0, 2, 'm²');
+      // up to 10 m²: some rules use larger thresholds (e.g. 5 m² for formwork soffit voids); the rule is the required source (review A-1).
+      const t = need('Voids not deducted up to', i.voidRule, 0, 10, 'm²');
       const holeArea = q.holes.reduce((a, h) => a + h.areaM2, 0);
       const depth = q.kind === 'volume' ? (holeArea > 0 ? q.deductions / holeArea : NaN) : undefined;
       const rq = ruleQuantity(q, { name: i.voidRule!.source.trim(), edition: '', voidNotDeductedUpToM2: t }, depth);
