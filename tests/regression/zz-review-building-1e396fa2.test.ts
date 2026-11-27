@@ -65,9 +65,9 @@ describe('advisories A1 / A4 / A6 / E1 and version', () => {
     expect(s).not.toMatch(/\|\|20\}|\|\|'8\.8'|:'OK'|\|\|4;|\|\|16;|\|\|8\b|\|\|200/);
     expect(s).toMatch(/srNoResult/);
   });
-  it('E1: ASHRAE 62.1 and BRE Digest 309 now say "edition not stated" (honest, but no year)', () => {
-    expect(calcSrc).toContain('ASHRAE 62.1 (edition not stated)');
-    expect(calcSrc).toContain('BRE Digest 309 (1986)'); // W2: the edition used is recorded
+  it('E1 (updated 2026-11-27, standards-access report): ASHRAE 62.1-2022 Table 6-1 and BRE Digest 310 (1986)', () => {
+    expect(calcSrc).toContain('ASHRAE 62.1-2022, Table 6-1 (values checked against the free Addendum w reprint)');
+    expect(calcSrc).toContain('BRE Digest 310 (1986)'); // W2: the edition used is recorded (Digest 310 holds the ADF; 309 does not)
     expect(calcSrc).toContain('BS 8206-2:2008 (superseded 2022-01-31)');
   });
   it('build-up engine version bumped', () => { expect(BUILDUP_ENGINE_VERSION).toMatch(/^qs-buildup 1\.2\.0/); });

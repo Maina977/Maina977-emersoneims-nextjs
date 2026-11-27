@@ -221,7 +221,7 @@ export function motorStartDip(i: { generatorKVA: number; reactancePU: number; mo
       'Motor starting kVA from the motor data (locked-rotor code or the soft-starter/VSD setting), not estimated here.',
       'Use the manufacturer\'s transient-performance data or sizing software for the final check.',
     ],
-    reference: 'Reactance-divider estimate (see e.g. IEEE 446, generator transient performance); ISO 8528-5 for performance classes.',
+    reference: 'Reactance-divider estimate (see e.g. IEEE 446, generator transient performance); ISO 8528-5:2025 for performance classes (title and edition from the official contents list; limits not reviewed).',
   });
 }
 

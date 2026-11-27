@@ -138,7 +138,7 @@ export const APPLIANCE_DATABASE = {
 
 // ==================== CABLES ====================
 
-/** Copper, PVC, two loaded conductors, IEC 60364-5-52 Table B.52.4 method C (A). */
+/** Copper, PVC, two loaded conductors, IEC 60364-5-52 Table B.52.2 method C (A). (2026-11-27: was labelled B.52.4, the three-loaded-conductor table.) */
 const AMPACITY_A: [number, number][] = [
   [1.5, 19.5], [2.5, 27], [4, 36], [6, 46], [10, 63], [16, 85], [25, 112], [35, 138],
   [50, 168], [70, 213], [95, 258], [120, 299], [150, 344], [185, 392], [240, 461],

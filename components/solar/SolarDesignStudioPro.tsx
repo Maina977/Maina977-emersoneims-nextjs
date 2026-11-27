@@ -209,7 +209,8 @@ export default function SolarDesignStudioPro() {
   const acAmps = threePhase ? (inverterSize * 1000) / (Math.sqrt(3) * 400) : (inverterSize * 1000) / 230;
   // Breaker at 1.25 x the inverter's AC current, then a cable whose rating is
   // at least the breaker's, so the breaker protects the cable (IEC 60364-4-43).
-  // Ratings: IEC 60364-5-52 Table B.52.4, method B1 (PVC in conduit), copper.
+  // Ratings: IEC 60364-5-52, method B1 (PVC in conduit), copper: Table B.52.2 (two
+  // loaded conductors) for single phase, Table B.52.4 (three loaded conductors) for three phase.
   // 2026-10-27 audit: the diagram always printed "63A MCB + 6 mm²" (6 mm² is
   // about 41 A, so a 63 A breaker did not protect it) for 3 kW to 15 kW.
   const STD_MCB = [6, 10, 13, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160];

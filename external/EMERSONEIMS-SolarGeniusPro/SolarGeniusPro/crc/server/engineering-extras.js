@@ -14,14 +14,14 @@ const r3 = (x) => Math.round(x * 1000) / 1000;
 // ---------------------------------------------------------------------------
 // References:
 //   IEC 62305-2, risk components for structures (annex to be confirmed against the purchased standard)
-//   IEC 62305-3, LPS class vs rolling-sphere radius (clause to be confirmed against the purchased standard):
+//   IEC 62305-3:2024, clause 5.2.2 Positioning, Table 2 "Values of rolling sphere radius, mesh size and protection angle corresponding to the class of LPS" (clause number from the official contents list; clause text not reviewed); the radii below are to be confirmed against the purchased standard:
 //     Class I  — 20 m   (high-risk: hospitals, ATEX, telecom)
 //     Class II — 30 m   (commercial, industrial)
 //     Class III — 45 m  (residential, light commercial)
 //     Class IV — 60 m   (low-occupancy / low value)
-//   IEC 61643-31 — SPD class for PV side; DC SPD Type 1+2 typical for KE
-//   Kenya Standard KS 1515 (2019) and EPRA technical guideline align
-//   with IEC 62305 for installations >20 m² array or >1 kW.
+//   IEC 61643-32 — selection and application of SPDs connected to PV installations (clause to be confirmed against the purchased standard); IEC 61643-31 is the SPD product standard. DC SPD Type 1+2 typical for KE
+//   Kenyan earthing code: KS 503-2:1990 (Code of practice for earthing), clause to be confirmed against the purchased standard.
+//   EPRA technical guideline aligns with IEC 62305 for installations >20 m² array or >1 kW.
 // ---------------------------------------------------------------------------
 function lightningRiskClass({
   occupancyType = 'residential',  // residential | commercial | industrial | hospital | telecom
@@ -53,7 +53,7 @@ function lightningRiskClass({
   else if (adjustedNd >= 1e-3) { lpsClass = 'III'; rollingSphereRadiusM = 45; }
   else                          { lpsClass = 'IV';  rollingSphereRadiusM = 60; }
 
-  // SPD selection per IEC 61643-31 for PV systems
+  // SPD selection per IEC 61643-32 for PV systems (clause to be confirmed against the purchased standard); SPD products to IEC 61643-31
   const spdRecommendation = {
     dcSide: lpsClass === 'I' || lpsClass === 'II'
       ? 'Type 1+2 combined SPD on DC string side (Iimp ≥ 12.5 kA per pole, 10/350 µs)'
@@ -61,7 +61,7 @@ function lightningRiskClass({
     acSide: lpsClass === 'I'
       ? 'Type 1 SPD at AC main + Type 2 at sub-DB'
       : 'Type 2 SPD at AC main',
-    earthing: 'TT or TN-S earthing; ≤ 10 Ω (KS 1515 §6); ≤ 1 Ω if hospital/telecom',
+    earthing: 'TT or TN-S earthing; ≤ 10 Ω screening target (Kenyan earthing code KS 503-2:1990, clause to be confirmed against the purchased standard; the 10 Ω figure is not yet attributed to it); ≤ 1 Ω if hospital/telecom',
   };
 
   return {
@@ -73,10 +73,10 @@ function lightningRiskClass({
     spdRecommendation,
     verdict: lpsClass === 'IV'
       ? 'Optional LPS; SPDs still recommended on PV DC + AC sides'
-      : `Mandatory Class ${lpsClass} LPS per IEC 62305-3 + SPDs per IEC 61643-31`,
+      : `Mandatory Class ${lpsClass} LPS per IEC 62305-3 + SPDs selected per IEC 61643-32`,
     provenance: {
       method: 'IEC 62305-2 Eq. A.2 collection area + simplified L1 risk threshold',
-      reference: 'IEC 62305-2/3 (2010), IEC 61643-31 (2018), KS 1515 (2019)',
+      reference: 'IEC 62305-2/3 (2010); IEC 61643-32 (SPD selection and application, PV; clause to be confirmed against the purchased standard); IEC 61643-31:2018 (SPD product requirements); KS 503-2:1990 (Kenyan earthing code; clause to be confirmed against the purchased standard)',
       limits: 'Short-form risk; full RA per IEC 62305-2 needed for hospitals & ATEX. KE flash density approximate (NASA LIS).',
     }
   };

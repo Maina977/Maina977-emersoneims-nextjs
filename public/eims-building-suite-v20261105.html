@@ -7120,7 +7120,7 @@ const PRO_CATALOG = [
   /* -------- PHYSICS -------- */
   {id:'ph_day', grp:'Physics', title:'Daylight — average daylight factor (BRE)',
     ep:'/api/arch/daylight/adf', mth:'POST',
-    refs:['BRE Digest 309','BS 8206-2'],
+    refs:['BRE Digest 310 (1986)','BS 8206-2'],
     f:[
       {k:'T_glass',type:'number',def:0.68,step:'0.01',l:'Glass transmittance'},
       {k:'window_area_m2',type:'number',def:6,l:'Window area (m²)'},
@@ -7141,7 +7141,7 @@ const PRO_CATALOG = [
     ]},
   {id:'ph_snd', grp:'Physics', title:'Airborne sound insulation, single wall (EN 12354-1 Annex B)',
     ep:'/api/arch/acoustics/airborne', mth:'POST',
-    refs:['EN 12354-1:2000 Annex B (mass law, m′ ≥ 150 kg/m²); flanking not included'],
+    refs:['EN 12354-1:2000 Annex B (mass law, m′ ≥ 150 kg/m²); flanking not included; superseded by EN ISO 12354-1:2017, Annex B (informative) Sound reduction index (annex title from the official contents list)'],
     f:[
       {k:'layers',type:'textarea',
         def:'[\n  {"description":"200 mm dense concrete block","thickness_m":0.2,"density_kg_m3":2000},\n  {"description":"13 mm plaster, side 1","thickness_m":0.013,"density_kg_m3":1300},\n  {"description":"13 mm plaster, side 2","thickness_m":0.013,"density_kg_m3":1300}\n]',l:'Layers (JSON array: thickness m, density kg/m³)'},
@@ -7169,7 +7169,7 @@ const PRO_CATALOG = [
     ]},
   {id:'ph_vent', grp:'Physics', title:'Ventilation, outdoor air (ASHRAE 62.1)',
     ep:'/api/arch/ventilation', mth:'POST',
-    refs:['ASHRAE 62.1 Table 6.2.2.1 / 6.2.2.2'],
+    refs:['ASHRAE 62.1-2022 Table 6-1 (values checked against the free Addendum w reprint)'],
     f:[
       {k:'space_type',type:'select',opts:['office','conference','reception','classroom','lecture','retail','restaurant','hotel_bedroom','gym'],def:'office',l:'Space type'},
       {k:'floor_area_m2',type:'number',def:200,l:'Floor area (m²)'},

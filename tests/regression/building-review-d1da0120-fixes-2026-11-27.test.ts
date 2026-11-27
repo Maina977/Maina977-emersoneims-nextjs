@@ -53,10 +53,10 @@ describe('inverted FINDING tests: the findings are gone', () => {
     const repSiteCoords = new Function(`${fnSrc}; return repSiteCoords;`)();
     expect([repSiteCoords(''), repSiteCoords('abc'), repSiteCoords('-1.286, 36.817'), repSiteCoords('95,10')]).toEqual([null, null, { lat: -1.286, lng: 36.817 }, null]);
   });
-  it('E1: ASHRAE 62.1 and BRE Digest 309 say their edition is not stated; BS 8206-2:2008 is marked superseded', () => {
+  it('E1 (updated 2026-11-27, standards-access report): ASHRAE 62.1-2022 Table 6-1 and BRE Digest 310 (1986); BS 8206-2:2008 is marked superseded', () => {
     const methods = [...calcSrc.matchAll(/method: ['"`]([^'"`]*)['"`]/g)].map((m) => m[1]);
-    expect(methods.find((m) => m.startsWith('ASHRAE 62.1'))).toBe('ASHRAE 62.1 (edition not stated) Ventilation Rate Procedure, Eq. 6.2.2.1 and 6.2.2.2');
-    expect(methods.find((m) => m.includes('BRE Digest 309'))).toMatch(/BRE Digest 309 \(1986\).*BS 8206-2:2008 \(superseded 2022-01-31\)/);
+    expect(methods.find((m) => m.startsWith('ASHRAE 62.1'))).toBe('ASHRAE 62.1-2022 Ventilation Rate Procedure: Vbz = Rp·Pz + Ra·Az, Voz = Vbz / Ez; Rp, Ra and default densities from Table 6-1 (values checked against the free Addendum w reprint); equation numbers to be confirmed against the purchased standard');
+    expect(methods.find((m) => m.includes('BRE Digest 310'))).toMatch(/BRE Digest 310 \(1986\).*BS 8206-2:2008 \(superseded 2022-01-31\)/);
   });
 });
 

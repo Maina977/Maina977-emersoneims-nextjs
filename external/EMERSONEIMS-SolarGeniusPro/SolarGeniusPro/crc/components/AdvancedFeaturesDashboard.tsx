@@ -210,7 +210,7 @@ const FEATURES: FeatureCfg[] = [
   { id: 'string-mppt',       icon: '🧮', title: 'String / MPPT Validator', tier: 'design', desc: 'Cold-Voc & hot-Vmpp string check vs inverter MPPT window (IEC 62548, NEC 690.7)', status: 'Run live', open: { kind: 'drawer', runner: 'string-mppt' } },
   { id: 'voltage-drop',      icon: '🔌', title: 'Cable & Voltage Drop', tier: 'design', desc: 'IEC 60364-5-52 conductor sizing with copper/Al ampacity & 3 % drop (NEC 690.8)', status: 'Run live', open: { kind: 'drawer', runner: 'voltage-drop' } },
   { id: 'ocpd-fuse',         icon: '🧯', title: 'Fuse / OCPD Sizing', tier: 'design', desc: 'String fuse + AC breaker per NEC 690.9 / IEC 60269-6 (gPV) / IEC 60898', status: 'Run live', open: { kind: 'drawer', runner: 'ocpd-fuse' } },
-  { id: 'lightning-iec62305',icon: '⚡', title: 'Lightning Protection (IEC 62305)', tier: 'design', desc: 'Risk class + rolling sphere + SPD selection per IEC 62305 / KS 1515', status: 'Run live', open: { kind: 'drawer', runner: 'lightning' } },
+  { id: 'lightning-iec62305',icon: '⚡', title: 'Lightning Protection (IEC 62305)', tier: 'design', desc: 'Risk class + rolling sphere per IEC 62305; SPD selection per IEC 61643-32; earthing per KS 503-2:1990 (clauses to be confirmed against the purchased standards)', status: 'Run live', open: { kind: 'drawer', runner: 'lightning' } },
   { id: 'battery-sizing',    icon: '🔋', title: 'Battery Sizing Wizard', tier: 'financial', desc: 'IEEE 1561 sizing: autonomy × critical loads × DoD × derating', status: 'Run live', open: { kind: 'drawer', runner: 'battery-sizing' } },
   { id: 'priced-boq',        icon: '📄', title: 'Priced BOQ / Quotation', tier: 'financial', desc: 'Line-itemised BOM → cost → contingency → margin → 16 % VAT', status: 'Run live', open: { kind: 'drawer', runner: 'priced-boq' } },
   { id: 'om-schedule',       icon: '📅', title: 'O&M Schedule Generator', tier: 'iot', desc: 'IEC 62446-1 annual maintenance calendar + labour cost', status: 'Run live', open: { kind: 'drawer', runner: 'om-schedule' } },
@@ -1650,7 +1650,7 @@ const EarthElectrodeRunner: React.FC = () => {
   const [target, setTarget] = useState(10);
   return (
     <>
-      <Hint>Dwight equation R = ρ/(2πL)·[ln(8L/d)−1] with multi-rod correction. KS 1515: ≤10 Ω LV; ≤1 Ω medical/telecom.</Hint>
+      <Hint>Dwight equation R = ρ/(2πL)·[ln(8L/d)−1] with multi-rod correction. Screening targets ≤10 Ω LV; ≤1 Ω medical/telecom (Kenyan earthing code KS 503-2:1990, clause to be confirmed against the purchased standard).</Hint>
       <Field><span className="l">Soil type</span>
         <select value={soil} onChange={e=>setSoil(e.target.value as any)}>
           <option value="clay">Clay (50 Ω·m)</option><option value="loam">Loam (150 Ω·m)</option>
@@ -2218,7 +2218,7 @@ const CableDeratedRunner: React.FC = () => {
   const [ins, setIns] = useState<'PVC'|'XLPE'>('XLPE');
   return (
     <>
-      <Hint>Full IEC 60364-5-52 ampacity table lookup with ambient temperature (Table B.52.14/15), grouping (Table B.52.17), and soil thermal resistivity (Table B.52.16) corrections. PVC = 70°C, XLPE = 90°C insulation.</Hint>
+      <Hint>Full IEC 60364-5-52 ampacity table lookup with ambient temperature (air: Table B.52.14; ground: Table B.52.15), grouping (Table B.52.17), and soil thermal resistivity (Table B.52.16) corrections. PVC = 70°C, XLPE = 90°C insulation.</Hint>
       <Field><span className="l">Conductor</span>
         <select value={mat} onChange={e=>setMat(e.target.value as any)}>
           <option value="copper">Copper</option>

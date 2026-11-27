@@ -500,7 +500,7 @@ const MODULES = [
   { id:'daylight', group:'Architecture', tag:'b-arch',
     title:'Average daylight factor (BRE)',
     endpoint:'/api/arch/daylight/adf', method:'POST',
-    refs:['BRE Digest 309','BS 8206-2'],
+    refs:['BRE Digest 310 (1986)','BS 8206-2'],
     fields:[
       {k:'T_glass', label:'τ glass', type:'number', def:0.68, step:'0.01'},
       {k:'window_area_m2', label:'Window area (m²)', type:'number', def:6},
@@ -552,7 +552,7 @@ const MODULES = [
   { id:'vent', group:'Architecture', tag:'b-arch',
     title:'Ventilation, outdoor air (ASHRAE 62.1)',
     endpoint:'/api/arch/ventilation', method:'POST',
-    refs:['ASHRAE 62.1 Table 6.2.2.1','ASHRAE 62.1 Table 6.2.2.2'],
+    refs:['ASHRAE 62.1-2022 Table 6-1 (values checked against the free Addendum w reprint)','Ez: table number to be confirmed'],
     fields:[
       {k:'space_type', label:'Space type', type:'select', opts:['office','conference','reception','classroom','lecture','retail','restaurant','hotel_bedroom','gym'], def:'office'},
       {k:'floor_area_m2', label:'Floor area (m²)', type:'number', def:200},
