@@ -131,7 +131,34 @@ export const FORMWORK_WORKS: Record<string, CatalogueItem> = {
     combine: { fn: ([d]) => 2 * d, text: '2 × beam depth formed' } },
 };
 
-export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting' | 'concrete' | 'formwork';
+/**
+ * R-09 earthworks (P1-D §4): site strip, bulk excavation and filling to
+ * levels, and disposal, from a measured plan area and the levels on the
+ * drawings (mean existing ground level from the level survey; formation
+ * level from the sections). Volumes are bank (in-situ) volumes; disposal
+ * applies a bulking factor only when one is entered with its source.
+ */
+const LEVEL = (key: string, label: string): DimSpec => ({ key, label, unit: 'm', min: -500, max: 9000 });
+const cutDepth = ([eg, fl]: number[]) => {
+  if (!(eg > fl)) throw new TradeError(`mean existing ground level (${eg} m) must be above the formation level (${fl} m) for excavation: use "Filling to levels"`);
+  return eg - fl;
+};
+const fillDepth = ([eg, fl]: number[]) => {
+  if (!(fl > eg)) throw new TradeError(`the formation level (${fl} m) must be above the mean existing ground level (${eg} m) for filling: use "Bulk excavation to levels"`);
+  return fl - eg;
+};
+export const EARTHWORKS: Record<string, CatalogueItem> = {
+  topsoil: { takes: 'area', unit: 'm³', label: 'Site strip / remove topsoil (area × depth)', dims: [D('depth', 'strip depth', 0.02, 1)], specHint: 'e.g. remove 150 mm topsoil and stockpile for reuse' },
+  bulkExcavation: { takes: 'area', unit: 'm³', label: 'Bulk excavation to levels (area × (mean existing ground level − formation level))', dims: [LEVEL('eg', 'mean existing ground level'), LEVEL('fl', 'formation level')], specHint: 'e.g. reduce level excavation in soft material',
+    combine: { fn: cutDepth, text: '(mean existing ground level − formation level)' } },
+  fill: { takes: 'area', unit: 'm³', label: 'Filling to levels (area × (formation level − mean existing ground level))', dims: [LEVEL('eg', 'mean existing ground level'), LEVEL('fl', 'formation level')], specHint: 'e.g. approved murram fill in 150 mm compacted layers',
+    combine: { fn: fillDepth, text: '(formation level − mean existing ground level)' } },
+  disposal: { takes: 'area', unit: 'm³', label: 'Disposal off site (area × depth × bulking factor)', dims: [D('depth', 'excavated depth', 0.02, 30), { key: 'bulking', label: 'bulking factor (1.00 = none)', unit: 'No', min: 1, max: 1.6 }], specHint: 'e.g. surplus excavated material to a licensed tip',
+    combine: { fn: ([d, b]) => d * b, text: 'excavated depth × bulking factor' } },
+  basementExcavation: { takes: 'volume', unit: 'm³', label: 'Excavation measured as a volume (area × depth in the take-off)', dims: [], specHint: 'e.g. basement excavation, depth band 1.5–3 m' },
+};
+
+export type WorksTrade = 'external' | 'hvac' | 'drainage' | 'painting' | 'concrete' | 'formwork' | 'earthworks';
 export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record<string, CatalogueItem>; notMeasured: string[]; note?: string }> = {
   external: {
     trade: 'External works', items: EXTERNAL_WORKS,
@@ -161,6 +188,11 @@ export const WORKS_CATALOGUES: Record<WorksTrade, { trade: string; items: Record
     trade: 'Formwork', items: FORMWORK_WORKS,
     note: 'Measured from contact areas only: the area of concrete face the formwork touches, from the measured elements and the drawn sizes. Use the same measurements and sizes as the Concrete trade, but in a separate formwork take-off (one measurement feeds one item). No soffit formwork for a ground-bearing slab.',
     notMeasured: ['Propping and back-propping design (temporary works designer)', 'Formwork to openings and boxes ≤ the contract’s small-void rule (add as your own items)', 'Permanent formwork, profiled or special finishes'],
+  },
+  earthworks: {
+    trade: 'Earthworks', items: EARTHWORKS,
+    note: 'Levels come from the level survey (mean existing ground level of the measured area) and the sections (formation level). Volumes are bank volumes; disposal is bulked only by a factor you enter with its source (1.00 = none). Strip-foundation trenches: Strip foundation trade.',
+    notMeasured: ['Working space and earthwork support (state per the contract rules)', 'Dewatering', 'Excavation in rock (needs the site investigation)', 'Compaction testing'],
   },
 };
 
@@ -193,14 +225,15 @@ export function measuredWorks(i: WorksInput): TradeLine[] {
     if (prev) throw new TradeError(`${name}: measurement ${q.id} is already used by ${prev} (double counting)`);
     used.set(q.id, name);
     let v = q.net; const xs: number[] = [];
-    const inputs = [`${q.kind === 'count' ? 'count' : q.kind === 'linear' ? 'length' : 'area'} ${r3(q.net)} ${q.unit} (take-off ${q.id})`];
+    const inputs = [`${q.kind === 'count' ? 'count' : q.kind === 'linear' ? 'length' : q.kind === 'volume' ? 'volume' : 'area'} ${r3(q.net)} ${q.unit} (take-off ${q.id})`];
     for (const [k, d] of c.dims.entries()) {
       const x = need(`${name} (${c.label}) ${d.label}`, row.dims[k], d.min, d.max, d.unit);
       if (d.integer && !Number.isInteger(x)) throw new TradeError(`${name} (${c.label}) ${d.label} must be a whole number`);
       xs.push(x);
       inputs.push(`${d.label} ${x} ${d.unit} (${row.dims[k]!.source.trim()})`);
     }
-    v *= c.combine ? c.combine.fn(xs) : xs.reduce((a, b) => a * b, 1);
+    try { v *= c.combine ? c.combine.fn(xs) : xs.reduce((a, b) => a * b, 1); }
+    catch (e) { throw new TradeError(`${name} (${c.label}): ${(e as Error).message}`); }
     return {
       code: `${i.code}.${n + 1}`, trade: cat.trade, unit: c.unit, quantity: c.unit === 'No' ? q.net : r3(v),
       description: `${i.description}: ${c.label}, ${spec}`,
