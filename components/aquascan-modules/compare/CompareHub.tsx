@@ -44,6 +44,10 @@ export default function CompareHub() {
         <p style={{ margin: '0 0 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>
           Select up to 3 sites to compare borehole viability, yield, water quality and cost.
         </p>
+        {/* CA-52 review advisory: these sites are fixed examples, not analyses of real sites. */}
+        <p data-testid="compare-example-notice" role="note" style={{ margin: '0 0 1.5rem', padding: '0.75rem 1rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 8, color: '#78350f', fontSize: '0.875rem' }}>
+          <strong>Example sites (not real analyses).</strong> The sites, scores, depths, yields and costs below are fixed illustrations of how the comparison works. They are not survey results or quotations. For a real site, run an analysis on the <a href="/aquascan-pro-v3">AquaScan page</a> and request a quotation.
+        </p>
 
         <div style={{ background: 'white', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', marginBottom: '1.5rem', overflow: 'hidden' }}>
           <SiteSelector sites={DEMO_SITES} onSelect={setSelectedIds} maxSelections={3} />

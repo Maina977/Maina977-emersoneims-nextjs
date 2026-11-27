@@ -1,4 +1,8 @@
-﻿import { ImageDetector } from './imageDetector';
+﻿// LEGACY COPY: UNUSED. Do not import (2026-11-26, AquaScan safety release).
+// The live AquaScan engine is external/borehole-ai-engine/src. This May 2026
+// source is kept for the record only (never delete); it does not have the
+// verification-honesty, pricing or safety fixes.
+import { ImageDetector } from './imageDetector';
 import { SiteLocator } from './siteLocator';
 import { SoilAnalyzer } from './soilAnalyzer';
 import { ContaminationDetector } from './contaminationDetector';

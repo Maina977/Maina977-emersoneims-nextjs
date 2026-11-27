@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
 /**
- * Correction 2026-11-26: the governing PDF prints section 27 (pump test) whenever a pump test was
+ * Correction 2026-11-26 (CA-14): the governing PDF prints section 27 (pump test) whenever a pump test was
  * entered. It used to sit inside the Professional-only block, and the tier has been 'basic' since
  * 3025687f (one governing PDF), so the PDF never printed the pump-test result or its INSUFFICIENT
  * EVIDENCE limitation (the screen, JSON and Word did). Real engine results (network down) and the
  * real PDF code; every string the PDF writes is recorded by wrapping jsPDF's text(). TEST values only.
+ *
+ * Integrated release (2026-11-27): the AquaScan safety release (b187d03b) tests the single reading
+ * and the no-pump-test cases; the time-series case (b) from release/features-2026-11-26 is carried
+ * here as well, since the time-series pumping test ships in this release.
  */
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 
@@ -93,6 +97,7 @@ describe('governing PDF, section 27 (pump test)', () => {
     expect(pdf).toContain('Records needed for a defensible pumping-test interpretation:');
     expect(pdf).not.toContain('27. Pump Test Analysis (Theis / Cooper-Jacob)');
     expect(pdf).not.toContain('No field pump test has been conducted');
+    expect(pdf).not.toMatch(/Transmissivity[^\n]*m²\/day|Storativity[^\n]*\d|Safe yield[^\n]*\d/i);
   });
 
   it('(b) a time series: the section with the same rows as the Pump Test tab; not the single-reading or "no test" wording', async () => {

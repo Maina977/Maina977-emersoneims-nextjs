@@ -95,7 +95,12 @@ describe('location: site-specific only (review B2, M1, m6)', () => {
       [{ lat: '0.5', lon: '37.9', display_name: 'Kenya', addresstype: 'country', boundingbox: ['-4.9', '5.0', '33.9', '41.9'] }],
       [{ lat: '0.0567', lon: '34.6912', display_name: 'Emabungo, Vihiga, Kenya', addresstype: 'village', boundingbox: ['0.0467', '0.0667', '34.6812', '34.7012'] }],
     ];
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(answers.shift()), { status: 200 })));
+    // Review M-1 (2026-11-26): the engine's deliberate preload (localData.ts +3 s,
+    // openGroundwaterData.ts +5 s) can fetch mid-test; an in-order stub then gave it the
+    // village answer. The stub now answers by URL: geocode answers only to geocode calls.
+    vi.stubGlobal('fetch', vi.fn(async (input: unknown) => (/\/api\/geocode/.test(String(input))
+      ? new Response(JSON.stringify(answers.shift()), { status: 200 })
+      : new Response('{}', { status: 404 }))));
     const q = screen.getByPlaceholderText('Search place name — e.g. "Emabungo, Vihiga"');
     fireEvent.change(q, { target: { value: 'Kenya' } });
     fireEvent.keyDown(q, { key: 'Enter' });

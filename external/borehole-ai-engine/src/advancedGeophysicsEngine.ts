@@ -1316,7 +1316,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   // guarantee drilling success or sustainable yield (re-audit #13). Framed as a
   // projected information-confidence, conditional on the methods agreeing.
   const recommendation = successRateAnalysis.meetsTarget
-    ? `RECOMMENDED: "${optimalPackage.name}" reaches ${expectedSuccessRate}% projected siting/information confidence IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
+    ? `RECOMMENDED: "${optimalPackage.name}" reaches a projected siting score of ${expectedSuccessRate}/100 (hypothetical, uncalibrated) IF the surveys are carried out and their results are mutually consistent (planning target ≥90%). This is not a drilling-success guarantee — the governing site probability is unchanged until field data exists. ` +
       `Cost: $${optimalPackage.cost_usd.toLocaleString()} | Time: ${optimalPackage.time_hrs}h field work. ` +
       `${methodCount} independent geophysical methods with joint inversion provide comprehensive subsurface characterization.`
     : `RECOMMENDED: Upgrade to "${rankedPackages.find(p => aiOnlySuccess + p.successRateBoost_pct >= 90)?.name ?? 'Combined Geophysics'}" to reach the 90% projected-confidence planning target. ` +
@@ -1326,7 +1326,7 @@ export function computeAdvancedGeophysics(input: AdvancedGeophysicsInput): Advan
   const technicalSummary = [
     `Site: ${input.lat.toFixed(5)}°, ${input.lon.toFixed(5)}° | Elevation: ${input.elevationM}m`,
     `Geology: ${rockType} (${isCrystalline ? (/basalt|phonolite|trachyte|tuff|volcanic|lava/i.test(rockType) ? 'volcanic hard rock' : 'crystalline basement') : isSedimentary ? 'sedimentary' : isKarst ? 'karst' : 'mixed'})`,
-    `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, ${aiOnlySuccess}% probability`,
+    `desktop prediction: ${predictedDepth_m}m depth, ${input.predictedYield_m3hr} m³/hr yield, success score ${Math.round(Number(aiOnlySuccess) || 0)}/100 (uncalibrated, not a probability)`,
     `Weathering: ${weatheringDepth_m}m | Water table: ${waterTableDepth_m}m | Bedrock: ${input.bedrockDepth_m}m`,
     `Optimal survey: ${optimalPackage.name} (${methodCount} methods, $${optimalPackage.cost_usd.toLocaleString()})`,
     `Projected siting/information confidence if surveys confirm the model: ${expectedSuccessRate}% (desktop-only: ${aiOnlySuccess}%, boost: +${optimalPackage.successRateBoost_pct}%) — NOT a drilling-success guarantee`,

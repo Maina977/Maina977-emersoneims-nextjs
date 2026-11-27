@@ -120,7 +120,7 @@ export function computeDesktopDrillTargetReadiness(
   if (['exif', 'device'].includes(gpsSource)) coordScore += 1;                                            // photo/device fix
   else if (/^[AB]$/i.test(grade)) coordScore += 1;   // geocoded admin hierarchy corroborates the entered point (grade A/B)
   add('Coordinate & administrative verification', coordScore, 5, 'Coordinates',
-    `GPS source "${gpsSource}"${grade ? `, location grade ${grade}` : ''}; admin ${adminResolved ? 'resolved' : 'unresolved'}.`,
+    `GPS source "${gpsSource}"${grade ? `, location precision class ${grade} (GPS precision, not a verification grade)` : ''}; admin ${adminResolved ? 'resolved' : 'unresolved'}.`,
     'Set out and record a survey-grade GPS peg on site (accuracy, date, operator, photo).');
 
   // ── 2. Official water-point & borehole evidence (20) ──

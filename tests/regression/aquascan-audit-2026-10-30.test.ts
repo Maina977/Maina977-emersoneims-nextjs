@@ -64,9 +64,10 @@ describe('named months and probability band', () => {
     expect(last12Months('2002-04 to 2024-12')).toBe('Jan 2024 to Dec 2024');
     expect(last12Months('n/a')).toBeNull();
   });
-  it('bands a probability', () => {
-    expect(probabilityBand(0.68)).toBe('about 7 in 10');
-    expect(probabilityBand(0.02)).toBe('about 1 in 10');
+  // Updated 2026-11-26 (S46, P1-C §4): the uncalibrated score is a screening indicator, never 'about N in 10'.
+  it('bands the uncalibrated score as a screening indicator, not a probability', () => {
+    expect(probabilityBand(0.68)).toBe('Favourable screening indicator (score 68/100; not a probability of success — not calibrated against drilled outcomes)');
+    expect(probabilityBand(0.02)).toBe('Unfavourable screening indicator (score 2/100; not a probability of success — not calibrated against drilled outcomes)');
   });
 });
 

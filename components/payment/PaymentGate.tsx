@@ -7,6 +7,7 @@
  */
 
 import React, { useState } from 'react';
+import { PaymentUnavailableNotice, PAYMENT_UNLOCK_AVAILABLE } from './PaymentUnavailableNotice';
 
 export interface PaymentGateProps {
   isUnlocked: boolean;
@@ -45,6 +46,10 @@ export function PaymentModal({
   const [step, setStep] = useState<'select' | 'details' | 'processing' | 'success'>('select');
 
   if (!isOpen) return null;
+
+  // CA-52: no payment can be taken (M-Pesa is not configured in production). The old flow
+  // simulated an STK push and a success after 3 s; it is not shown while unlocking is unavailable.
+  if (!PAYMENT_UNLOCK_AVAILABLE) return <PaymentUnavailableNotice onClose={onClose} reference={reportId} />;
 
   const handleMpesaPayment = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {

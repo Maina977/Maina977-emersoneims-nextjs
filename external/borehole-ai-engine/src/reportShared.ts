@@ -7,7 +7,9 @@ import type { AnalysisResult } from './types';
 import { finalVerdict, salinityEvidence, chemEvidence } from './verdict';
 import { auditReport, type AuditReport } from './reportAuditor';
 import type { VerificationReport } from './preReportVerification';
-import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES } from './costModel';
+import { drillRatePerM, mobilisationUSD, countyRateBand, costSoilType, KES_PER_USD, drillingCostKES, EIMS_RATES_KES, rockClassForCost } from './costModel';
+import { projectPricingOf } from './projectPricing';
+import { costSourcing } from './costSources';
 
 export class AuditBlockError extends Error {
   public audit: AuditReport;
@@ -189,10 +191,16 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
   // NEMA report 105,000 for institutional or commercial abstraction (taken as
   // a planned yield of 5 m3/h or more).
   const needsNema = yieldVal >= 5;
-  const surveyCost = Math.round(EIMS_RATES_KES.hydrogeologicalSurvey / KES_PER_USD);
+  // 2026-11-26 (management decision C): the pricing category and the verified
+  // project quotations stored with this project's result. The tender figures
+  // below are the tender's; costSourcing decides which apply to this project.
+  const pricing = projectPricingOf(result);
+  const isTender = pricing.category === 'government_tender';
+  const tenderSurveyCost = Math.round(EIMS_RATES_KES.hydrogeologicalSurvey / KES_PER_USD);
   const permitKES = EIMS_RATES_KES.wraDrillingPermit + EIMS_RATES_KES.abstractionPermit + EIMS_RATES_KES.countyFees + (needsNema ? EIMS_RATES_KES.nemaReport : 0);
-  const permitCost = Math.round(permitKES / KES_PER_USD);
-  const permitNote = `WRA drilling permit KSh 80,000 + abstraction permit KSh 30,000 + county fees KSh 25,000${needsNema ? ' + NEMA report KSh 105,000 (institutional/commercial yield)' : ''} (${EIMS_RATES_KES.source})`;
+  const tenderPermitCost = Math.round(permitKES / KES_PER_USD);
+  // The tender is named only on a tender project (a private project is never priced at it).
+  const permitNote = `WRA drilling permit KSh 80,000 + abstraction permit KSh 30,000 + county fees KSh 25,000${needsNema ? ' + NEMA report KSh 105,000 (institutional/commercial yield)' : ''}${isTender ? ` (${EIMS_RATES_KES.source})` : ''}`;
   // Completion works the tender prices separately: gravel pack, 12 h
   // development, 24 h test pumping, laboratory water test, cap and site finishing.
   const gravelTons = Math.max(1, Math.round(depthVal * EIMS_RATES_KES.gravelTonsPerMetre));
@@ -201,12 +209,32 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     + EIMS_RATES_KES.testPumpingPerHour * EIMS_RATES_KES.testPumpingHours
     + EIMS_RATES_KES.waterQualityLab + EIMS_RATES_KES.capAndSiteFinishing;
   const completionCost = Math.round(completionKES / KES_PER_USD);
-  const completionNote = `Gravel pack ${gravelTons} t x KSh 6,500, development 12 h x KSh 12,500, 24 h test pumping x KSh 9,500, laboratory water test KSh 28,000, cap and site finishing KSh 85,000 (${EIMS_RATES_KES.source})`;
-  const subtotalCost = surveyCost + permitCost + drillingCost + mobilisationCost + casingCost + screenCost + completionCost + pumpCost + installCost + solarCost + wqTreatmentCost + defluoridationCost;
-  const isHardRock = /gneiss|granite|basalt|quartzite|dolerite/i.test(soilType) || /rocky/i.test(soilType);
-  const contingencyRate = isHardRock ? 0.25 : 0.15;
-  const contingency = Math.round(subtotalCost * contingencyRate);
-  const totalCost = subtotalCost + contingency;
+  const completionNote = `Gravel pack ${gravelTons} t x KSh 6,500, development 12 h x KSh 12,500, 24 h test pumping x KSh 9,500, laboratory water test KSh 28,000, cap and site finishing KSh 85,000${isTender ? ` (${EIMS_RATES_KES.source})` : ''}`;
+  // 2026-11-26 (real-project test D4): the contingency reads the SAME rock
+  // classification as the drilling rate above (it used to test the soil type,
+  // so a basalt hole priced at the hard-rock rate got the 15% soft contingency
+  // when the soil was "unknown"). No classified rock type: the conservative 25%.
+  const rockClass = rockClassForCost((result as any).rockClassification?.primaryRockType);
+  const isHardRock = rockClass === 'hard';
+  const rockTypeUnknown = rockClass === 'unknown';
+  const contingencyRate = isHardRock || rockTypeUnknown ? 0.25 : 0.15;
+  const rockType = (result as any).rockClassification?.primaryRockType as string | undefined;
+  // ONE cost model (2026-11-26, management): the subtotal, contingency (rate,
+  // base and amount) and total are those of the priced lines, the same figures
+  // the screen and every export show. Items still to quote are not in them.
+  const _cs = costSourcing({
+    surveyCost: tenderSurveyCost, permitCost: tenderPermitCost, permitNote, permitKES, needsNema,
+    depthVal, drillMethod, drillingCost, rockType, isHardRock, rockTypeUnknown,
+    mobilisationCost, casingCost, blindCasingLen, screenCost, gravelTons,
+    pumpCost, installCost, solarCost, solarKW, wqTreatmentCost, needsRO, defluoridationCost,
+    contingencyRate, pricing,
+  });
+  const lineUSD = (k: string) => { const l = _cs.lines.find((x) => x.key === k); return l && l.kes != null ? l.usd : 0; };
+  const surveyCost = lineUSD('survey');
+  const permitCost = lineUSD('permits');
+  const subtotalCost = _cs.sourcedSubtotal;
+  const contingency = _cs.sourcedContingency;
+  const totalCost = _cs.sourcedTotal;
   const annualMaintenance = Math.round(totalCost * 0.045);
   // ONE annual O&M definition used EVERYWHERE (re-audit #6). The recurring
   // defluoridation media ($/yr) is a real operating cost separate from the 4.5%
@@ -287,7 +315,12 @@ export function computeCanonicalEconomics(result: AnalysisResult) {
     depthVal, yieldVal, soilType, cpm, drillingCost, mobilisationCost, casingCost, casingNote, blindCasingLen,
     screenLength, screenCost, screenNote, pumpKW, pumpHead, pumpCost, pumpNote,
     installCost, solarKW, solarCost, isHandPump, wqTreatmentCost, needsRO, salinityUnpriced, fluorideUnpriced, roDailyM3, fluorideVal,
-    defluoridationCost, annualDefluoridation, subtotalCost, isHardRock,
+    defluoridationCost, annualDefluoridation, subtotalCost, isHardRock, rockTypeUnknown,
+    // 2026-11-26 (management decision C): the pricing category and the verified
+    // project quotations stored with this result; the rock type the drilling
+    // rate used; the tender's permit total in KSh (used only under a tender).
+    pricing, rockType, permitKES, needsNema,
+    subtotalKES: _cs.sourcedSubtotalKES, contingencyKES: _cs.sourcedContingencyKES, totalKES: _cs.sourcedTotalKES,
     contingencyRate, contingency, totalCost, annualMaintenance, annualOM,
     pumpHoursPerDay, operatingDaysPerYear, waterTariffPerM3, dailyWaterM3,
     maxAnnualRevenue, yr1Utilization, yr2Utilization, yr3PlusUtilization,

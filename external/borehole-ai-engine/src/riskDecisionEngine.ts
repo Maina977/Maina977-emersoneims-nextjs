@@ -5,6 +5,7 @@
 
 /* ── Types ─────────────────────────────────────────────────── */
 
+import { screeningIndicator, modelledRiskText } from './successScore';
 export interface RiskDecisionInput {
   // Core predictions
   probability: number;
@@ -184,7 +185,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
       name: 'Dry Borehole',
       probability: dryProb,
       impact: dryProb > 0.3 ? 'critical' : dryProb > 0.15 ? 'high' : 'moderate',
-      description: `${(dryProb * 100).toFixed(0)}% chance of no water at predicted depth`,
+      description: `${modelledRiskText('dry-hole', dryProb)}: no water at the planned depth`,
       mitigation: [
         dryProb > 0.3 ? 'CRITICAL: Conduct ERT survey before drilling' : 'Consider geophysical survey',
         'Drill deeper into bedrock (fracture zone targeting)',
@@ -196,7 +197,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
       name: 'Low Yield',
       probability: lowYieldProb,
       impact: lowYieldProb > 0.3 ? 'high' : 'moderate',
-      description: `${(lowYieldProb * 100).toFixed(0)}% chance of yield < 0.5 m³/hr (insufficient for community)`,
+      description: `${modelledRiskText('low-yield', lowYieldProb)}: yield < 0.5 m³/hr (insufficient for community)`,
       mitigation: [
         'Target fracture intersections for higher yield',
         'Consider hydro-fracturing (borehole stimulation)',
@@ -207,7 +208,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
       name: 'Poor Water Quality',
       probability: poorQualityProb,
       impact: poorQualityProb > 0.25 ? 'high' : 'low',
-      description: `${(poorQualityProb * 100).toFixed(0)}% chance of water requiring treatment`,
+      description: `${modelledRiskText('water-quality', poorQualityProb)}: water requiring treatment`,
       mitigation: [
         'Budget for water quality testing post-drilling',
         'Include treatment system in project costs (iron removal, fluoride filter)',
@@ -218,7 +219,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
       name: 'Borehole Collapse',
       probability: collapseProb,
       impact: collapseProb > 0.1 ? 'critical' : 'low',
-      description: `${(collapseProb * 100).toFixed(0)}% chance of borehole wall collapse during/after drilling`,
+      description: `${modelledRiskText('collapse', collapseProb)}: borehole wall collapse during/after drilling`,
       mitigation: [
         'Use appropriate casing through unstable zones',
         'Consider gravel packing in sandy formations',
@@ -334,7 +335,7 @@ export function assessDrillingRisk(input: RiskDecisionInput): RiskDecisionResult
     scenarios,
     dataQualityWarning,
     confidenceGrade,
-    methodology: 'Multi-factor probabilistic risk model with Bayesian prior adjustment from regional data (ISO 31000 framework)',
+    methodology: 'Multi-factor risk-scoring model (uncalibrated scores) with Bayesian prior adjustment from regional data (ISO 31000 framework)',
   };
 }
 
@@ -345,9 +346,9 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
     return {
       action: 'DRILL',
       confidence: Math.min(0.95, successProb),
-      headline: `${(successProb * 100).toFixed(0)}% success probability — PROCEED with drilling`,
+      headline: `${screeningIndicator(successProb)} — PROCEED with drilling`,
       reasoning: [
-        `High success probability (${(successProb * 100).toFixed(0)}%)`,
+        `High success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
         `Low overall risk score (${riskScore}/100)`,
         input.hasFieldGeophysics ? 'Supported by field geophysics data' : 'Consider adding ERT for higher confidence',
         `Expected depth: ${input.predictedDepth_m}m, Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr`,
@@ -359,9 +360,9 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
     return {
       action: 'SURVEY_FIRST',
       confidence: successProb * 0.8,
-      headline: `${(successProb * 100).toFixed(0)}% probability — RECOMMEND geophysical survey before drilling`,
+      headline: `${screeningIndicator(successProb)} — RECOMMEND geophysical survey before drilling`,
       reasoning: [
-        `Moderate success probability (${(successProb * 100).toFixed(0)}%)`,
+        `Moderate success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
         `Moderate risk (${riskScore}/100) — additional data will reduce uncertainty`,
         'ERT survey recommended to confirm aquifer location and depth',
         'Survey cost (~$500-2000) justified by reduced drilling failure risk',
@@ -373,9 +374,9 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
     return {
       action: 'RELOCATE',
       confidence: 0.6,
-      headline: `${(successProb * 100).toFixed(0)}% probability — CONSIDER alternative site`,
+      headline: `${screeningIndicator(successProb)} — CONSIDER alternative site`,
       reasoning: [
-        `Low success probability at this location (${(successProb * 100).toFixed(0)}%)`,
+        `Low modelled success score at this location (${Math.round(successProb * 100)}/100, uncalibrated)`,
         `High risk score (${riskScore}/100)`,
         'Look for fracture intersections, valley positions, or nearby successful boreholes',
         'If must drill here: mandatory ERT + seismic survey first',
@@ -386,9 +387,9 @@ function makeDecision(successProb: number, riskScore: number, input: RiskDecisio
   return {
     action: 'ABANDON',
     confidence: 0.7,
-    headline: `${(successProb * 100).toFixed(0)}% probability — NOT RECOMMENDED for drilling`,
+    headline: `${screeningIndicator(successProb)} — NOT RECOMMENDED for drilling`,
     reasoning: [
-      `Very low success probability (${(successProb * 100).toFixed(0)}%)`,
+      `Very low success score (${Math.round(successProb * 100)}/100 (uncalibrated, not a probability))`,
       `Very high risk (${riskScore}/100)`,
       'Multiple risk factors indicate this site is unsuitable',
       'Recommend comprehensive regional survey to identify better locations',
@@ -419,8 +420,8 @@ function makeAlternatives(primaryAction: DecisionRecommendation['action'], riskS
       headline: 'Evaluate alternative drilling point within 500m',
       reasoning: [
         'Target fracture intersections or valley positions',
-        'Use probabilistic drilling map to find optimal point',
-        'Even 100m shift can significantly change success probability',
+        'Use the drilling screening map to compare candidate points',
+        'Even 100m shift can significantly change success score',
       ],
     });
   }

@@ -277,7 +277,7 @@ export function generateProbabilisticDrillMap(input: DrillMapInput): DrillMapRes
 
   // Add specific reasoning for top points
   for (const tp of topPoints) {
-    if (tp.rank === 1) tp.reasoning.unshift('HIGHEST probability drilling point');
+    if (tp.rank === 1) tp.reasoning.unshift('HIGHEST relative screening score (uncalibrated) among the candidate points');
     if (tp.rank <= 3) tp.reasoning.push(`Rank #${tp.rank} of ${candidates.length} evaluated points`);
   }
 
@@ -301,7 +301,7 @@ export function generateProbabilisticDrillMap(input: DrillMapInput): DrillMapRes
     minProbability: Math.round(minProb * 1000) / 1000,
     highProbabilityArea_km2: Math.round(highProbArea * 100) / 100,
     coverageRadius_km: input.radiusKm,
-    methodology: 'Multi-factor spatial probability model: slope, TWI, fracture proximity, drainage, vegetation, borehole history, kriging-inspired distance weighting',
+    methodology: 'Multi-factor spatial screening-score model (relative, uncalibrated; not a probability): slope, TWI, fracture proximity, drainage, vegetation, borehole history, kriging-inspired distance weighting',
     confidence: Math.min(0.92, 0.5 +
       (input.fractureDensity ? 0.1 : 0) +
       (input.nearbyBoreholes && input.nearbyBoreholes.length > 2 ? 0.12 : 0) +
@@ -397,7 +397,7 @@ export function renderDrillHeatmap(
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 14px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Probabilistic Drilling Map', width / 2, 20);
+  ctx.fillText('Drilling Screening Map (relative scores, uncalibrated)', width / 2, 20);
   ctx.font = '11px sans-serif';
   ctx.fillStyle = '#aaa';
   ctx.fillText(`${result.coverageRadius_km}km radius | ${heatmap.length} cells | ${result.cellSizeM}m resolution`, width / 2, 36);
@@ -432,7 +432,7 @@ export function renderDrillHeatmap(
     const tp = topPoints[i];
     const y = height - 25 + i * 0; // compact
     ctx.fillStyle = i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : '#CD7F32';
-    ctx.fillText(`★ #${tp.rank}: ${(tp.probability * 100).toFixed(0)}% @${tp.distanceFromCenter_m}m`, padding + 80 + i * 150, height - 10);
+    ctx.fillText(`★ #${tp.rank}: ${Math.round(tp.probability * 100)}/100 @${tp.distanceFromCenter_m}m`, padding + 80 + i * 150, height - 10);
   }
 }
 

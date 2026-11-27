@@ -98,6 +98,7 @@ async function fieldRecordsWithin(lat: number, lon: number, km: number): Promise
 }
 import { getKenyaHydroPrior } from './kenyaHydroPriors';
 import { nearestKenyaBaseline } from './kenyaBaseline';
+import { buildVerificationReport } from './preReportVerification';
 import { salinityFromWaterQuality, modelledSalinityLabel, salinityRisk, chemFromWaterQuality, chemMeasuredNearby, fluorideRisk, nitrateRisk, modelledChemLabel, type ChemRisk } from './verdict';
 
 /**
@@ -767,7 +768,7 @@ export class BoreholeAnalyzer {
         fallbacksUsed.push(`Elevation API failed — using a stored SRTM elevation for ${kbElev.name} (${kbElev.distance_km} km away) instead of this exact point`);
         remoteSensing.elevation = {
           elevation: kbElev.elevation_m,
-          source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km)`,
+          source: `EmersonEIMS baseline — SRTM measured at ${kbElev.name} (${kbElev.distance_km} km away), not at this site`,
         };
       }
     }
@@ -791,7 +792,7 @@ export class BoreholeAnalyzer {
         const rechargePct = annualP > 1000 ? 0.15 : annualP > 500 ? 0.10 : 0.05;
         remoteSensing = {
           soilGrids: kb.soil ? { available: true, clay: kb.soil.clay_pct != null ? kb.soil.clay_pct * 10 : null, sand: kb.soil.sand_pct != null ? kb.soil.sand_pct * 10 : null, silt: kb.soil.silt_pct != null ? kb.soil.silt_pct * 10 : null, phH2O: kb.soil.pH != null ? kb.soil.pH * 10 : null, source: `EmersonEIMS baseline — ISRIC SoilGrids measured at ${kb.name}` } : null,
-          elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}` } : null,
+          elevation: kb.elevation_m != null ? { elevation: kb.elevation_m, source: `EmersonEIMS baseline — SRTM measured at ${kb.name}${kb.distance_km != null ? ` (${kb.distance_km} km away)` : ""}, not at this site` } : null,
           climate: {
             annualPrecipitation: annualP,
             monthlyPrecipitation: kenyaMonthlyRain(annualP),
@@ -843,7 +844,7 @@ export class BoreholeAnalyzer {
     // A failed source stays empty: no latitude-made values (2026-10-27 audit:
     // a constant "losing" storage trend subtracted 5 points at every site).
     if (!graceData) {
-      fallbacksUsed.push('GRACE-FO water storage: not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('GRACE-FO water storage: not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
 
     if (!nearbyWells) {
@@ -871,13 +872,13 @@ export class BoreholeAnalyzer {
 
     // Nairobi CBD and Lodwar both got "dense vegetation" from latitude (2026-10-27 audit).
     if (!vegetationGWProxy) {
-      fallbacksUsed.push('Vegetation-groundwater proxy (MODIS NDVI): not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('Vegetation-groundwater proxy (MODIS NDVI): not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
     if (!satelliteVegetation) {
-      fallbacksUsed.push('Satellite vegetation (MODIS): not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('Satellite vegetation (MODIS): not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
     if (!nasaPowerMoisture) {
-      fallbacksUsed.push('NASA POWER soil moisture: not available (the service did not answer) — left out of the probability and shown as "not available"');
+      fallbacksUsed.push('NASA POWER soil moisture: not available (the service did not answer) — left out of the success score and shown as "not available"');
     }
 
     // Extract SoilGrids data for downstream modules
@@ -941,7 +942,7 @@ export class BoreholeAnalyzer {
       else if (trend === 'critically-depleting') probability = Math.max(0.10, probability - 0.15);
 
       probability = Math.round(probability * 100) / 100;
-      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} → ${(probability*100).toFixed(1)}%`);
+      console.log(`[Pipeline] Probability recalibrated with water budget: recharge=${recharge}mm/yr, smClass=${smClass}, trend=${trend} → ${Math.round(probability * 100)}/100 (uncalibrated)`);
     }
 
     // Depth estimation with real data calibration
@@ -1332,7 +1333,7 @@ export class BoreholeAnalyzer {
     probability = ensembleResult.probability;
     calibratedDepth = ensembleResult.depth_m;
     calibratedYield = ensembleResult.yield_m3h;
-    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, P=${(probability*100).toFixed(1)}%, depth=${calibratedDepth}m, yield=${calibratedYield}m³/h`);
+    console.log(`[Pipeline] Bayesian ensemble: ${ensembleResult.sourcesUsed} sources, agreement=${ensembleResult.sourceAgreement}, score=${Math.round(probability * 100)}/100, depth=${calibratedDepth}m, yield=${calibratedYield}m³/h`);
 
     let subsurfaceModel: any = undefined;
     let aquiferSimulation: any = undefined;
@@ -3764,7 +3765,10 @@ export class BoreholeAnalyzer {
     try {
       let wt: number | null = null;
       let kind: 'field' | 'nearby' | null = null;
-      let basis = (result as any).pumpHeadAssumption ?? 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
+      // S36 (2026-11-26): the pump-cost assumption ("half the planned depth") is
+      // shown only beside the pump and cost figures, which are gated on field
+      // evidence; the water-table basis never carries it.
+      let basis = 'Not measured: no field reading and too few recorded water levels nearby. An ERT survey or the drilled hole sets it.';
       const fieldSwl = Number(fieldData?.stepDrawdownTest?.staticWaterLevel_m ?? fieldData?.gprSurvey?.waterTableDepthM);
       if (Number.isFinite(fieldSwl) && fieldSwl > 0) {
         wt = fieldSwl; kind = 'field'; basis = 'Measured on site (field data you entered).';
@@ -3949,15 +3953,15 @@ export class BoreholeAnalyzer {
         verificationTimeout,
       ]);
       const vr = (result as any).verificationReport;
-      console.log(`[Pipeline] Verification: ${vr?.verified ? '✅ PASSED' : '❌ FAILED'} — Grade ${vr?.grade}, ${vr?.score}%, ${vr?.apiRequeriesPerformed} API re-queries`);
+      console.log(`[Pipeline] Verification: ${vr?.status ?? (vr?.verified ? 'PASSED' : 'FAILED')} — ${vr?.coverage ? `${vr.coverage.run} of ${vr.coverage.total} checks run` : ''}, grade ${vr?.grade ?? 'not issued'}, ${vr?.apiRequeriesRun ?? 0} of ${vr?.apiRequeriesPerformed} API re-queries ran`);
     } catch (e) {
       console.warn('[Pipeline] Pre-report verification engine failed:', e);
-      (result as any).verificationReport = {
-        verified: true, score: 0, grade: 'F', totalChecks: 0, passed: 0, warnings: 0,
-        failures: 0, skipped: 0, checks: [], apiRequeriesPerformed: 0, apiRequeriesMatched: 0,
-        timestamp: new Date().toISOString(), durationMs: 0,
-        summary: '⚠️ Verification engine failed — report generated without verification.',
-      };
+      // 2026-11-26 (D1): the engine did not complete, so nothing was checked:
+      // INCOMPLETE with no grade (was verified: true). It does not block the report.
+      (result as any).verificationReport = buildVerificationReport([{
+        id: 'VERIFY-ENGINE', category: 'INTERNAL_CONSISTENCY', name: 'Pre-report verification', severity: 'SKIP',
+        message: `Not checked: the verification engine did not complete (${e instanceof Error ? e.message : String(e)})`,
+      }], { attempted: 0, performed: 0, matched: 0 });
     }
 
     // ─── THREE-SCORE STATUS ARCHITECTURE (DDTR / FRR / MAG) ───

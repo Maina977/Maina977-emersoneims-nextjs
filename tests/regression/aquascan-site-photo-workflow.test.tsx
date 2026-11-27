@@ -23,7 +23,7 @@ import { runVisionSafely, featureStatements, DISABLED_PROVIDER, VISION_UNAVAILAB
 import { photoOnlyLocation, compareCardFigures, compareVerdictSentence, chanceText, PHOTO_ONLY_NO_CHANCE } from '@/external/borehole-ai-engine/src/photoOnlyGate';
 import { screeningContent, screeningRows } from '@/external/borehole-ai-engine/src/screeningReport';
 import { jsonReportData } from '@/external/borehole-ai-engine/src/reportGenerator';
-import { governingSummary } from '@/external/borehole-ai-engine/src/governingSummary';
+import { governingSummary, probabilityBand, SCORE_NOT_PROBABILITY } from '@/external/borehole-ai-engine/src/governingSummary';
 import type { AnalysisResult } from '@/external/borehole-ai-engine/src/types';
 import { sharpImage, blurred, jpegWithExif, pngDataUrl } from './aquascan-site-photo-fixtures';
 
@@ -315,7 +315,12 @@ describe('photo-only analyses (location guessed from the photo) never show depth
     expect(c.yield).not.toMatch(/4\.2/);
     const v = compareVerdictSentence(photoOnly, 'Site A', 71);
     expect(v).not.toMatch(/65|4\.2|in 10|chance/i);
-    expect(chanceText({ ...photoOnly, locationMethod: 'manual-entry' } as AnalysisResult)).toBe('about 8 in 10');
+    // Integrated release (S46, b187d03b): a located run shows the uncalibrated screening indicator,
+    // never a frequency such as "about 8 in 10".
+    const located = chanceText({ ...photoOnly, locationMethod: 'manual-entry' } as AnalysisResult);
+    expect(located).toBe(probabilityBand(0.81));
+    expect(located).toContain(SCORE_NOT_PROBABILITY);
+    expect(located).not.toMatch(/in 10|chance/i);
   });
   it('screening and JSON exports of a photo-only result carry no depth, yield or probability', () => {
     const txt = JSON.stringify({ s: screeningContent(photoOnly, NOW), rows: screeningRows(photoOnly, NOW), j: jsonReportData(photoOnly) });

@@ -10,10 +10,12 @@ import type { AnalysisResult } from './types';
 import { finalVerdict, salinityFromWaterQuality, chemFromWaterQuality, labSourceLabel, nearbyProvenance } from './verdict';
 import { computeCanonicalEconomics } from './reportShared';
 import { evidenceGate, provenanceText } from './evidenceGate';
-import { costSourcing, QUOTATION_TEXT } from './costSources';
+import { costSourcing, costLineText } from './costSources';
 import { locationStatusText, waterCheckStatusText, photoGpsConflictText } from './locationStatus';
 import { displayDepth, displayYield } from './displayFigures';
 import { waterQualityStatus } from './waterQualityStatus';
+import { fmtKES } from './projectPricing';
+import { verificationRows } from './preReportVerification';
 
 export type Row = [string, string, string]; // label, value, basis
 export interface SummarySection { title: string; rows: Row[]; notes?: string[] }
@@ -34,10 +36,21 @@ export function last12Months(period: unknown): string | null {
   return `${monthName(start)} to ${monthName(`${y}-${end[2]}`)}`;
 }
 
-/** "about 7 in 10": the success probability is a planning estimate, not a calibrated frequency. */
+/**
+ * S46 (2026-11-26, P1-C §4 "only if calibrated may it later be called a
+ * probability"): the success score has not been calibrated against recorded
+ * drilling outcomes (the validation framework, validation/metrics.ts, has no
+ * calibration result for it), so it is never shown as a probability or a
+ * frequency ("about 7 in 10", "62%"). It is a qualitative screening class with
+ * its score out of 100 and this note, on screen and in every export.
+ */
+// The wording lives in successScore.ts (no imports) so the engines can use it too.
+import { SCORE_NOT_PROBABILITY, screeningClass, scoreOutOf100, screeningIndicator } from './successScore';
+export { SCORE_NOT_PROBABILITY, screeningClass, scoreOutOf100, screeningIndicator };
+
+/** Kept for its callers; since 2026-11-26 it returns the screening indicator, never "about N in 10". */
 export function probabilityBand(p: number): string {
-  const tenths = Math.max(1, Math.min(9, Math.round(p * 10)));
-  return `about ${tenths} in 10`;
+  return screeningIndicator(p);
 }
 
 export function governingSummary(result: AnalysisResult, locationText: string): SummarySection[] {
@@ -60,7 +73,7 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
       ...(photoGpsConflictText(r) ? [['Photo GPS', String(photoGpsConflictText(r)), 'The camera position is not used for the site'] as Row] : []),
       ['Verdict', v.verdict, 'Desktop pre-screen: a hydrogeological survey is required before drilling (Kenya Water Resources Regulations)'],
       ['What to do next', v.next, ''],
-      ['Chance of a productive borehole', probabilityBand(n(r.probability) ?? 0.5), 'A planning estimate from desktop data; not yet calibrated against drilling outcomes'],
+      ['Modelled success score (uncalibrated)', screeningIndicator(n(r.probability) ?? 0.5), 'A screening indicator from desktop data'],
       // Re-review of f89698e8, BLOCKING 2: depth and yield only through the display accessor.
       ['Planned depth', (() => { const d = displayDepth(r); return d.shown ? `${f(d.value)} m${Array.isArray(depthRange) ? ` (likely ${f(depthRange[0])}-${f(depthRange[1])} m)` : ''}` : d.text; })(), g0.citations.depth ? `Field evidence: ${g0.citations.depth}` : 'Field records nearby where they exist, otherwise the regional model'],
       ...(((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed ?? []) as string[]).length ? [['Sources that did not answer', ((r.fallbacksUsed ?? r.dataProvenance?.fallbacksUsed) as string[]).join('; '), 'A stored baseline or no value was used for these'] as Row] : []),
@@ -136,19 +149,20 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   //    rate carry a price, with the source beside it; the rest are "by
   //    quotation", and the total is the total of the sourced lines.
   const cs = costSourcing(eco);
-  const costRows: Row[] = cs.lines.map((l): Row => l.source
-    ? [l.item, usd(l.usd), `${eco.kes(l.usd)}. ${l.source}`]
-    : [l.item, QUOTATION_TEXT, 'No sourced rate on file: the supplier\'s quotation prices this item']);
+  // 2026-11-26 (management decision C): each line with its price state.
+  const costRows: Row[] = cs.lines.map((l): Row => { const t = costLineText(l); return l.kes != null ? [l.item, t.usd, `${t.kes}. ${t.basis}`] : [l.item, t.usd, t.basis]; });
   if (eco.salinityUnpriced) costRows.push(['Desalination (reverse osmosis)', 'not priced', 'Salinity has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
   if (eco.fluorideUnpriced) costRows.push(['Defluoridation', 'not priced', 'Fluoride has not been measured at this site; a laboratory test of the first water decides whether treatment is needed and its size']);
-  costRows.push([`Contingency (${Math.round(eco.contingencyRate * 100)}% of the sourced items)`, usd(cs.sourcedContingency), eco.kes(cs.sourcedContingency)]);
-  costRows.push([cs.quotationItems.length ? 'TOTAL of the sourced items' : 'TOTAL', usd(cs.sourcedTotal), `${eco.kes(cs.sourcedTotal)}${cs.quotationItems.length ? `. Not included, by quotation: ${cs.quotationItems.join(', ')}` : ''}`]);
-  if (r.pumpHeadAssumption) costRows.push(['Water level behind the pump cost', 'assumed, not measured', String(r.pumpHeadAssumption)]);
+  costRows.push([cs.contingencyLabel, usd(cs.sourcedContingency), fmtKES(cs.sourcedContingencyKES)]);
+  costRows.push([cs.totalLabel, usd(cs.sourcedTotal), `${fmtKES(cs.sourcedTotalKES)}${cs.quotationItems.length ? `. Not included (${cs.lines.find((l) => l.kes == null)?.priceText ?? ''}): ${cs.quotationItems.join(', ')}` : ''}`]);
+  // S36: the pump-cost assumption only beside priced pump/cost figures (field evidence).
+  if (r.pumpHeadAssumption && g0.cost) costRows.push(['Water level behind the pump cost', 'assumed, not measured', String(r.pumpHeadAssumption)]);
   const paybackYears = n(eco.paybackMonths) !== null && eco.paybackMonths > 0 ? eco.paybackMonths / 12 : null;
-  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : cs.quotationItems.length ? 'not given until the quotation prices every item' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
+  costRows.push(['Payback if water is sold', eco.paybackWithheld ? 'not given: the site screens as unfavourable' : cs.quotationItems.length ? 'not given until a quotation prices every item' : paybackYears !== null ? `about ${f(paybackYears, 1)} years` : 'does not pay back from water sales', `$${eco.waterTariffPerM3}/m³, ${eco.pumpHoursPerDay} h/day, ${eco.operatingDaysPerYear} days/yr${eco.needsRO ? `; only ${Math.round(eco.roRecovery * 100)}% is product water after reverse osmosis, which costs about $${eco.roOpexPerM3}/m³` : ''}`]);
   const ge = evidenceGate(result);
   sections.push({ title: 'Costs (typical Kenyan prices, not a quotation)', rows: costRows, notes: [
     'Prices are estimates for planning; the drilling contractor and the hydrogeological survey fix the real cost.',
+    ...cs.notes,
     ...(ge.cost ? [`Priced on the drilling depth and yield from the field evidence entered: ${[ge.citations.depth, ge.citations.yield].filter(Boolean).join('; ')}.`] : []),
   ] });
 
@@ -180,6 +194,10 @@ export function governingSummary(result: AnalysisResult, locationText: string): 
   if (od?.bgsMaps) evRows.push(['Regional groundwater map (BGS)', `depth to water ${od.bgsMaps.depthToGroundwater ?? '—'}; yield ${od.bgsMaps.productivity ?? '—'}`, 'MacDonald et al. 2012, 5 km grid. Contains data supplied by permission of the Natural Environment Research Council [2023]']);
   if (od?.measured?.restWaterLevel) evRows.push(['Rest water level nearby (median)', `${f(od.measured.restWaterLevel.median, 1)} m`, `${od.measured.restWaterLevel.n} boreholes, measured`]);
   if (evRows.length) sections.push({ title: 'Evidence near the site', rows: evRows });
+
+  // 2026-11-26 (D1): the pre-report verification status, coverage and grade,
+  // the same lines as the screen panel, right after the verdict.
+  sections.splice(1, 0, { title: 'Pre-report verification', rows: verificationRows(result).map(([k, v]): Row => [k, v, '']) });
 
   // Guard: no "undefined" or "NaN" reaches a customer document.
   for (const s of sections) {

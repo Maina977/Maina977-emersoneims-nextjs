@@ -165,7 +165,8 @@ export function calibrateWithFieldData(
     const T = pt.transmissivityM2Day;
     const S = pt.storativity;
 
-    notes.push(`Pump test yield: ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
+    // 34072f31 review (minor): the figure is the rate the test pumped at, not a yield.
+    notes.push(`Pump test: tested rate ${pt.sustainableYieldM3Hr} m³/hr (desktop predicted ${desktopResult.estimatedYield} m³/hr)`);
     if (T != null || S != null) notes.push(`Transmissivity: ${T ?? 'not reported'} m²/day, Storativity: ${S ?? 'not reported'}`);
     if (pt.recoveryPercent != null) notes.push(`Recovery: ${pt.recoveryPercent}% → ${pt.recoveryPercent > 80 ? 'good recovery (favourable; long-term sustainability still depends on recharge and a long-duration test)' : 'CAUTION: slow recovery'}`);
 
@@ -639,9 +640,9 @@ export function computePredictionAccuracy(outcome: DrillingOutcome): {
   if (depthErr > 30) feedback.push(`Depth prediction off by ${depthErr.toFixed(0)}% — regional calibration needed`);
   if (yieldErr > 40) feedback.push(`Yield prediction off by ${yieldErr.toFixed(0)}% — transmissivity model needs adjustment`);
   if (!outcome.success && outcome.predictedProbability > 0.7)
-    feedback.push('False positive: High probability but dry hole — check lineament/fracture model');
+    feedback.push('False positive: high modelled success score but dry hole — check lineament/fracture model');
   if (outcome.success && outcome.predictedProbability < 0.4)
-    feedback.push('False negative: Low probability but found water — check vegetation/recharge model');
+    feedback.push('False negative: low modelled success score but found water — check vegetation/recharge model');
   if (feedback.length === 0)
     feedback.push(`Prediction accuracy grade ${grade} — model performing well for this region`);
 

@@ -62,10 +62,26 @@ export const EIMS_RATES_KES = {
 } as const;
 const HARD_ROCK = /basalt|phonolite|trachyte|tuff|volcanic|lava|rhyolite|andesite|nephelinite|granite|gneiss|schist|quartzite|migmatite|basement|crystalline|dolerite/;
 
+/**
+ * The ONE rock classification for pricing (2026-11-26 real-project test D4):
+ * the drilling rate and the contingency both read it, so a hole priced at the
+ * hard-rock rate always carries the hard-rock contingency. 'unknown' when no
+ * rock type was classified.
+ */
+export function rockClassForCost(rockType?: string): 'hard' | 'soft' | 'unknown' {
+  const r = String(rockType ?? '').trim().toLowerCase();
+  if (!r || r === 'unknown' || r === 'n/a') return 'unknown';
+  return HARD_ROCK.test(r) ? 'hard' : 'soft';
+}
+
 /** Drilling cost in KES for a hole of `depth` metres at the EmersonEIMS rates. */
 export function drillingCostKES(depth: number, rockType?: string): number {
   const d = Math.max(0, depth);
-  if (HARD_ROCK.test(String(rockType || '').toLowerCase())) return d * EIMS_RATES_KES.drillHardRockPerM;
+  // M-4 (review of 56acf032): no classified rock type is priced at the conservative
+  // hard-rock rate (a pricing assumption, not a geological finding), consistent
+  // with the conservative contingency.
+  const cls = rockClassForCost(rockType);
+  if (cls === 'hard' || cls === 'unknown') return d * EIMS_RATES_KES.drillHardRockPerM;
   let cost = 0, from = 0;
   for (const [to, rate] of EIMS_RATES_KES.drillSoftBandsPerM) {
     if (d <= from) break;

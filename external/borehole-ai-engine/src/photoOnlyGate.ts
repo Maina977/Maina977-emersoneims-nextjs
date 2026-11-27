@@ -35,7 +35,8 @@ export function compareCardFigures(r: AnalysisResult): { chance: string; depth: 
 export function compareVerdictSentence(r: AnalysisResult, name: string, score: number): string {
   const g = evidenceGate(r);
   const parts = [`${name} has the highest composite score (${score}/100).`];
-  if (!photoOnlyLocation(r)) parts.push(`Chance of success: ${probabilityBand(r.probability)} (planning estimate).`);
+  // Integrated release (S46, b187d03b): the uncalibrated score is never worded as a chance; same wording as compareGate.
+  if (!photoOnlyLocation(r)) parts.push(`Its modelled success score: ${probabilityBand(r.probability)}.`);
   if (g.yield) parts.push(`Estimated yield ${r.estimatedYield.toFixed(1)} m³/h.`);
   if (g.depth) parts.push(`Depth ${r.recommendedDepth.toFixed(0)} m.`);
   if (!g.depth || !g.yield) parts.push('Depth and yield need a geophysical survey and a pumping test; photographs cannot give them.');

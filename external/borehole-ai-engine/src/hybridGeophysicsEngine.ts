@@ -599,7 +599,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       `desktop analysis achieves DRI ${finalDRI}% — exceeds the ${drillThreshold}% threshold for ${isCrystalline ? 'crystalline' : isSedimentary ? 'sedimentary' : 'mixed'} terrain`,
       `${sourceConvergence} independent data sources analyzed (satellite, geological, hydrological, borehole database)`,
       `Source agreement: ${input.sourceAgreement} — predictions are internally consistent`,
-      `Estimated drilling success probability: ${(input.probability * 100).toFixed(0)}%`,
+      `Modelled success score: ${Math.round(input.probability * 100)}/100 (uncalibrated; not a probability of success)`,
       `RECOMMENDATION: drill at the surveyed point once the field ERT confirms the target.`,
     );
     if (input.hasNearbyBoreholes) surveyEliminationReasoning.push('Nearby borehole records confirm aquifer presence in this area');
@@ -748,12 +748,12 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
 
   // ═══ EXECUTIVE SUMMARY ═══
   const executiveSummary = drillReadinessLabel === 'DRILL NOW'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The desktop analysis has processed ${sourceConvergence} independent data sources with ${input.sourceAgreement} agreement. Aquifer presence is ${aquiferScore >= 70 ? 'well-supported' : 'indicated'}, depth estimate is calibrated against ${input.hasNearbyBoreholes ? 'nearby borehole records' : 'regional database'}, and geology is classified as ${input.rockType}. NO SITE SURVEY REQUIRED — proceed directly to drilling. This saves an estimated $${FULL_SURVEY_COST_USD.toLocaleString()} in survey costs and ${Math.round(FULL_SURVEY_COST_USD / 500)} days of mobilization time.`
+    ? `DRILL READINESS INDEX (screening indicator, not verified; not an accuracy grade): ${finalDRI}/100 (band ${driGrade}). The desktop analysis has processed ${sourceConvergence} independent data sources with ${input.sourceAgreement} agreement. Aquifer presence is ${aquiferScore >= 70 ? 'well-supported' : 'indicated'}, depth estimate is calibrated against ${input.hasNearbyBoreholes ? 'nearby borehole records' : 'regional database'}, and geology is classified as ${input.rockType}. NO SITE SURVEY REQUIRED — proceed directly to drilling. This saves an estimated $${FULL_SURVEY_COST_USD.toLocaleString()} in survey costs and ${Math.round(FULL_SURVEY_COST_USD / 500)} days of mobilization time.`
     : drillReadinessLabel === 'TARGETED SURVEY'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). The desktop analysis is strong but ${knowledgeGaps.length} knowledge gap(s) need targeted verification. Instead of a full $${FULL_SURVEY_COST_USD.toLocaleString()} site survey, conduct ${adaptiveSurveySequence.length <= 2 ? 'only' : ''} ${adaptiveSurveySequence.length} targeted survey step(s) at the desktop-identified drill point for ~$${recommendedSurveyCostUSD.toLocaleString()}. This is a ${costSavingsPercent}% cost reduction. The desktop model has already done the heavy lifting — the targeted survey just confirms the final details.`
+    ? `DRILL READINESS INDEX (screening indicator, not verified; not an accuracy grade): ${finalDRI}/100 (band ${driGrade}). The desktop analysis is strong but ${knowledgeGaps.length} knowledge gap(s) need targeted verification. Instead of a full $${FULL_SURVEY_COST_USD.toLocaleString()} site survey, conduct ${adaptiveSurveySequence.length <= 2 ? 'only' : ''} ${adaptiveSurveySequence.length} targeted survey step(s) at the desktop-identified drill point for ~$${recommendedSurveyCostUSD.toLocaleString()}. This is a ${costSavingsPercent}% cost reduction. The desktop model has already done the heavy lifting — the targeted survey just confirms the final details.`
     : drillReadinessLabel === 'FOCUSED SURVEY'
-    ? `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). ${knowledgeGaps.length} significant gaps require focused field investigation at the desktop-selected drill points. Cost: ~$${recommendedSurveyCostUSD.toLocaleString()} (${costSavingsPercent}% savings vs full survey). The desktop model has narrowed the search area from km² to specific GPS points — survey only those points.`
-    : `DRILL READINESS INDEX: ${finalDRI}% (Grade ${driGrade}). Insufficient data confidence for this location. A comprehensive geophysical survey is recommended before drilling. However, the desktop analysis has identified optimal survey lines and priority areas, which still reduces survey scope and cost.`;
+    ? `DRILL READINESS INDEX (screening indicator, not verified; not an accuracy grade): ${finalDRI}/100 (band ${driGrade}). ${knowledgeGaps.length} significant gaps require focused field investigation at the desktop-selected drill points. Cost: ~$${recommendedSurveyCostUSD.toLocaleString()} (${costSavingsPercent}% savings vs full survey). The desktop model has narrowed the search area from km² to specific GPS points — survey only those points.`
+    : `DRILL READINESS INDEX (screening indicator, not verified; not an accuracy grade): ${finalDRI}/100 (band ${driGrade}). Insufficient data confidence for this location. A comprehensive geophysical survey is recommended before drilling. However, the desktop analysis has identified optimal survey lines and priority areas, which still reduces survey scope and cost.`;
 
   // ═══ DRILLER BRIEF ═══
   // Never instructs mobilization before the statutory survey: in Kenya a
@@ -768,7 +768,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
   // survey incl. targeted ERT runs KSh 40,000-110,000. Never quote "$200" or
   // promise skipping the survey -- it is a legal requirement for motorised
   // boreholes, not an optional extra.
-  const clientBrief = `Our desktop analysis of ${sourceConvergence} satellite and geological data sources identified this as a promising site with ${(input.probability * 100).toFixed(0)}% modelled success probability. Before drilling, Kenyan regulations require a hydrogeological survey report; we recommend combining it with a targeted ERT profile at the proposed position (typical Kenya market cost KSh 40,000-110,000 depending on site access, line length and reporting scope). This confirms the aquifer target before rig mobilization -- far cheaper than a failed borehole.`;
+  const clientBrief = `Our desktop analysis of ${sourceConvergence} satellite and geological data sources identified this as a promising site with a modelled success score of ${Math.round(input.probability * 100)}/100 (uncalibrated; not a probability of success). Before drilling, Kenyan regulations require a hydrogeological survey report; we recommend combining it with a targeted ERT profile at the proposed position (typical Kenya market cost KSh 40,000-110,000 depending on site access, line length and reporting scope). This confirms the aquifer target before rig mobilization -- far cheaper than a failed borehole.`;
 
   // ═══ 5-STEP PIPELINE: AI Screen → Top 3 → ERT #1 → Fusion → Decision ═══
 
@@ -908,7 +908,7 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       `Expected depth: ${input.predictedDepth_m}m`,
       `Expected yield: ${input.predictedYield_m3hr.toFixed(1)} m³/hr`,
       `Rock type: ${input.rockType}`,
-      `Desktop probability: ${(input.probability * 100).toFixed(0)}%`,
+      `Desktop modelled success score: ${Math.round(input.probability * 100)}/100 (uncalibrated, not a probability)`,
       isCrystalline ? `Fracture zone expected at ${Math.round(input.predictedDepth_m * 0.3)}-${Math.round(input.predictedDepth_m * 0.8)}m` : `Aquifer horizon at ${Math.round(input.predictedDepth_m * 0.4)}-${input.predictedDepth_m}m`,
     ],
     ertExpected: [
@@ -941,8 +941,8 @@ export function computeHybridGeophysics(input: HybridGeophysicsInput): HybridGeo
       step: 1, title: 'Desktop Screening', subtitle: 'Entire Site',
       status: 'complete',
       icon: '\u{1F9E0}',
-      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. desktop scoring model computes groundwater probability, depth, yield, geology classification, and contamination risk.`,
-      keyOutput: `${(input.probability * 100).toFixed(0)}% groundwater probability | ${input.predictedDepth_m}m depth | ${input.predictedYield_m3hr.toFixed(1)} m³/hr | ${input.rockType}`,
+      description: `${sourceConvergence} satellite, geological, and hydrological data sources analyzed across the entire site area. desktop scoring model computes a modelled success score (uncalibrated, not a probability), depth, yield, geology classification, and contamination risk.`,
+      keyOutput: `${Math.round(input.probability * 100)}/100 modelled success score (uncalibrated) | ${input.predictedDepth_m}m depth | ${input.predictedYield_m3hr.toFixed(1)} m³/hr | ${input.rockType}`,
       details: [
         `Satellite data: SRTM elevation, GLDAS soil moisture, GRACE groundwater trends, NASA POWER climate`,
         `Geological: Multi-source rock classification (8 classifiers), lineament analysis, subsurface model`,
