@@ -36,3 +36,11 @@ describe('SH-08: the UPS battery has its own chemistry', () => {
     expect(src).toMatch(/caption=\{`\$\{inputs\.upsBatteryChemistry\}: \$\{Math\.round\(CHEM_DOD\[inputs\.upsBatteryChemistry\] \* 100\)\} % usable/);
   });
 });
+
+describe('REQ review advisory: the chemistry DoD table is labelled assumed practice (no cited source)', () => {
+  it('code and screen say "assumed practice"', () => {
+    expect(src).toMatch(/ASSUMED PRACTICE, not a cited source/);
+    expect(src).toMatch(/label="Usable DoD \(assumed practice; use the datasheet\)"/);
+    expect(src).toMatch(/% usable \(assumed practice\), /);
+  });
+});
