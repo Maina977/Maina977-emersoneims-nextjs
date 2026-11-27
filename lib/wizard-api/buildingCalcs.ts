@@ -1280,6 +1280,51 @@ export function ec2Shear(b: Body) {
   };
 }
 
+/**
+ * RC column, axial (register R-31, 2026-11-27). EN 1992-1-1:2004:
+ *  - concentric resistance N_Rd = fcd·(Ac − As) + σs·As, with the mean strain
+ *    limited to εc2 = 0.002 (§6.1(5), Table 3.1): σs = min(fyd, Es·εc2 = 400 MPa);
+ *    fcd = αcc·fck/γc, αcc = 0.85 (UK NA, as the beam check), γc 1.5, γs 1.15;
+ *  - slenderness §5.8.3.1: λ = l0/i, i = h/√12 (smaller side), λlim = 20·A·B·C/√n,
+ *    n = N_Ed/(Ac·fcd), A = 0.7, B = 1.1, C = 0.7 (the values to use when φef, ω, rm
+ *    are not known);
+ *  - longitudinal steel §9.5.2: As,min = max(0.10·N_Ed/fyd, 0.002·Ac); As,max = 0.04·Ac.
+ * Bending (minimum eccentricity e0 = max(h/30, 20 mm), §6.1(4)) and second-order
+ * effects of a slender column are NOT checked: the result says so (PARTIAL).
+ */
+export function rcColumn(b: Body) {
+  const bw = pick(b, 'b_mm'), h = pick(b, 'h_mm'), As = pick(b, 'As_mm2'), fck = pick(b, 'fck_MPa'), fyk = pick(b, 'fyk_MPa'), N = pick(b, 'NEd_kN'), l0 = pick(b, 'l0_m');
+  const err = missing({ b_mm: bw, h_mm: h, As_mm2: As, fck_MPa: fck, fyk_MPa: fyk, NEd_kN: N, l0_m: l0 });
+  if (err) return err;
+  if (!(bw! >= 150 && bw! <= 3000 && h! >= 150 && h! <= 3000)) return bad('b_mm and h_mm must be between 150 and 3,000 mm (EN 1992-1-1 column section)');
+  if (!(fck! >= 12 && fck! <= 50)) return bad('fck_MPa must be between 12 and 50 MPa');
+  if (!(fyk! >= 400 && fyk! <= 600)) return bad('fyk_MPa must be between 400 and 600 MPa');
+  if (!(N! > 0 && N! <= 1e5)) return bad('NEd_kN must be a compressive design load greater than 0 (kN)');
+  if (!(l0! > 0 && l0! <= 50)) return bad('l0_m (effective length) must be between 0 and 50 m');
+  const Ac = bw! * h!;
+  if (!(As! > 0 && As! < Ac)) return bad('As_mm2 must be greater than 0 and smaller than the section area');
+  const fcd = (0.85 * fck!) / 1.5, fyd = fyk! / 1.15, sigmaS = Math.min(fyd, 200000 * 0.002);
+  const NRd = (fcd * (Ac - As!) + sigmaS * As!) / 1000;
+  const i = Math.min(bw!, h!) / Math.sqrt(12);
+  const lambda = (l0! * 1000) / i;
+  const n = (N! * 1000) / (Ac * fcd);
+  const lambdaLim = (20 * 0.7 * 1.1 * 0.7) / Math.sqrt(n);
+  const AsMin = Math.max((0.1 * N! * 1000) / fyd, 0.002 * Ac), AsMax = 0.04 * Ac;
+  return {
+    N_Rd_kN: r(NRd, 1), utilisation: r(N! / NRd, 3), sigma_s_MPa: r(sigmaS, 1), fcd_MPa: r(fcd), lambda: r(lambda, 1), lambda_lim: r(lambdaLim, 1), n: r(n, 3),
+    As_min_mm2: Math.ceil(AsMin), As_max_mm2: Math.floor(AsMax),
+    checks: [
+      { check: 'N_Ed ≤ N_Rd (concentric, §6.1)', value: `${N} ≤ ${r(NRd, 1)} kN`, pass: N! <= NRd },
+      { check: 'Short column: λ ≤ λlim, second-order effects may be ignored (§5.8.3.1)', value: `${r(lambda, 1)} ≤ ${r(lambdaLim, 1)}`, pass: lambda <= lambdaLim },
+      { check: 'As ≥ As,min (§9.5.2(2))', value: `${As} ≥ ${Math.ceil(AsMin)} mm²`, pass: As! >= AsMin },
+      { check: 'As ≤ As,max = 0.04·Ac (§9.5.2(3), outside laps)', value: `${As} ≤ ${Math.floor(AsMax)} mm²`, pass: As! <= AsMax },
+    ],
+    not_checked: ['bending from the minimum eccentricity e0 = max(h/30, 20 mm) (§6.1(4)) and any applied moment', ...(lambda > lambdaLim ? ['second-order effects of a slender column (§5.8.5-5.8.8)'] : []), 'bar diameter, spacing and links (§9.5.2, §9.5.3)'],
+    assumptions: ['Braced column, rectangular section, bars symmetrically placed', 'αcc = 0.85 (UK/Kenya practice; recommended value is 1.0)', 'λlim with A = 0.7, B = 1.1, C = 0.7 (EN 1992-1-1 §5.8.3.1(1) values when φef, ω and rm are not known)'],
+    method: 'EN 1992-1-1:2004 §6.1, §5.8.3.1, §9.5.2 (axial resistance, slenderness, steel limits)',
+  };
+}
+
 /** EN 1992-1-1 §7.4.2 span/effective-depth check, Eq. 7.16 with the
  *  §7.4.2(2) modifications (steel stress, long spans, flanged sections). */
 const DEFL_K: Record<string, number> = { simply_supported: 1.0, end_span: 1.3, interior_span: 1.5, flat_slab: 1.2, cantilever: 0.4 };

@@ -349,6 +349,7 @@ export async function dispatch(req: NextRequest, segments: string[], prefix: str
   // 2026-10-27 audit: EC7 bearing, EC2 shear and deflection, pad footings and EN 1998.
   if (path.endsWith('/geotech/bearing/ec7')) return calc(calcs.bearingEc7, body);
   if (path.endsWith('/rc/beam/shear')) return calc(calcs.ec2Shear, body);
+  if (path.endsWith('/rc/column/axial')) return calc(calcs.rcColumn, body); // R-31, 2026-11-27
   if (path.endsWith('/rc/deflection/span-depth')) return calc(calcs.ec2Deflection, body);
   if (path.endsWith('/geotech/pad-footing')) return calc(calcs.padFooting, body);
   if (path.endsWith('/loads/seismic/ec8-lfm')) return calc(calcs.seismicEc8, body);
