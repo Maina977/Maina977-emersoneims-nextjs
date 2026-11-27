@@ -108,7 +108,7 @@ describe('design-to-proposal', () => {
     const p = buildProposal(i);
     expect(p.costing.capexKes).toBeNull();
     expect(p.finance).toBeNull();
-    expect(p.statusReasons.join(' ')).toMatch(/Rate required: Mounting structure/);
+    expect(p.statusReasons.join(' ')).toMatch(/Request a quotation for: Mounting structure/); // REQ-19 wording (was "Rate required")
   });
   it('an unverified datasheet keeps it DRAFT', () => {
     const p = buildProposal({ ...base(), module: entry(MOD, 'module', false) });

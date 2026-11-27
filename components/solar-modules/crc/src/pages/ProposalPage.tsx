@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { REQUEST_QUOTATION } from '@/lib/solar/sizing';
 import { simulateHourly, type HourlyResult } from '@/lib/solar/design/hourly';
 import { simulateHybrid, type HybridResult } from '@/lib/solar/design/hybrid';
 import type { Proposal } from '@/lib/solar/design/proposal';
@@ -74,7 +75,7 @@ const btn: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border:
 const primary: React.CSSProperties = { ...btn, background: '#b45309', border: '1px solid #f59e0b', color: '#fff', fontWeight: 600 };
 const th: React.CSSProperties = { textAlign: 'left', padding: '4px 6px', borderBottom: '1px solid #334155', color: '#94a3b8', fontWeight: 600 };
 const td: React.CSSProperties = { padding: '4px 6px', borderBottom: '1px solid #1e293b', verticalAlign: 'top' };
-const kes = (x: number | null | undefined) => (x === null || x === undefined ? 'rate required' : `KES ${Math.round(x).toLocaleString('en-KE')}`);
+const kes = (x: number | null | undefined) => (x === null || x === undefined ? REQUEST_QUOTATION : `KES ${Math.round(x).toLocaleString('en-KE')}`);
 
 function Fieldset({ g, f, set }: { g: Group; f: ProposalForm; set: (k: string, v: string) => void }) {
   return (
@@ -413,7 +414,7 @@ export default function ProposalPage() {
 
         <section style={box} aria-label="Bill of materials">
           <h2 style={{ fontSize: 16, fontWeight: 600, color: '#fbbf24', margin: '0 0 8px' }}>Bill of materials</h2>
-          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Leave a rate empty if it is not yet quoted: the item shows as &quot;rate required&quot; and the proposal has no total. A rate needs its source and date.</p>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 8px' }}>Leave a rate empty if it is not yet quoted: the item shows as &quot;{REQUEST_QUOTATION}&quot; and the proposal has no total. A rate needs its source and date.</p>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%', minWidth: 760 }}>
               <thead><tr>{['Item', 'Model', 'Qty', 'Unit', 'Rate (KES)', 'Rate source', 'Rate date', ''].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
@@ -421,7 +422,7 @@ export default function ProposalPage() {
                 {bom.map((r, i) => (
                   <tr key={i}>
                     {(['item', 'model', 'quantity', 'unit', 'rate', 'rateSource', 'rateDate'] as Array<keyof BomRow>).map((k) => (
-                      <td key={k} style={td}><input aria-label={`${k} row ${i + 1}`} type={k === 'rateDate' ? 'date' : 'text'} value={r[k]} placeholder={k === 'rate' ? 'rate required' : ''} onChange={(e) => setRow(i, k, e.target.value)} style={{ ...inputStyle, marginTop: 0 }} /></td>
+                      <td key={k} style={td}><input aria-label={`${k} row ${i + 1}`} type={k === 'rateDate' ? 'date' : 'text'} value={r[k]} placeholder={k === 'rate' ? REQUEST_QUOTATION : ''} onChange={(e) => setRow(i, k, e.target.value)} style={{ ...inputStyle, marginTop: 0 }} /></td>
                     ))}
                     <td style={td}><button type="button" onClick={() => setBom((rows) => rows.filter((_, j) => j !== i))} style={{ ...btn, padding: '4px 8px' }} aria-label={`Remove row ${i + 1}`}>×</button></td>
                   </tr>
@@ -494,9 +495,9 @@ function ProposalView({ p, stale }: { p: Proposal; stale: boolean }) {
         <thead><tr>{['Item', 'Model', 'Qty', 'Rate', 'Source / date', 'Amount'].map((x) => <th key={x} style={th}>{x}</th>)}</tr></thead>
         <tbody>
           {p.costing.lines.map((l, i) => (
-            <tr key={i}><td style={td}>{l.item}</td><td style={td}>{l.model}</td><td style={td}>{l.quantity} {l.unit}</td><td style={td}>{l.rate ? kes(l.rate.valueKes) : 'rate required'}</td><td style={{ ...td, color: '#94a3b8' }}>{l.rate ? `${l.rate.source}, ${l.rate.date}` : ''}</td><td style={{ ...td, textAlign: 'right' }}>{kes(l.amountKes)}</td></tr>
+            <tr key={i}><td style={td}>{l.item}</td><td style={td}>{l.model}</td><td style={td}>{l.quantity} {l.unit}</td><td style={td}>{l.rate ? kes(l.rate.valueKes) : REQUEST_QUOTATION}</td><td style={{ ...td, color: '#94a3b8' }}>{l.rate ? `${l.rate.source}, ${l.rate.date}` : ''}</td><td style={{ ...td, textAlign: 'right' }}>{kes(l.amountKes)}</td></tr>
           ))}
-          <tr><td style={{ ...td, fontWeight: 700 }} colSpan={5}>Capital cost</td><td style={{ ...td, textAlign: 'right', fontWeight: 700 }}>{p.costing.capexKes === null ? `no total: rate required for ${p.costing.unpriced.join(', ')}` : kes(p.costing.capexKes)}</td></tr>
+          <tr><td style={{ ...td, fontWeight: 700 }} colSpan={5}>Capital cost</td><td style={{ ...td, textAlign: 'right', fontWeight: 700 }}>{p.costing.capexKes === null ? `no total: ${REQUEST_QUOTATION.toLowerCase()} for ${p.costing.unpriced.join(', ')}` : kes(p.costing.capexKes)}</td></tr>
         </tbody>
       </table></div>
 

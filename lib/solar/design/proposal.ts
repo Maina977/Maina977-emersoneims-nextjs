@@ -29,6 +29,7 @@ import type { HourlyResult } from './hourly';
 import type { HybridResult } from './hybrid';
 import { proposalRevisionHash, verifyApproval, TYPED_APPROVAL_IGNORED_REASON, type ApprovalVerifier, type VerifiedApproval } from './proposalApproval';
 import { buildSld, type SldConnections, type SldModel } from './sld';
+import { REQUEST_QUOTATION } from '../sizing';
 import { horizonErrors, type ShadingSummary } from './shading';
 
 export const PROPOSAL_ENGINE_VERSION = 'solar-proposal 1.2.0 (2026-11-25, single-line diagram and horizon shading)';
@@ -210,7 +211,8 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     return { ...b, amountKes: b.rate ? Math.round(b.rate.valueKes * b.quantity * 100) / 100 : null };
   });
   const unpriced = lines.filter((l) => l.amountKes === null).map((l) => l.item);
-  if (unpriced.length) reasons.push(`Rate required: ${unpriced.join(', ')}`);
+  // REQ-19: the company wording for an unquoted item (lib/solar/sizing.ts REQUEST_QUOTATION).
+  if (unpriced.length) reasons.push(`${REQUEST_QUOTATION} for: ${unpriced.join(', ')} (no verified price; the proposal has no total until each is quoted)`);
   const capex = unpriced.length ? null : Math.round(lines.reduce((s, l) => s + (l.amountKes as number), 0) * 100) / 100;
 
   // 3. Energy

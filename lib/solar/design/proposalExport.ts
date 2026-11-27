@@ -7,6 +7,7 @@
  * is printed only when the proposal holds a verified approval.
  */
 import ExcelJS from 'exceljs';
+import { REQUEST_QUOTATION } from '../sizing';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Proposal } from './proposal';
@@ -34,7 +35,8 @@ export function pdfSafe(t: string): string {
 }
 const safeRows = (rows: unknown[][]) => rows.map((r) => r.map((c) => pdfSafe(String(c))));
 
-const kes = (x: number | null) => (x === null ? 'rate required' : `KES ${Math.round(x).toLocaleString('en-KE')}`);
+// REQ-19: an unquoted line says "Request a quotation" (lib/solar/sizing.ts), never a price.
+const kes = (x: number | null) => (x === null ? REQUEST_QUOTATION : `KES ${Math.round(x).toLocaleString('en-KE')}`);
 /** FOR ISSUE only with a verified approval; a FOR ISSUE status without one is shown as DRAFT. */
 const issued = (p: Proposal) => p.status === 'FOR ISSUE' && p.approval !== null;
 const banner = (p: Proposal) => (issued(p) ? 'FOR ISSUE' : `${p.status === 'FOR ISSUE' ? 'DRAFT' : p.status}: NOT FOR ISSUE`);
@@ -65,7 +67,7 @@ export async function proposalToXlsx(p: Proposal): Promise<Buffer> {
 
   const sch = wb.addWorksheet('Equipment & costs');
   sch.addRow(['Item', 'Model', 'Qty', 'Unit', 'Rate (KES)', 'Rate source', 'Rate date', 'Amount (KES)']);
-  p.costing.lines.forEach((l) => sch.addRow([l.item, l.model, l.quantity, l.unit, l.rate?.valueKes ?? 'rate required', l.rate?.source ?? '', l.rate?.date ?? '', l.amountKes ?? '']));
+  p.costing.lines.forEach((l) => sch.addRow([l.item, l.model, l.quantity, l.unit, l.rate?.valueKes ?? REQUEST_QUOTATION, l.rate?.source ?? '', l.rate?.date ?? '', l.amountKes ?? '']));
   sch.addRow([]); sch.addRow(['Capital cost', '', '', '', '', '', '', p.costing.capexKes ?? 'incomplete']);
 
   if (p.finance) {
@@ -111,7 +113,7 @@ export function proposalToPdf(p: Proposal): Uint8Array {
     ['Capital cost', kes(p.costing.capexKes)], ['NPV / IRR', p.finance ? `${kes(p.finance.npvKes)} / ${p.finance.irrPct ?? '—'} %` : '—'], ['Simple payback', p.finance?.simplePaybackYears != null ? `${p.finance.simplePaybackYears} years` : '—'], ['LCOE', p.finance ? `KES ${p.finance.lcoeKesPerKwh}/kWh` : '—'],
   ]), styles: { fontSize: 9 } });
   autoTable(doc, { head: [['Design check', 'Verdict', 'Value', 'Limit', 'Reference']], body: safeRows(p.checks.map((c) => [c.title, c.verdict, `${c.value} ${c.unit}`, `${c.limit} ${c.unit}`, c.reference])), styles: { fontSize: 8 } });
-  autoTable(doc, { head: [['Item', 'Model', 'Qty', 'Rate', 'Source / date', 'Amount']], body: safeRows(p.costing.lines.map((l) => [l.item, l.model, `${l.quantity} ${l.unit}`, l.rate ? kes(l.rate.valueKes) : 'rate required', l.rate ? `${l.rate.source}, ${l.rate.date}` : '', kes(l.amountKes)])), styles: { fontSize: 8 } });
+  autoTable(doc, { head: [['Item', 'Model', 'Qty', 'Rate', 'Source / date', 'Amount']], body: safeRows(p.costing.lines.map((l) => [l.item, l.model, `${l.quantity} ${l.unit}`, l.rate ? kes(l.rate.valueKes) : REQUEST_QUOTATION, l.rate ? `${l.rate.source}, ${l.rate.date}` : '', kes(l.amountKes)])), styles: { fontSize: 8 } });
   if (p.shading) {
     autoTable(doc, { head: [['Horizon shading', '']], body: safeRows([['Horizon source', p.shading.horizon.source], ['Method', p.shading.method], ['Diffuse', p.shading.diffuseTreatment], ['Sky-view factor (horizontal)', String(p.shading.skyViewFactorHorizontal)], ['Indicative diffuse loss (NOT applied)', p.shading.indicativeDiffuseLossPct === null ? '—' : `${p.shading.indicativeDiffuseLossPct} %`], ['Annual energy unshaded / shaded', `${p.shading.annual.unshadedAnnualKwh.toLocaleString('en-KE')} / ${p.shading.annual.shadedAnnualKwh.toLocaleString('en-KE')} kWh`]]), styles: { fontSize: 8 } });
     autoTable(doc, { head: safeRows([SHADING_HEAD]), body: safeRows(shadingRows(p.shading)), styles: { fontSize: 8 } });
