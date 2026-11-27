@@ -702,9 +702,9 @@ export default async function RootLayout({
         ` }} />
 
         {/* CRITICAL: DNS Prefetch - Resolve domains 100ms+ faster */}
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        {/* Google Analytics / Tag Manager dns-prefetch hints removed (privacy
+            correction 2026-11-27): those hosts are contacted only after Accept All. */}
         <link rel="dns-prefetch" href="https://vitals.vercel-insights.com" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://cdn.vercel-insights.com" />
         <link rel="dns-prefetch" href="https://vercel.live" />
         {/*
@@ -730,7 +730,10 @@ export default async function RootLayout({
             A preconnect is only worth issuing for an origin the page is
             definitely about to call. The three below qualify. */}
         <link rel="preconnect" href="https://vitals.vercel-insights.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+        {/* Privacy correction 2026-11-27: the preconnect to www.google-analytics.com
+            was removed. It opened a TCP/TLS connection to Google (revealing the
+            visitor's IP address) on every page load, before any consent choice,
+            and Google tags now load only after Accept All. */}
 
         {/* HIGHEST PRIORITY: Preload critical resources */}
         {/* The logo preload was removed (2026-08-29), and so was a second,
