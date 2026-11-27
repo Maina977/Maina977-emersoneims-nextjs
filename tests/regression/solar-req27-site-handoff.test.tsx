@@ -23,8 +23,8 @@ import { formToProposalInput, WORKED_EXAMPLE_FORM, WORKED_EXAMPLE_BOM, WORKED_EX
 import { proposalRevisionHash } from '@/lib/solar/design/proposalApproval';
 
 const NOW = new Date('2026-11-27T09:30:00Z');
-const SITE = { lat: -1.2921, lon: 36.8219, displayName: 'TEST place, Nairobi, Kenya', elevationM: 1661, elevationSource: 'OpenTopoData SRTM 30 m lookup at the coordinates' };
-const H: SiteHandoff = { v: 1, confirmedAt: NOW.toISOString(), address: SITE.displayName, lat: SITE.lat, lon: SITE.lon, coordinatesSource: PLACE_SEARCH_SOURCE, elevationM: 1661, elevationSource: SITE.elevationSource };
+const SITE = { lat: -1.2921, lon: 36.8219, displayName: 'TEST place, Nairobi, Kenya', elevationM: 1661, elevationSource: 'OpenTopoData SRTM 30 m lookup at the coordinates', elevationRetrievedAt: '2026-11-27T09:29:00.000Z' };
+const H: SiteHandoff = { v: 1, confirmedAt: NOW.toISOString(), address: SITE.displayName, lat: SITE.lat, lon: SITE.lon, coordinatesSource: PLACE_SEARCH_SOURCE, elevationM: 1661, elevationSource: SITE.elevationSource, elevationRetrievedAt: SITE.elevationRetrievedAt };
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); }, removeItem: (k: string) => { m.delete(k); }, m }; };
 
@@ -61,12 +61,14 @@ describe('building the hand-off: only what the user confirmed', () => {
 describe('pre-filling the Proposal form', () => {
   it('fills only blank fields, each with its source; never irradiance, temperature or roof area', () => {
     const a = applySiteHandoff({}, H);
-    expect(a.applied.map((x) => x.key)).toEqual(['c.address', 'c.lat', 'c.lon', 's.elevationM', 's.source']);
+    // Review M2: the general site source (s.source) is never pre-filled.
+    expect(a.applied.map((x) => x.key)).toEqual(['c.address', 'c.lat', 'c.lon', 's.elevationM']);
+    expect(a.form['s.source']).toBeUndefined();
     expect(a.form['c.address']).toBe(SITE.displayName);
     expect(a.form['c.lat']).toBe('-1.2921');
     expect(a.form['s.elevationM']).toBe('1661');
     expect(prefillSource(a.form, 'c.lat')).toBe(`${PLACE_SEARCH_SOURCE}, confirmed 2026-11-27`);
-    expect(prefillSource(a.form, 's.elevationM')).toBe('OpenTopoData SRTM 30 m lookup at the coordinates, confirmed on the Dashboard 2026-11-27');
+    expect(prefillSource(a.form, 's.elevationM')).toBe('automatically obtained: OpenTopoData SRTM 30 m lookup at the coordinates, retrieved 2026-11-27');
     for (const k of ['t.recordLowC', 't.maxAmbientC', 's.usableAreaM2', 's.mounting', 'd.azimuth', 'd.tilt']) expect(a.form[k]).toBeUndefined();
   });
   it('without the ticked elevation, no elevation and no site-details source are filled', () => {
@@ -79,7 +81,7 @@ describe('pre-filling the Proposal form', () => {
     const a = applySiteHandoff({ 'c.address': 'Plot 12, survey drawing', 'c.lat': '-1.2921' }, H);
     expect(a.form['c.address']).toBe('Plot 12, survey drawing');
     expect(a.differences.map((x) => [x.key, x.current, x.value])).toEqual([['c.address', 'Plot 12, survey drawing', SITE.displayName]]);
-    expect(a.applied.map((x) => x.key)).toEqual(['c.lon', 's.elevationM', 's.source']);
+    expect(a.applied.map((x) => x.key)).toEqual(['c.lon', 's.elevationM']);
     expect(prefillSource(a.form, 'c.address')).toBeNull();
     const r = replaceWithHandoff(a.form, a.differences);
     expect(r['c.address']).toBe(SITE.displayName);
@@ -90,8 +92,8 @@ describe('pre-filling the Proposal form', () => {
     expect(prefillSource({ ...a.form, 's.elevationM': '1650' }, 's.elevationM')).toBeNull();
   });
   it('the pre-fill record is not part of the proposal input or its revision', () => {
-    const base = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 's.elevationM': '1661', 's.source': 'x' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null).input!;
-    const withRec = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 's.elevationM': '1661', 's.source': 'x', [HANDOFF_FORM_KEY]: '{"s.elevationM":{"value":"1661","source":"y"}}' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null).input!;
+    const base = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 's.elevationM': '1661', 's.elevationSource': 'x' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null).input!;
+    const withRec = formToProposalInput({ ...WORKED_EXAMPLE_FORM, 's.elevationM': '1661', 's.elevationSource': 'x', [HANDOFF_FORM_KEY]: '{"s.elevationM":{"value":"1661","source":"y"}}' }, WORKED_EXAMPLE_BOM, WORKED_EXAMPLE_PRODUCTION, null).input!;
     expect(proposalRevisionHash(withRec)).toBe(proposalRevisionHash(base));
   });
   it('the elevation answer is used only with the service that gave it, and only inside −500 to 6,000 m', () => {
@@ -142,7 +144,7 @@ describe('Dashboard → Proposal hand-off (both screens rendered)', () => {
   it('the confirmed site pre-fills address, coordinates and the ticked elevation, each labelled; the current temperature and irradiance are not carried', async () => {
     const calls = stubNetwork({ success: true, data: { location: { latitude: SITE.lat, longitude: SITE.lon, elevation: 1661, source: SITE.elevationSource } } });
     const panel = await confirmOnDashboard(true);
-    expect(within(panel).getByText(/Include the elevation: 1661 m \(OpenTopoData SRTM 30 m lookup at the coordinates\)/)).toBeTruthy();
+    expect(within(panel).getByText(/Include the elevation: 1661 m \(automatically obtained: OpenTopoData SRTM 30 m lookup at the coordinates, retrieved \d{4}-\d{2}-\d{2}\)/)).toBeTruthy();
     expect(within(panel).getByText(/Not carried: irradiance/)).toBeTruthy();
     expect(calls).toContain('POST /api/solar/elevation');
     expect(window.location.hash).toBe('#/proposal');
@@ -156,7 +158,7 @@ describe('Dashboard → Proposal hand-off (both screens rendered)', () => {
     expect(fieldInput(/^Longitude/).value).toBe('36.8219');
     expect(fieldInput(/^Site elevation/).value).toBe('1661');
     expect(document.querySelector('[data-prefill-source="c.lat"]')!.textContent).toBe(`Pre-filled from the Dashboard: ${PLACE_SEARCH_SOURCE}, confirmed 2026-11-27`.replace('2026-11-27', new Date().toISOString().slice(0, 10)));
-    expect(document.querySelector('[data-prefill-source="s.elevationM"]')!.textContent).toMatch(/OpenTopoData SRTM 30 m lookup at the coordinates, confirmed on the Dashboard/);
+    expect(document.querySelector('[data-prefill-source="s.elevationM"]')!.textContent).toMatch(/automatically obtained: OpenTopoData SRTM 30 m lookup at the coordinates, retrieved \d{4}-\d{2}-\d{2}/);
     const note = screen.getByRole('status', { name: 'Site from the Dashboard' });
     expect(note.textContent).toMatch(/Pre-filled: Site address TEST place, Nairobi, Kenya · Latitude -1.2921 · Longitude 36.8219 · Site elevation 1661/);
     // Not carried: the 23 °C current temperature and 5.6 kWh/m²/day are not design values.

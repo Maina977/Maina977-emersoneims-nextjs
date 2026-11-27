@@ -44,7 +44,39 @@ export interface LoadDetails {
   monthlyKwh?: number[]; peakKw?: number; motorStartingKva?: number; criticalLoadKw?: number; outageHoursPerDay?: number;
   dieselKesPerLitre?: Sourced; source: string;
 }
-export interface SiteDetails { elevationM?: number; mounting?: 'roof' | 'ground'; usableAreaM2?: number; source: string }
+/**
+ * Site value provenance (review M2 and management, 2026-11-27). Each site value
+ * carries one of three categories, shown in the disclosure:
+ *  (a) 'automatic': obtained by a lookup (e.g. SRTM elevation), with the service and retrieval date;
+ *  (b) 'customer': entered by the customer or designer, with their source;
+ *  (c) 'verified': independently verified, only where a stated survey or engineer source is given.
+ * A source on one field never covers another field.
+ */
+export type SiteProvenanceCategory = 'automatic' | 'customer' | 'verified';
+export const SITE_PROVENANCE_LABEL: Record<SiteProvenanceCategory, string> = { automatic: 'automatically obtained', customer: 'customer-entered', verified: 'independently verified' };
+export interface SiteFieldProvenance { category: SiteProvenanceCategory; source: string; /** ISO date, required for 'automatic'. */ retrievedOn?: string }
+export type SiteField = 'elevationM' | 'mounting' | 'usableAreaM2';
+export const SITE_FIELDS: SiteField[] = ['elevationM', 'mounting', 'usableAreaM2'];
+/**
+ * `source` covers the stated fields that have no entry in `provenance`
+ * (customer-entered); a field with its own provenance entry uses that.
+ */
+export interface SiteDetails { elevationM?: number; mounting?: 'roof' | 'ground'; usableAreaM2?: number; source: string; provenance?: Partial<Record<SiteField, SiteFieldProvenance>> }
+
+/** The provenance of each stated site value: its own entry, else the shared source as customer-entered. */
+export function siteProvenance(site: SiteDetails): Array<{ field: SiteField; text: string; prov: SiteFieldProvenance }> {
+  const text: Record<SiteField, string | null> = {
+    elevationM: site.elevationM !== undefined ? `elevation ${site.elevationM} m` : null,
+    mounting: site.mounting ? `${site.mounting}-mounted` : null,
+    usableAreaM2: site.usableAreaM2 !== undefined ? `usable area ${site.usableAreaM2} m²` : null,
+  };
+  return SITE_FIELDS.filter((k) => text[k] !== null).map((k) => ({ field: k, text: text[k] as string, prov: site.provenance?.[k] ?? { category: 'customer' as const, source: String(site.source ?? '').trim() } }));
+}
+/** "elevation 1661 m (automatically obtained: <service>, retrieved <date>); roof-mounted (customer-entered: <source>)". */
+export function siteProvenanceText(site: SiteDetails): string {
+  return siteProvenance(site).map(({ text, prov }) => `${text} (${SITE_PROVENANCE_LABEL[prov.category]}: ${prov.source}${prov.retrievedOn ? `, retrieved ${prov.retrievedOn}` : ''})`).join('; ');
+}
+const SITE_LABEL: Record<SiteField, string> = { elevationM: 'Site elevation', mounting: 'Mounting', usableAreaM2: 'Usable area' };
 export interface PricedLine { item: string; model: string; quantity: number; unit: string; rate: { valueKes: number; source: string; date: string } | null }
 export interface ProposalInput {
   reference: string;
@@ -199,7 +231,21 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
     if (site.elevationM !== undefined && !(Number.isFinite(site.elevationM) && site.elevationM >= -500 && site.elevationM <= 6000)) throw new Error('Site elevation must be −500 to 6,000 m');
     if (site.mounting !== undefined && site.mounting !== 'roof' && site.mounting !== 'ground') throw new Error('Mounting must be roof or ground');
     if (site.usableAreaM2 !== undefined && !(Number.isFinite(site.usableAreaM2) && site.usableAreaM2 > 0)) throw new Error('Usable area must be a positive number of m²');
-    if ((site.elevationM !== undefined || site.mounting !== undefined || site.usableAreaM2 !== undefined) && !String(site.source ?? '').trim()) throw new Error('Site details need their source (survey, drawing, map)');
+    // Review M2: every stated value needs its own provenance or the shared source; no source covers a value it does not name.
+    const pv = site.provenance;
+    if (pv !== undefined) {
+      if (typeof pv !== 'object' || pv === null || Array.isArray(pv)) throw new Error('site.provenance must be { elevationM?, mounting?, usableAreaM2? }');
+      for (const [k, v] of Object.entries(pv)) {
+        if (!(SITE_FIELDS as string[]).includes(k)) throw new Error(`site.provenance.${k} is not a site field`);
+        if (site[k as SiteField] === undefined) throw new Error(`site.provenance.${k} is given but ${k} is not entered`);
+        if (!v || typeof v !== 'object' || !['automatic', 'customer', 'verified'].includes((v as SiteFieldProvenance).category) || !String((v as SiteFieldProvenance).source ?? '').trim()) throw new Error(`${SITE_LABEL[k as SiteField]}: provenance needs a category (automatic, customer or verified) and its source`);
+        const r = (v as SiteFieldProvenance).retrievedOn;
+        if ((v as SiteFieldProvenance).category === 'automatic' && !(typeof r === 'string' && /^\d{4}-\d{2}-\d{2}/.test(r) && !Number.isNaN(Date.parse(r)))) throw new Error(`${SITE_LABEL[k as SiteField]}: an automatically obtained value needs its retrieval date (YYYY-MM-DD)`);
+        if (r !== undefined && (typeof r !== 'string' || Number.isNaN(Date.parse(r)))) throw new Error(`${SITE_LABEL[k as SiteField]}: retrievedOn must be a date`);
+      }
+    }
+    const unsourced = SITE_FIELDS.filter((k) => site[k] !== undefined && !pv?.[k]);
+    if (unsourced.length && !String(site.source ?? '').trim()) throw new Error(`Site details need their source (survey, drawing, map): ${unsourced.map((k) => SITE_LABEL[k]).join(', ')}`);
   }
   const load = i.load;
   if (load !== undefined) {
@@ -401,7 +447,7 @@ export function buildProposal(i: ProposalInput, verifier: ApprovalVerifier | nul
       ...(load ? [`Load (${load.source}): ${[load.monthlyKwh ? `${Math.round(load.monthlyKwh.reduce((a, b) => a + b, 0)).toLocaleString('en-KE')} kWh a year from 12 monthly bills` : null, load.peakKw !== undefined ? `peak ${load.peakKw} kW` : null, load.motorStartingKva !== undefined ? `largest motor start ${load.motorStartingKva} kVA` : null, load.criticalLoadKw !== undefined ? `critical ${load.criticalLoadKw} kW` : null, load.outageHoursPerDay !== undefined ? `outages ${load.outageHoursPerDay} h/day` : null, load.dieselKesPerLitre ? `diesel KES ${load.dieselKesPerLitre.value}/L (${load.dieselKesPerLitre.source})` : null].filter(Boolean).join(', ')}.`] : []),
       ...(load?.dieselKesPerLitre && i.hybrid && i.hybrid.totals.generatorFuelL > 0 ? [`Generator fuel in the hybrid balance: ${Math.round(i.hybrid.totals.generatorFuelL).toLocaleString('en-KE')} L × KES ${load.dieselKesPerLitre.value}/L = KES ${Math.round(i.hybrid.totals.generatorFuelL * load.dieselKesPerLitre.value).toLocaleString('en-KE')} a year at the customer's diesel price. This fuel cost is NOT in the cash flow, NPV, IRR or payback (they value the PV energy used on site against the tariff only).`] : []),
       siteStated
-        ? `Site: ${[site!.mounting ? `${site!.mounting}-mounted` : null, site!.elevationM !== undefined ? `elevation ${site!.elevationM} m` : null, site!.usableAreaM2 !== undefined ? `usable area ${site!.usableAreaM2} m²` : null].filter(Boolean).join(', ')} (${site!.source}).`
+        ? `Site: ${siteProvenanceText(site!)}.`
         : 'Site elevation, roof or ground mounting and usable area were not entered: the layout is not checked against the available area.',
       replacements.length
         ? `Component replacements in the cash flow (quoted, not escalated): ${replacements.map((r) => `${r.item} in year ${r.year}, KES ${r.costKes.toLocaleString('en-KE')} (${r.source}, ${r.date})`).join('; ')}.`

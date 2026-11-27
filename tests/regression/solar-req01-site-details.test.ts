@@ -29,7 +29,8 @@ describe('REQ-01: site elevation, mounting and usable area', () => {
   it('carried into the proposal and its disclosures with the source', () => {
     const p = buildProposal(input(SITE));
     expect(p.site).toEqual(SITE);
-    expect(p.disclosures.join(' ')).toContain('Site: roof-mounted, elevation 1661 m, usable area 120 m² (TEST roof survey 2026-11-20).');
+    // Review M2: each value is shown with its provenance category; one shared source given here = customer-entered for each.
+    expect(p.disclosures.join(' ')).toContain('Site: elevation 1661 m (customer-entered: TEST roof survey 2026-11-20); roof-mounted (customer-entered: TEST roof survey 2026-11-20); usable area 120 m² (customer-entered: TEST roof survey 2026-11-20).');
   });
   it('blank → null, and the proposal says the layout is not checked against the area (nothing assumed)', () => {
     const p = buildProposal(input());
@@ -44,7 +45,9 @@ describe('REQ-01: site elevation, mounting and usable area', () => {
   });
   it('the form reads the fields and reports bad ones', () => {
     const errors: string[] = [];
-    expect(siteFromForm({ 's.mounting': 'Ground', 's.elevationM': '1200', 's.usableAreaM2': '300', 's.source': 'site plan' }, errors)).toEqual({ mounting: 'ground', elevationM: 1200, usableAreaM2: 300, source: 'site plan' });
+    // Review M2: the elevation has its own source field; each value carries its provenance.
+    const cust = { category: 'customer', source: 'site plan' };
+    expect(siteFromForm({ 's.mounting': 'Ground', 's.elevationM': '1200', 's.elevationSource': 'site plan', 's.usableAreaM2': '300', 's.source': 'site plan' }, errors)).toEqual({ mounting: 'ground', elevationM: 1200, usableAreaM2: 300, source: 'site plan', provenance: { elevationM: cust, mounting: cust, usableAreaM2: cust } });
     expect(errors).toEqual([]);
     expect(siteFromForm({}, errors)).toBeUndefined();
     siteFromForm({ 's.mounting': 'pole', 's.usableAreaM2': '-1' }, errors);

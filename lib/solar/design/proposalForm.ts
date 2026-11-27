@@ -12,7 +12,8 @@ import { importModule, importInverter, importBattery, verify, type LibraryEntry 
 import { CABLE_CONDUCTORS, RCD_TYPES, type Module, type Inverter, type Battery, type CableRun, type AcProtection } from './validate';
 import type { HourlyInput, HourlyResult } from './hourly';
 import type { HybridInput, HybridResult } from './hybrid';
-import type { ProposalInput, PricedLine, Sourced, SiteDetails, LoadDetails } from './proposal';
+import type { ProposalInput, PricedLine, Sourced, SiteDetails, LoadDetails, SiteFieldProvenance } from './proposal';
+import { prefillEntry } from './siteHandoff';
 import { PVWATTS_DEFAULT_LOSSES, type Losses } from './production';
 import { parseHorizonText, type HorizonProfile } from './shading';
 import { buildSld, type SldConnections, type SldModel } from './sld';
@@ -186,10 +187,34 @@ export function siteFromForm(f: ProposalForm, errors: string[]): SiteDetails | u
   const el = str(f, 's.elevationM'), mount = str(f, 's.mounting').toLowerCase(), area = str(f, 's.usableAreaM2');
   if (!el && !mount && !area) return undefined;
   const out: SiteDetails = { source: str(f, 's.source') };
-  if (el) { const v = Number(el); if (Number.isFinite(v)) out.elevationM = v; else errors.push('Site elevation must be a number of metres'); }
+  const provenance: NonNullable<SiteDetails['provenance']> = {};
+  // Review M2 and management (2026-11-27): each value keeps its own provenance:
+  // (a) automatically obtained (the Dashboard elevation lookup, unedited), (b)
+  // customer-entered, (c) independently verified (only with a stated survey or
+  // engineer source and the "independent" box ticked). A source on one field
+  // never covers another.
+  const own = (source: string, verifiedKey: string): SiteFieldProvenance => ({ category: f[verifiedKey] === 'yes' ? 'verified' : 'customer', source });
+  if (el) {
+    const v = Number(el);
+    if (Number.isFinite(v)) {
+      out.elevationM = v;
+      const pre = prefillEntry(f, 's.elevationM');
+      if (pre && pre.category === 'automatic' && pre.retrievedOn) provenance.elevationM = { category: 'automatic', source: pre.source, retrievedOn: pre.retrievedOn };
+      else if (str(f, 's.elevationSource')) provenance.elevationM = own(str(f, 's.elevationSource'), 's.elevationVerified');
+      else errors.push('Site elevation needs its own source (survey, drawing, map), or use the elevation looked up on the Dashboard');
+    } else errors.push('Site elevation must be a number of metres');
+  }
   if (mount) { if (mount === 'roof' || mount === 'ground') out.mounting = mount; else errors.push('Mounting must be "roof" or "ground"'); }
   if (area) { const v = Number(area); if (Number.isFinite(v) && v > 0) out.usableAreaM2 = v; else errors.push('Usable area must be a positive number of m²'); }
-  if (!out.source) errors.push('Site details need their source (survey, drawing, map)');
+  const shared = [area ? 'Usable area' : null, mount ? 'mounting' : null].filter(Boolean) as string[];
+  if (shared.length) {
+    if (!out.source) errors.push(`${shared.join(' and ')} need${shared.length > 1 ? '' : 's'} their source (survey, drawing, the customer): a source given for another field does not cover ${shared.length > 1 ? 'them' : 'it'}`);
+    else {
+      if (out.mounting) provenance.mounting = own(out.source, 's.verified');
+      if (out.usableAreaM2 !== undefined) provenance.usableAreaM2 = own(out.source, 's.verified');
+    }
+  }
+  if (Object.keys(provenance).length) out.provenance = provenance;
   return out;
 }
 
@@ -287,7 +312,7 @@ const CABLE_KEYS = ['name', 'lengthM', 'csaMm2', 'designCurrentA', 'systemV', 't
 /** REQ-05: every run in the form also states its route, installation method and conductor. */
 export const CABLE_RUN_REQUIRED = [...CABLE_KEYS, 'from', 'to', 'method', 'conductor'];
 /** Every field of one run (form key suffixes). */
-export const CABLE_RUN_FIELDS = ['name', 'from', 'to', 'kind', 'mppt', 'stringFuseA', 'lengthM', 'method', 'conductor', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
+export const CABLE_RUN_FIELDS = ['name', 'from', 'to', 'kind', 'mppt', 'stringFuseA', 'invertersCarried', 'lengthM', 'method', 'conductor', 'csaMm2', 'designCurrentA', 'systemV', 'tabulatedAmpacityA', 'ambientFactor', 'groupingFactor', 'maxDropPct'];
 /** REQ-05: up to MAX_CABLE_RUNS runs; 'k.' is run 1 (kept so saved drafts still open), then 'k2.', 'k3.', … */
 export const MAX_CABLE_RUNS = 8;
 export const cableRunPrefix = (n: number) => (n === 1 ? 'k.' : `k${n}.`);
@@ -339,11 +364,15 @@ export function cablesFromForm(f: ProposalForm, errors: string[]): CableRun[] {
     if (!blank(f, `${p}mppt`) && !(Number.isInteger(num(f, `${p}mppt`)) && num(f, `${p}mppt`) >= 1)) errors.push(`Cable run ${label}: MPPT must be a whole number, 1 or more`);
     if (!blank(f, `${p}stringFuseA`) && !(num(f, `${p}stringFuseA`) > 0)) errors.push(`Cable run ${label}: string fuse rating must be a positive number of A`);
     if (str(f, `${p}name`) && out.some((c) => c.name === str(f, `${p}name`))) errors.push(`Cable run ${label}: another run has the same name (names must be unique)`);
+    // Review M1: inverters carried, a whole number from 1 to the inverter count.
+    const nInv = num(f, 'd.inverterCount'), carried = num(f, `${p}invertersCarried`);
+    if (!blank(f, `${p}invertersCarried`) && !(Number.isInteger(carried) && carried >= 1 && (!Number.isFinite(nInv) || carried <= nInv))) errors.push(`Cable run ${label}: inverters carried must be a whole number from 1 to the inverter count${Number.isFinite(nInv) ? ` (${nInv})` : ''}`);
     out.push({
       name: str(f, `${p}name`), from: str(f, `${p}from`), to: str(f, `${p}to`), method: str(f, `${p}method`),
       ...((CABLE_CONDUCTORS as readonly string[]).includes(cond) ? { conductor: cond as CableRun['conductor'] } : {}),
       lengthM: num(f, `${p}lengthM`), csaMm2: num(f, `${p}csaMm2`), designCurrentA: num(f, `${p}designCurrentA`), systemV: num(f, `${p}systemV`), tabulatedAmpacityA: num(f, `${p}tabulatedAmpacityA`), ambientFactor: num(f, `${p}ambientFactor`), groupingFactor: num(f, `${p}groupingFactor`), maxDropPct: num(f, `${p}maxDropPct`),
       ...cableKindFromForm(f, p),
+      ...(blank(f, `${p}invertersCarried`) ? {} : { invertersCarried: carried }),
     });
   });
   return out;
@@ -351,11 +380,12 @@ export function cablesFromForm(f: ProposalForm, errors: string[]): CableRun[] {
 
 /** REQ-05 AC protection from the form (ap.*); undefined when nothing is entered. Bad entries are reported, never guessed. */
 export function acProtectionFromForm(f: ProposalForm, cables: CableRun[], errors: string[]): AcProtection | undefined {
-  const keys = ['ap.breakerA', 'ap.device', 'ap.cable', 'ap.rcdType'];
+  const keys = ['ap.breakerA', 'ap.device', 'ap.deviceType', 'ap.cable', 'ap.rcdType'];
   if (keys.every((k) => blank(f, k))) return undefined;
   const out: AcProtection = {};
   if (!blank(f, 'ap.breakerA')) { const v = num(f, 'ap.breakerA'); if (Number.isFinite(v) && v > 0) out.breakerA = v; else errors.push('AC breaker rating must be a positive number of A'); }
   if (!blank(f, 'ap.device')) out.device = str(f, 'ap.device');
+  if (!blank(f, 'ap.deviceType')) { const t = str(f, 'ap.deviceType'); if (t === 'circuit-breaker' || t === 'fuse') out.deviceType = t; else errors.push('AC protective device type must be circuit-breaker or fuse'); }
   if (!blank(f, 'ap.cable')) {
     const name = str(f, 'ap.cable'), run = cables.find((c) => c.name === name);
     if (!run) errors.push(`AC breaker: "${name}" is not one of the cable runs`);

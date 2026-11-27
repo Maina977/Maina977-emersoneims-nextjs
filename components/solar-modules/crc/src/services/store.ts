@@ -12,6 +12,8 @@ export interface SiteInfo {
   elevationM: number | null; irradianceKwhPerM2Day: number | null; temperatureC: number | null;
   /** REQ-27: the service that gave elevationM (e.g. an SRTM lookup); absent = not looked up. */
   elevationSource?: string;
+  /** REQ-27 / review M2: when the elevation lookup answered (ISO), shown as its retrieval date. */
+  elevationRetrievedAt?: string;
   /** Where the sun-hours came from: 'nasa-power' or 'kenya-typical' (NASA did not answer). */
   irradianceSource?: string;
   monthlyConsumptionKwh: number | null; tariffKesPerKwh: number; gridReliabilityNotes: string;

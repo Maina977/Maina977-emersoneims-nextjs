@@ -164,7 +164,7 @@ export function buildSld(i: SldInput): SldModel {
   const ap = i.acProtection;
   const v = (id: string) => { const k = acChecks.find((c) => c.id === id); return k ? (k.formula === 'not checked' ? 'NOT CHECKED' : k.verdict) : 'NOT CHECKED'; };
   const ac = box('ac', `AC protection${multi ? ' (each inverter)' : ''}`, ap ? [
-    `AC circuit breaker: ${typeof ap.breakerA === 'number' ? `${ap.breakerA} A` : `rating ${TBS}`}${ap.device ? `, ${ap.device}` : ''}; inverter maximum AC output ${typeof inv.maxAcOutputA === 'number' ? `${inv.maxAcOutputA} A` : 'not entered'} (check ac-breaker-current: ${v('ac-breaker-current')})`,
+    `AC circuit breaker: ${typeof ap.breakerA === 'number' ? `${ap.breakerA} A` : `rating ${TBS}`}${ap.device ? `, ${ap.device}` : ''}${ap.deviceType ? ` (${ap.deviceType})` : ''}; inverter maximum AC output ${typeof inv.maxAcOutputA === 'number' ? `${inv.maxAcOutputA} A` : 'not entered'} (check ac-breaker-current: ${v('ac-breaker-current')})`,
     `Protects cable: ${ap.cable ? `${ap.cable} (check ac-breaker-cable: ${v('ac-breaker-cable')})` : `${TBS} (I_n ≤ I_z not checked)`}`,
     `RCD: ${ap.rcdType === undefined ? TBS : ap.rcdType === 'none' ? 'none fitted' : `type ${ap.rcdType}`}; inverter requirement: ${inv.rcdTypeRequired === undefined ? 'not stated on the datasheet' : inv.rcdTypeRequired === 'not-required' ? 'no particular type' : `type ${inv.rcdTypeRequired}`} (check ac-rcd-type: ${v('ac-rcd-type')})`,
     `AC SPD: need and type ${TBS}`,

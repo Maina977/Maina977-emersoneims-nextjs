@@ -123,6 +123,12 @@ export interface CableRun {
   method?: string;
   /** REQ-05: conductor material. Not stated = the voltage drop is never a PASS (the copper ρ is only an assumption). */
   conductor?: CableConductor;
+  /**
+   * Review M1: for an AC run, how many inverters it carries (1 = one
+   * inverter's own run, up to inverterCount = a shared run). Required for the
+   * AC checks to pass when the design has more than one inverter.
+   */
+  invertersCarried?: number;
 }
 
 export const CABLE_CONDUCTORS = ['copper', 'aluminium'] as const;
@@ -138,6 +144,8 @@ export interface AcProtection {
   breakerA?: number;
   /** The device as specified, e.g. "MCB, C curve, 4-pole" (text, shown on the diagram). */
   device?: string;
+  /** Review A1: what the device is. Only a stated circuit-breaker lets I_n ≤ I_z PASS (a fuse's I_2 is higher). */
+  deviceType?: 'circuit-breaker' | 'fuse';
   /** Name of the AC cable run this breaker protects (one of the design's cable runs, kind 'ac'). */
   cable?: string;
   /** RCD type fitted on the inverter's AC circuit; 'none' = no RCD fitted. */
@@ -261,7 +269,8 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
   if (c.conductor !== undefined && !(CABLE_CONDUCTORS as readonly string[]).includes(c.conductor)) errors.push(`${c.name}: conductor must be copper or aluminium`);
   if (errors.length) return { checks: [], errors };
   const iz = c.tabulatedAmpacityA * c.ambientFactor * c.groupingFactor;
-  // ρ = 0.0225 Ω·mm²/m: copper at normal service temperature, IEC 60364-5-52 Annex G (1.25 × ρ at 20 °C).
+  // ρ = 0.0225 Ω·mm²/m: copper resistivity at operating temperature (value per
+  // IEC 60364-5-52 Annex G, to be confirmed against the purchased standard; review A3).
   const RHO = 0.0225;
   const vd = (2 * c.lengthM * c.designCurrentA * RHO) / c.csaMm2;
   const pct = (vd / c.systemV) * 100;
@@ -281,12 +290,21 @@ export function checkCable(c: CableRun): { checks: Check[]; errors: string[] } {
       note: 'Aluminium conductor: only the copper resistivity is built in, so the voltage drop is NOT checked; work it out with the aluminium resistivity from the standard and record it' };
   } else {
     const within = pct <= c.maxDropPct;
+    // Review A2: the 2 × L form is the two-conductor (DC or single-phase) drop.
+    // For a three-phase AC run it overstates the drop by 2/√3 ≈ 1.155 (conservative).
+    const notes = [
+      ...(c.conductor === undefined ? [`Conductor not stated: worked out as copper${within ? ', so the voltage drop is NOT confirmed' : ''}`] : []),
+      ...(c.kind === 'ac' ? ['Worked out single-phase (2 × L); for a three-phase circuit this overstates the drop by 2/√3 ≈ 1.155, so it is conservative'] : []),
+    ];
     vdrop = { id: `vdrop-${c.name}`, title: `${c.name}: voltage drop`, verdict: within && c.conductor === 'copper' ? 'PASS' : 'WARN', value: r2(pct), limit: c.maxDropPct, unit: '%', marginPct: margin(pct, c.maxDropPct, true),
-      formula: `ΔV = 2 × L × I × ρ ÷ A = 2 × ${c.lengthM} × ${c.designCurrentA} × 0.0225 ÷ ${c.csaMm2} = ${r2(vd)} V`, reference: 'IEC 60364-5-52 Annex G (ρ for copper in service = 0.0225 Ω·mm²/m)',
-      ...(c.conductor === undefined ? { note: `Conductor not stated: worked out as copper${within ? ', so the voltage drop is NOT confirmed' : ''}` } : {}) };
+      formula: `${c.kind === 'ac' ? 'single-phase ' : ''}ΔV = 2 × L × I × ρ ÷ A = 2 × ${c.lengthM} × ${c.designCurrentA} × 0.0225 ÷ ${c.csaMm2} = ${r2(vd)} V`, reference: COPPER_RHO_BASIS,
+      ...(notes.length ? { note: notes.join('. ') } : {}) };
   }
   return { errors, checks: [ampacity, vdrop] };
 }
+
+/** Review A3: the copper ρ is cited as a value to be confirmed (the Annex G value has not been read). */
+export const COPPER_RHO_BASIS = 'Copper resistivity at operating temperature 0.0225 Ω·mm²/m (value per IEC 60364-5-52 Annex G, to be confirmed against the purchased standard)';
 
 /** REQ-05: stated basis of the AC breaker coordination checks (no clause number until the standard is read). */
 export const AC_PROTECTION_BASIS = 'IEC 60364-4-43, protection against overcurrent: coordination of the conductor and its protective device (I_B ≤ I_n ≤ I_z). Clause to be confirmed against the purchased standard.';
@@ -327,24 +345,47 @@ export function acProtectionChecks(inverter: Inverter, ac: AcProtection | undefi
   else {
     const r = checkCable(run);
     const iz = run.tabulatedAmpacityA * run.ambientFactor * run.groupingFactor;
-    if (r.errors.length) out.push(notChecked('ac-breaker-cable', T2, `Cable "${name}" has invalid data (${r.errors.join('; ')}): not checked`, AC_PROTECTION_BASIS));
-    else if (!pos(inA)) out.push(notChecked('ac-breaker-cable', T2, 'AC breaker rating In not entered (or not above 0 A): not checked', AC_PROTECTION_BASIS));
-    else {
-      const ok = inA <= iz * (1 + 1e-9);
-      const traced = typeof run.method === 'string' && run.method.trim() !== '';
-      out.push({ id: 'ac-breaker-cable', title: T2, verdict: ok ? (traced ? 'PASS' : 'WARN') : 'REFUSE', value: inA, limit: r2(iz), unit: 'A', marginPct: margin(inA, iz, true),
-        formula: `I_n ≤ I_z: breaker ${inA} A ≤ I_z of "${name}" = ${run.tabulatedAmpacityA} × ${run.ambientFactor} × ${run.groupingFactor} = ${r2(iz)} A`, reference: AC_PROTECTION_BASIS,
-        note: !ok ? 'The breaker is rated above what the cable can carry: the cable is not protected against overload'
-          : !traced ? `Cable "${name}" has no installation method: its I_z is not traceable, so the coordination is NOT confirmed`
-          : 'The second condition (conventional tripping current I_2 ≤ 1.45 × I_z) is not worked out: confirm it from the breaker datasheet' });
+    // Review M1 (a20a31b9): how many inverters this run carries. With one
+    // inverter it is 1; with several it must be stated (1 = this inverter's
+    // own run, up to inverterCount = a shared run). Not stated with several
+    // inverters is never a PASS.
+    const nStated = run.invertersCarried;
+    const nValid = nStated === undefined || (Number.isInteger(nStated) && (nStated as number) >= 1 && (nStated as number) <= inverterCount);
+    const n: number | null = !nValid ? null : nStated !== undefined ? (nStated as number) : inverterCount === 1 ? 1 : null;
+    const SHARED_NOT_STATED = 'not checked: state whether this run carries one inverter or all of them (inverters carried)';
+    const TC = `${name}: design current covers the inverter AC output it carries`;
+    if (!nValid) {
+      out.push(refuse('ac-breaker-cable', T2, `Inverters carried by "${name}" must be a whole number from 1 to ${inverterCount} (got ${String(nStated)})`, AC_PROTECTION_BASIS));
+      out.push(refuse(`ac-cable-current-${name}`, TC, `Inverters carried by "${name}" must be a whole number from 1 to ${inverterCount} (got ${String(nStated)})`, AC_PROTECTION_BASIS));
+    } else {
+      if (r.errors.length) out.push(notChecked('ac-breaker-cable', T2, `Cable "${name}" has invalid data (${r.errors.join('; ')}): not checked`, AC_PROTECTION_BASIS));
+      else if (!pos(inA)) out.push(notChecked('ac-breaker-cable', T2, 'AC breaker rating In not entered (or not above 0 A): not checked', AC_PROTECTION_BASIS));
+      else if (n === null) out.push(notChecked('ac-breaker-cable', T2, SHARED_NOT_STATED, AC_PROTECTION_BASIS));
+      else if (n > 1) out.push(notChecked('ac-breaker-cable', T2, `not checked: "${name}" carries ${n} inverters, so one inverter's ${inA} A breaker does not protect it; the protective device of the shared run must be rated at least ${pos(ib) ? `${r2(n * ib)} A (${n} × ${ib} A)` : `${n} × the inverter maximum AC output`} and at most its I_z`, AC_PROTECTION_BASIS));
+      else {
+        const ok = inA <= iz * (1 + 1e-9);
+        const traced = typeof run.method === 'string' && run.method.trim() !== '';
+        // Review A1: I_n ≤ I_z also covers the overload condition (I_2 ≤ 1.45 × I_z)
+        // only for a circuit-breaker (I_2 = 1.45 I_n or less); not for a fuse or an unstated device.
+        const cb = ac.deviceType === 'circuit-breaker';
+        out.push({ id: 'ac-breaker-cable', title: T2, verdict: ok ? (traced && cb ? 'PASS' : 'WARN') : 'REFUSE', value: inA, limit: r2(iz), unit: 'A', marginPct: margin(inA, iz, true),
+          formula: `I_n ≤ I_z: breaker ${inA} A ≤ I_z of "${name}" = ${run.tabulatedAmpacityA} × ${run.ambientFactor} × ${run.groupingFactor} = ${r2(iz)} A`, reference: AC_PROTECTION_BASIS,
+          note: !ok ? 'The breaker is rated above what the cable can carry: the cable is not protected against overload'
+            : !traced ? `Cable "${name}" has no installation method: its I_z is not traceable, so the coordination is NOT confirmed`
+            : !cb ? `not checked: fuse I2 condition. The device is ${ac.deviceType === 'fuse' ? 'a fuse' : 'not stated to be a circuit-breaker'}, so the second condition (I_2 ≤ 1.45 × I_z) is not worked out: work it out from the device's conventional fusing current`
+            : 'The second condition (conventional tripping current I_2 ≤ 1.45 × I_z) is not worked out: confirm it from the breaker datasheet' });
+      }
+      // The run's own design current (and its I_z) must cover the inverter output it carries.
+      if (!pos(ib)) out.push(notChecked(`ac-cable-current-${name}`, TC, 'Inverter maximum AC output current not entered: not checked', AC_PROTECTION_BASIS));
+      else if (n === null) out.push(notChecked(`ac-cable-current-${name}`, TC, SHARED_NOT_STATED, AC_PROTECTION_BASIS));
+      else if (Number.isFinite(run.designCurrentA)) {
+        const need = ib * n;
+        const okI = run.designCurrentA >= need * (1 - 1e-9), okZ = r.errors.length === 0 && iz >= need * (1 - 1e-9);
+        out.push({ id: `ac-cable-current-${name}`, title: TC, verdict: okI && okZ ? 'PASS' : 'REFUSE', value: r2(Math.min(run.designCurrentA, iz)), limit: r2(need), unit: 'A', marginPct: margin(Math.min(run.designCurrentA, iz), need, false),
+          formula: `inverters carried × inverter maximum AC output = ${n} × ${ib} A = ${r2(need)} A ≤ design current ${run.designCurrentA} A and ≤ I_z ${r2(iz)} A`, reference: AC_PROTECTION_BASIS,
+          ...(okI && okZ ? {} : { note: !okI ? `The entered design current is below the ${r2(need)} A the run carries: size the AC cable for it` : `I_z ${r2(iz)} A is below the ${r2(need)} A the run carries` }) });
+      }
     }
-    // The cable's own design current must cover the inverter output it carries.
-    if (pos(ib) && Number.isFinite(run.designCurrentA)) {
-      const ok = run.designCurrentA >= ib * (1 - 1e-9);
-      out.push({ id: `ac-cable-current-${name}`, title: `${name}: design current covers the inverter maximum AC output`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(run.designCurrentA), limit: ib, unit: 'A', marginPct: margin(run.designCurrentA, ib, false),
-        formula: `design current ≥ inverter maximum AC output current = ${ib} A`, reference: AC_PROTECTION_BASIS,
-        note: ok ? (inverterCount > 1 ? 'Per inverter: a cable shared by several inverters must be sized for their sum' : undefined) : 'The entered design current is below what the inverter can deliver: size the AC cable for the inverter output' });
-    } else if (!pos(ib)) out.push(notChecked(`ac-cable-current-${name}`, `${name}: design current covers the inverter maximum AC output`, 'Inverter maximum AC output current not entered: not checked', AC_PROTECTION_BASIS));
   }
 
   const T3 = `RCD type on the inverter AC circuit${each}`;
