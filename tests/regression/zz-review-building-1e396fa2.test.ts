@@ -66,7 +66,7 @@ describe('advisories A1 / A4 / A6 / E1 and version', () => {
     expect(s).toMatch(/srNoResult/);
   });
   it('E1 (updated 2026-11-27, standards-access report): ASHRAE 62.1-2022 Table 6-1 and BRE Digest 310 (1986)', () => {
-    expect(calcSrc).toContain('ASHRAE 62.1-2022, Table 6-1 (values checked against the free Addendum w reprint)');
+    expect(calcSrc).toContain('ASHRAE 62.1-2022, Table 6-1, SI; the Rp and Ra values were checked against the free Addendum w reprint'); // review 328c44aa M1: only Rp/Ra are "checked"
     expect(calcSrc).toContain('BRE Digest 310 (1986)'); // W2: the edition used is recorded (Digest 310 holds the ADF; 309 does not)
     expect(calcSrc).toContain('BS 8206-2:2008 (superseded 2022-01-31)');
   });

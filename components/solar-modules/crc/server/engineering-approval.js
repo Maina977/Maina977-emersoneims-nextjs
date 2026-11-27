@@ -480,7 +480,7 @@ function cableAmpacityDerated({
     methodologyNote: `${conductorMaterial.toUpperCase()} ${csaMm2} mm² ${insulationType}, method ${installationMethod}, base ${baseAmps} A → derated ${r2(deratedAmpacityA)} A after ${r2((1-overallDeratingFactor)*100)}% combined derating.`,
     provenance: {
       method: 'Base ampacity from IEC 60364-5-52 Table B.52.2 (PVC, two loaded conductors); ambient-air correction Table B.52.14 (this copy applies the air table to every method, including buried method D, which IEC 60364-5-52 rates on ground temperature, Table B.52.15); grouping correction Table B.52.17; soil thermal resistivity correction Table B.52.16 (only buried installations method D).',
-      reference: 'IEC 60364-5-52:2009+AMD1:2011 "Electrical installations of buildings — Part 5-52: Selection and erection of electrical equipment — Wiring systems"; IEEE 835-1994 Standard Power Cable Ampacity Tables; IEC 60287 series for cable thermal calculations.',
+      reference: 'IEC 60364-5-52:2009+AMD1:2024 (consolidated edition 3.1, 2024-11; tabulated values to be confirmed against the purchased standard) "Electrical installations of buildings — Part 5-52: Selection and erection of electrical equipment — Wiring systems"; IEEE 835-1994 Standard Power Cable Ampacity Tables; IEC 60287 series for cable thermal calculations.',
       limits: 'Tabulated cable sizes 1.5–120 mm² only (extend table for larger). For DC PV cables use EN 50618 H1Z2Z2-K (90°C XLPE rating). For very long runs voltage drop usually governs over ampacity.',
     }
   };

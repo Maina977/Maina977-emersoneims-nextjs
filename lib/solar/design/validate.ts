@@ -207,7 +207,7 @@ export function validateStrings(module: Module, inverter: Inverter, design: Arra
 
   const n = design.modulesPerString;
   const checks: Check[] = [];
-  const IEC62548 = 'IEC 62548-1 (PV array design); module datasheet temperature coefficients';
+  const IEC62548 = 'IEC 62548-1 (PV array design) (rule to be confirmed against the purchased standard); module datasheet temperature coefficients';
 
   // Cold Voc against the lower of the inverter and module maximum.
   const vocCold = module.vocV * (1 + (module.betaVocPct / 100) * (temps.recordLowC - 25)) * n;
@@ -235,17 +235,17 @@ export function validateStrings(module: Module, inverter: Inverter, design: Arra
       note: over > 0 && over <= 0.1 ? 'The inverter limits the current: some energy is clipped' : over > 0.1 ? 'More than 10 % above the input limit' : undefined });
     const isc = s * module.iscA * 1.25;
     checks.push({ id: `isc-mppt${i + 1}`, title: `MPPT ${i + 1} short-circuit current × 1.25`, verdict: isc <= inverter.maxIscA ? 'PASS' : 'REFUSE', value: r2(isc), limit: inverter.maxIscA, unit: 'A', marginPct: margin(isc, inverter.maxIscA, true),
-      formula: `strings × Isc × 1.25 = ${s} × ${module.iscA} × 1.25`, reference: 'IEC 62548-1 (1.25 × Isc for irradiance above STC); inverter datasheet maximum Isc per MPPT' });
-    // String fusing (IEC 62548-1): needed when the reverse current from the other strings can exceed the module rating.
+      formula: `strings × Isc × 1.25 = ${s} × ${module.iscA} × 1.25`, reference: 'IEC 62548-1 (1.25 × Isc for irradiance above STC) (rule to be confirmed against the purchased standard); inverter datasheet maximum Isc per MPPT' });
+    // String fusing (IEC 62548-1; rule to be confirmed against the purchased standard): needed when the reverse current from the other strings can exceed the module rating.
     const reverse = (s - 1) * module.iscA * 1.25;
     const needed = s >= 3 || reverse > module.maxSeriesFuseA;
     checks.push({ id: `fusing-mppt${i + 1}`, title: `MPPT ${i + 1} string overcurrent protection`, verdict: needed ? 'WARN' : 'PASS', value: r2(reverse), limit: module.maxSeriesFuseA, unit: 'A', marginPct: margin(reverse, module.maxSeriesFuseA, true),
       formula: `reverse current = (strings − 1) × 1.25 × Isc; fuse rating I_n with 1.5 × Isc < I_n ≤ 2.4 × Isc and ≤ module max series fuse`,
-      reference: 'IEC 62548-1 overcurrent protection of PV strings',
+      reference: 'IEC 62548-1 overcurrent protection of PV strings (rule to be confirmed against the purchased standard)',
       note: needed ? `String fuses required on both poles: rating above ${r2(1.5 * module.iscA)} A and at most ${r2(Math.min(2.4 * module.iscA, module.maxSeriesFuseA))} A` : 'Not required' });
     if (needed && 1.5 * module.iscA >= Math.min(2.4 * module.iscA, module.maxSeriesFuseA)) {
       checks.push({ id: `fuse-window-mppt${i + 1}`, title: `MPPT ${i + 1} no valid string-fuse rating`, verdict: 'REFUSE', value: r2(1.5 * module.iscA), limit: module.maxSeriesFuseA, unit: 'A', marginPct: margin(1.5 * module.iscA, module.maxSeriesFuseA, true),
-        formula: '1.5 × Isc must be below the module maximum series fuse rating', reference: 'IEC 62548-1' });
+        formula: '1.5 × Isc must be below the module maximum series fuse rating', reference: 'IEC 62548-1 (rule to be confirmed against the purchased standard)' });
     }
   });
 
@@ -408,7 +408,7 @@ export function acProtectionChecks(inverter: Inverter, ac: AcProtection | undefi
 
 /**
  * Review G3: a PV cable's design current is tied to the strings it carries.
- * IEC 62548-1 sizes PV string/array cable for 1.25 × Isc per string, so the
+ * IEC 62548-1 (rule to be confirmed against the purchased standard) sizes PV string/array cable for 1.25 × Isc per string, so the
  * entered design current must be at least strings × Isc × 1.25 of the MPPT it
  * serves (the most heavily loaded MPPT when not stated). Below that the
  * cable is REFUSED: the ampacity check would otherwise use a figure the
@@ -439,7 +439,7 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
       const lo = 1.5 * module.iscA, hi = Math.min(2.4 * module.iscA, module.maxSeriesFuseA);
       if (!(Number.isFinite(fuse) && fuse > lo && fuse <= hi)) {
         return { id: `cable-current-${c.name}`, title: `${c.name}: string fuse rating`, verdict: 'REFUSE', value: Number.isFinite(fuse) ? fuse : NaN, limit: r2(hi), unit: 'A', marginPct: -100,
-          formula: `1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse) = ${r2(lo)} < In ≤ ${r2(hi)} A`, reference: 'IEC 62548-1 string overcurrent protection', note: `A ${fuse} A string fuse is outside the design's fuse window` };
+          formula: `1.5 × Isc < In ≤ min(2.4 × Isc, module max series fuse) = ${r2(lo)} < In ≤ ${r2(hi)} A`, reference: 'IEC 62548-1 string overcurrent protection (rule to be confirmed against the purchased standard)', note: `A ${fuse} A string fuse is outside the design's fuse window` };
       }
       required = Math.max(isc125, fuse);
       basis = `string cable, fused: max(1.25 × Isc = ${r2(isc125)} A, fuse In = ${fuse} A)`;
@@ -465,7 +465,7 @@ export function cableStringCurrentCheck(c: CableRun, module: Module, design: Arr
   return {
     id: `cable-current-${c.name}`, title: `${c.name}: design current covers the strings it carries`, verdict: ok ? 'PASS' : 'REFUSE', value: r2(c.designCurrentA), limit: r2(required), unit: 'A', marginPct: margin(c.designCurrentA, required, false),
     formula: `strings × Isc × 1.25 = ${strings} × ${module.iscA} × 1.25 = ${r2(required)} A (${mpptStated ? `MPPT ${c.mppt}` : 'largest MPPT; state the MPPT or kind to narrow it'})`,
-    reference: 'IEC 62548-1 (PV cable current 1.25 × Isc per string)',
+    reference: 'IEC 62548-1 (PV cable current 1.25 × Isc per string) (rule to be confirmed against the purchased standard)',
     ...(ok ? {} : { note: 'The entered design current is below what the strings can deliver: size the cable for the string current' }),
   };
 }

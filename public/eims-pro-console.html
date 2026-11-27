@@ -552,7 +552,7 @@ const MODULES = [
   { id:'vent', group:'Architecture', tag:'b-arch',
     title:'Ventilation, outdoor air (ASHRAE 62.1)',
     endpoint:'/api/arch/ventilation', method:'POST',
-    refs:['ASHRAE 62.1-2022 Table 6-1 (values checked against the free Addendum w reprint)','Ez: table number to be confirmed'],
+    refs:['ASHRAE 62.1-2022 Table 6-1 (Rp, Ra checked against the free Addendum w reprint; restaurant and health-club default densities not verified, before Addendum w (2025))','Ez: table number to be confirmed'],
     fields:[
       {k:'space_type', label:'Space type', type:'select', opts:['office','conference','reception','classroom','lecture','retail','restaurant','hotel_bedroom','gym'], def:'office'},
       {k:'floor_area_m2', label:'Floor area (m²)', type:'number', def:200},

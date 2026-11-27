@@ -152,7 +152,8 @@ describe('IEC 60364-7-712:2017 is stated as withdrawn', () => {
 describe('ASHRAE 62.1: 2022 edition, Table 6-1', () => {
   it('the Rp/Ra assumption cites ASHRAE 62.1-2022 Table 6-1 against Addendum w; no 2016 table numbering remains', () => {
     const s = read('lib/wizard-api/buildingCalcs.ts');
-    expect(s).toContain('ASHRAE 62.1-2022, Table 6-1 (values checked against the free Addendum w reprint)');
+    expect(s).toContain('ASHRAE 62.1-2022, Table 6-1, SI; the Rp and Ra values were checked against the free Addendum w reprint');
+    expect(s).not.toContain('values checked against the free Addendum w reprint)');
     // The one line that records the old numbering as history is excluded.
     const live = s.split(/\r?\n/).filter((l) => !l.includes('(used here before) is the 2016-and-earlier numbering')).join('\n');
     expect(live).not.toMatch(/Table 6\.2\.2\.[12]\b|Eq\. 6\.2\.2|edition not stated/);
