@@ -25,29 +25,70 @@ export interface TenderRow { code: string; description: string; unit: string; qu
 export interface TenderSummary { name: string; total: number; complete: boolean; notPriced: string[]; arithmeticErrors: string[]; extraItems: string[]; rank: number | null; overLowestPct: number | null }
 export interface TenderComparison { rows: TenderRow[]; tenders: TenderSummary[]; basis: string }
 
+/**
+ * RFC 4180 records: fields separated by commas; a field in double quotes may
+ * contain commas, line breaks and "" (an escaped quote). Each record carries
+ * the line it starts on. A quote inside an unquoted field, text after a
+ * closing quote, or an unclosed quote is refused (review T1, 2026-11-27: the
+ * old split on every comma read an Excel `A1,"1,250.00"` as rate 1, amount 250).
+ */
+function csvRecords(name: string, text: string): Array<{ line: number; fields: string[] }> {
+  const out: Array<{ line: number; fields: string[] }> = [];
+  let fields: string[] = [], cur = '', quoted = false, inQuotes = false, afterQuote = false, line = 1, start = 1;
+  const endField = () => { fields.push(quoted ? cur : cur.trim()); cur = ''; quoted = false; afterQuote = false; };
+  const endRecord = () => { endField(); out.push({ line: start, fields }); fields = []; };
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { cur += '"'; i++; } else { inQuotes = false; afterQuote = true; }
+      } else { if (ch === '\n') line++; cur += ch; }
+      continue;
+    }
+    if (ch === ',') { endField(); continue; }
+    if (ch === '\r' && text[i + 1] === '\n') continue;
+    if (ch === '\n' || ch === '\r') { endRecord(); line++; start = line; continue; }
+    if (afterQuote) { if (ch === ' ' || ch === '\t') continue; throw new TenderError(`${name}, row ${start}: text after a closing quote`); }
+    if (ch === '"') {
+      if (cur.trim() !== '') throw new TenderError(`${name}, row ${start}: a quote inside an unquoted field (quote the whole field)`);
+      cur = ''; quoted = true; inQuotes = true; continue;
+    }
+    cur += ch;
+  }
+  if (inQuotes) throw new TenderError(`${name}, row ${start}: a quoted field is not closed`);
+  if (cur !== '' || fields.length || quoted) endRecord();
+  // Blank lines and # comment lines are not records.
+  return out.filter((r) => !(r.fields.length === 1 && r.fields[0] === '') && !(r.fields[0] ?? '').startsWith('#'));
+}
+
+/** A plain decimal number ≥ 0: digits with an optional decimal point. Thousands separators are refused, never guessed. */
+function plainNumber(at: string, what: string, s: string): number {
+  if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s) || s.includes(',')) throw new TenderError(`${at}: the ${what} "${s}" has a thousands separator or a comma: write it as a plain number (e.g. 1250.00), so it cannot be misread`);
+  if (!/^\d+(\.\d+)?$/.test(s)) throw new TenderError(`${at}: the ${what} must be a number ≥ 0 (got "${s}")`);
+  return Number(s);
+}
+
 /** One tenderer's CSV: header with `code` and `rate` (and optionally `amount`). */
 export function parseTenderCsv(name: string, text: string): Tender {
   const n = name.trim();
   if (!n) throw new TenderError('Give the tenderer a name');
-  const rows = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
-  if (rows.length < 2) throw new TenderError(`${n}: the CSV needs a header (code,rate[,amount]) and at least one priced item`);
-  const cols = (l: string) => l.split(',').map((x) => x.trim().replace(/^"|"$/g, ''));
-  const head = cols(rows[0]).map((h) => h.toLowerCase());
+  const recs = csvRecords(n, text);
+  if (recs.length < 2) throw new TenderError(`${n}: the CSV needs a header (code,rate[,amount]) and at least one priced item`);
+  const head = recs[0].fields.map((h) => h.trim().toLowerCase());
   const ci = head.indexOf('code'), ri = head.indexOf('rate'), ai = head.indexOf('amount');
   if (ci < 0 || ri < 0) throw new TenderError(`${n}: the header must name "code" and "rate" columns`);
   const rates = new Map<string, TenderRate>();
-  rows.slice(1).forEach((l, k) => {
-    const v = cols(l);
-    const code = v[ci] ?? '';
-    const at = `${n}, row ${k + 2}`;
+  for (const { line, fields: v } of recs.slice(1)) {
+    const at = `${n}, row ${line}`;
+    if (v.length !== head.length) throw new TenderError(`${at}: ${v.length} field(s), the header has ${head.length} — check for an unquoted comma or a missing value`);
+    const code = (v[ci] ?? '').trim();
     if (!code) throw new TenderError(`${at}: no item code`);
     if (rates.has(code)) throw new TenderError(`${at}: item ${code} is priced twice`);
-    const rate = Number(v[ri]);
-    if (v[ri] === undefined || v[ri] === '' || !Number.isFinite(rate) || rate < 0) throw new TenderError(`${at}: the rate for ${code} must be a number ≥ 0 (no thousands separators)`);
-    const a = ai >= 0 && v[ai] !== undefined && v[ai] !== '' ? Number(v[ai]) : undefined;
-    if (a !== undefined && !(Number.isFinite(a) && a >= 0)) throw new TenderError(`${at}: the amount for ${code} must be a number ≥ 0`);
+    const rate = plainNumber(at, `rate for ${code}`, (v[ri] ?? '').trim());
+    const rawA = ai >= 0 ? (v[ai] ?? '').trim() : '';
+    const a = rawA !== '' ? plainNumber(at, `amount for ${code}`, rawA) : undefined;
     rates.set(code, { rate, ...(a !== undefined ? { amount: a } : {}) });
-  });
+  }
   return { name: n, rates };
 }
 

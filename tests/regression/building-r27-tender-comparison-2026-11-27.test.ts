@@ -35,7 +35,8 @@ describe('R-27 tender comparison', () => {
   });
   it('bad CSVs are refused with the reason', () => {
     expect(() => parseTenderCsv('X', 'code,price\n1,5')).toThrow(/"code" and "rate"/);
-    expect(() => parseTenderCsv('X', 'code,rate\n1,1,250')).not.toThrow(); // extra column ignored, rate 1
+    // Review T1: an unquoted "1,250" is 3 fields against a 2-field header: refused, never read as rate 1.
+    expect(() => parseTenderCsv('X', 'code,rate\n1,1,250')).toThrow(/row 2: 3 field\(s\), the header has 2/);
     expect(() => parseTenderCsv('X', 'code,rate\n1,abc')).toThrow(/must be a number/);
     expect(() => parseTenderCsv('X', 'code,rate\n1,5\n1,6')).toThrow(/priced twice/);
     expect(() => compareTenders(BILL, [parseTenderCsv('X', 'code,rate\n1,5')])).toThrow(TenderError);

@@ -1231,7 +1231,7 @@ function repRender(report, quote, drawings, render, p, extras){
             const uval = u.U_value_W_m2K ?? u.U_W_m2K ?? u.u_value ?? u.U;
             const r = u.R_total_m2K_W ?? u.R_total_m2K_per_W ?? u.R_total ?? u.r_total;
             arch += card('6.2 Envelope Thermal Performance (ISO 6946)',
-                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br><em>ASSUMED build-up (2026-11-27), not this building's specification:</em> 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster.<br>For reference only: Approved Document L 2021 Vol. 1 (England) limiting wall U-value 0.26 W/m²K (its notional dwelling uses 0.18). Kenya sets no statutory wall U-value: use the project specification.`);
+                `Wall build-up U-value: <strong>${fmt(uval)} W/m²K</strong> · Total R-value: <strong>${fmt(r)} m²K/W</strong><br><em>ASSUMED build-up (2026-11-27), not this building's specification:</em> 20 mm external plaster + 200 mm concrete block + 50 mm EPS insulation + 12 mm internal plaster.<br>For reference only: Approved Document L 2021 Vol. 1 (England) limiting wall U-value 0.26 W/m²K (its notional dwelling uses 0.18). Check the Kenyan code in force (National Building Code 2024) and the project specification for the wall U-value requirement.`);
         }
         // 6.3 Acoustics
         if(ok(extras.acoustics)){

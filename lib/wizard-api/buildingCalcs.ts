@@ -210,6 +210,13 @@ export function egress(b: Body) {
  * (Eq. 6.2.2.2). Rp, Ra and default occupant densities from the SI version
  * of Table 6.2.2.1; Ez from Table 6.2.2.2. Single zone only: a multi-zone
  * system also needs the system ventilation efficiency (§6.2.4).
+ *
+ * Edition (review W2, 2026-11-27): kept as "edition not stated". The equation
+ * and table numbers (6.2.2.1 / 6.2.2.2) are those of the 2016 and earlier
+ * editions, but the Rp / Ra values used here (office 2.5 L/s·person +
+ * 0.3 L/s·m², classroom 5 + 0.6, retail 3.8 + 0.6 …) are the same in several
+ * editions, so the values alone cannot identify one, and no copy of the
+ * standard is in this repository to confirm it. Naming a year would be a guess.
  */
 const ASHRAE_621_SI: Record<string, { label: string; Rp: number; Ra: number; density: number }> = {
   office: { label: 'Office space', Rp: 2.5, Ra: 0.3, density: 5 },
@@ -401,7 +408,7 @@ export function daylightAdf(b: Body) {
     glazed_area_m2: r(Aw),
     assessment: ADF >= 5 ? 'Well daylit (≥ 5%)' : ADF >= 2 ? 'Adequately daylit (2–5%)' : 'Under-lit (< 2%) — supplementary electric lighting needed',
     assumptions: !('frame_factor' in b) ? ['No frame factor given: whole window area treated as glass'] : [],
-    method: 'Average daylight factor, BRE Digest 309 (edition not stated) / BS 8206-2:2008 (superseded 2022-01-31) formula',
+    method: 'Average daylight factor, BRE Digest 309 (1986) / BS 8206-2:2008 (superseded 2022-01-31) formula',
   };
 }
 
