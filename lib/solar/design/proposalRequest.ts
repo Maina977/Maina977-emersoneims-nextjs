@@ -5,7 +5,7 @@
  */
 import type { ProposalInput } from './proposal';
 import { CLIENT_APPROVAL_REJECTED } from './proposalApproval';
-import { moduleDataErrors, inverterDataErrors, batteryDataErrors } from './datasheet';
+import { moduleDataErrors, inverterDataErrors, batteryDataErrors, provenanceErrors } from './datasheet';
 
 export type ProposalFormat = 'json' | 'xlsx' | 'pdf';
 
@@ -36,6 +36,10 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
   }
   // Re-review Q6: the datasheet rules the import applies are applied to the
   // entries an API request sends directly (it never runs the import).
+  // Final review: provenance as the import requires it (source fields, https link, ISO dates).
+  if (isObj(i.module) && isObj(i.module.provenance)) e.push(...provenanceErrors(i.module.provenance, 'module.provenance.'));
+  if (isObj(i.inverter) && isObj(i.inverter.provenance)) e.push(...provenanceErrors(i.inverter.provenance, 'inverter.provenance.'));
+  if (isObj(i.battery) && isObj(i.battery.entry) && isObj((i.battery.entry as Record<string, unknown>).provenance)) e.push(...provenanceErrors((i.battery.entry as Record<string, unknown>).provenance as Record<string, unknown>, 'battery.provenance.'));
   if (isObj(i.module) && isObj(i.module.data)) e.push(...moduleDataErrors(i.module.data));
   if (isObj(i.inverter) && isObj(i.inverter.data)) e.push(...inverterDataErrors(i.inverter.data));
   if (isObj(i.battery) && isObj(i.battery.entry) && isObj((i.battery.entry as Record<string, unknown>).data)) e.push(...batteryDataErrors((i.battery.entry as Record<string, unknown>).data as Record<string, unknown>));

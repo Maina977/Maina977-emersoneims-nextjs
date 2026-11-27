@@ -51,10 +51,26 @@ export function parseCsv(text: string): Array<Record<string, string>> {
   return lines.slice(1).map((l) => { const v = parseCsvLine(l); return Object.fromEntries(head.map((h, i) => [h, v[i] ?? ''])); });
 }
 
+/**
+ * The import's provenance rules, shared with POST /api/solar/proposal (final
+ * review: the API accepted a URL "not-a-link" and a date "someday"). Required
+ * text fields, an https datasheet link, ISO dates (YYYY-MM-DD) for the
+ * datasheet and entry dates, and for a verification date when one is given.
+ * `prefix` names the entry in the messages ("module.", "inverter."…).
+ */
+export function provenanceErrors(p: Record<string, unknown>, prefix = ''): string[] {
+  const e: string[] = [];
+  const txt = (k: string) => (typeof p[k] === 'string' ? (p[k] as string).trim() : '');
+  for (const f of PROV_FIELDS) if (!txt(f)) e.push(`${prefix}${f} is required`);
+  if (txt('datasheetUrl') && !/^https:\/\/[^\s/]+\.[^\s]+/.test(txt('datasheetUrl'))) e.push(`${prefix}datasheetUrl must be an https link to the manufacturer document`);
+  const iso = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)) && new Date(`${v}T00:00:00Z`).toISOString().slice(0, 10) === v;
+  for (const f of ['datasheetDate', 'enteredOn'] as const) if (txt(f) && !iso(txt(f))) e.push(`${prefix}${f} must be a date (YYYY-MM-DD)`);
+  if (p.verifiedOn !== undefined && !(typeof p.verifiedOn === 'string' && iso(p.verifiedOn.trim()))) e.push(`${prefix}verifiedOn must be a date (YYYY-MM-DD)`);
+  if (p.verifiedBy !== undefined && typeof p.verifiedBy !== 'string') e.push(`${prefix}verifiedBy must be text`);
+  return e;
+}
 function provenance(r: Record<string, string>, errors: string[]): Provenance {
-  for (const f of PROV_FIELDS) if (!r[f]) errors.push(`${f} is required`);
-  if (r.datasheetUrl && !/^https:\/\//.test(r.datasheetUrl)) errors.push('datasheetUrl must be an https link to the manufacturer document');
-  for (const f of ['datasheetDate', 'enteredOn'] as const) if (r[f] && Number.isNaN(Date.parse(r[f]))) errors.push(`${f} must be a date (YYYY-MM-DD)`);
+  errors.push(...provenanceErrors(r));
   return { manufacturer: r.manufacturer, datasheetUrl: r.datasheetUrl, datasheetRevision: r.datasheetRevision, datasheetDate: r.datasheetDate, enteredBy: r.enteredBy, enteredOn: r.enteredOn };
 }
 function numbers<F extends readonly string[]>(r: Record<string, string>, fields: F, errors: string[]): Record<string, number | string> {

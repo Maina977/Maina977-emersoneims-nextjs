@@ -43,38 +43,41 @@ function iec62446CommissioningReport({
   testEngineerLicence = 'TBC',
   testDate = new Date().toISOString().slice(0, 10),
 }) {
-  // §6.4 visual inspection items
+  // Visual inspection items (IEC 62446-1; clause to be confirmed against the
+  // purchased standard). An on-site inspection cannot be done by software:
+  // items not derived from an input are null "not inspected", never a pass
+  // (CA-32 final review: VI-1…VI-10 were hard-coded pass: true).
   const visual = [
-    { id: 'VI-1',  item: 'PV modules free of damage / cracks / discolouration', pass: true, std: 'IEC 62446-1, inspection of the PV modules (clause to be confirmed against the purchased standard)' },
-    { id: 'VI-2',  item: 'DC cable routing protected from mechanical damage',   pass: true, std: 'IEC 62446-1, inspection of the DC cabling; IEC 60364-7-712, wiring systems (clauses to be confirmed against the purchased standards)' },
-    { id: 'VI-3',  item: 'DC cables UV-resistant solar grade (H1Z2Z2-K)',       pass: true, std: 'EN 50618:2014 / TUV 2 PfG 1169' },
-    { id: 'VI-4',  item: 'DC isolator within 1 m of inverter (or as required)', pass: true, std: 'IEC 60364-7-712, isolation and switching of the PV array (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-1',  item: 'PV modules free of damage / cracks / discolouration', pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 62446-1, inspection of the PV modules (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-2',  item: 'DC cable routing protected from mechanical damage',   pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 62446-1, inspection of the DC cabling; IEC 60364-7-712, wiring systems (clauses to be confirmed against the purchased standards)' },
+    { id: 'VI-3',  item: 'DC cables UV-resistant solar grade (H1Z2Z2-K)',       pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'EN 50618:2014 / TUV 2 PfG 1169' },
+    { id: 'VI-4',  item: 'DC isolator within 1 m of inverter (or as required)', pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 60364-7-712, isolation and switching of the PV array (clause to be confirmed against the purchased standard)' },
     { id: 'VI-5',  item: 'String overcurrent protection rated > 1.25 × Isc',    pass: ocpdRatingA >= 1.25 * iscExpectedA, std: 'IEC 60364-7-712, overcurrent protection of PV strings (clause to be confirmed against the purchased standard)' },
-    { id: 'VI-6',  item: 'Equipotential bonding to module frames (continuous)', pass: true, std: 'IEC 62446-1, inspection of earthing and bonding; IEC 60364-5-54 (clauses to be confirmed against the purchased standards)' },
+    { id: 'VI-6',  item: 'Equipotential bonding to module frames (continuous)', pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 62446-1, inspection of earthing and bonding; IEC 60364-5-54 (clauses to be confirmed against the purchased standards)' },
     { id: 'VI-7',  item: 'Earthing electrode resistance ≤ 10 Ω',                pass: earthResistanceOhm <= 10, std: 'BS 7430:2011 / IEC 62305-3' },
-    { id: 'VI-8',  item: 'PV array warning labels at DC isolator + meter',      pass: true, std: 'IEC 60364-7-712, identification and labelling (clause to be confirmed against the purchased standard)' },
-    { id: 'VI-9',  item: 'Inverter AC connection per manufacturer torque spec', pass: true, std: 'Mfr datasheet + IEC 62548, AC connection of the inverter (clause to be confirmed against the purchased standard)' },
-    { id: 'VI-10', item: 'Anti-islanding inverter type-tested',                 pass: true, std: 'IEC 62116:2014' },
+    { id: 'VI-8',  item: 'PV array warning labels at DC isolator + meter',      pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 60364-7-712, identification and labelling (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-9',  item: 'Inverter AC connection per manufacturer torque spec', pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'Mfr datasheet + IEC 62548, AC connection of the inverter (clause to be confirmed against the purchased standard)' },
+    { id: 'VI-10', item: 'Anti-islanding inverter type-tested',                 pass: null, status: 'not inspected: requires on-site inspection by the engineer', std: 'IEC 62116:2014' },
   ];
 
-  // §6.5 testing
+  // Electrical tests (IEC 62446-1; clause to be confirmed against the purchased standard)
   const vocPctDiff = ((vocMeasuredV - vocExpectedV) / vocExpectedV) * 100;
   const iscPctDiff = ((iscMeasuredA - iscExpectedA) / iscExpectedA) * 100;
   const tests = [
     {
       id: 'T-1',
       test: 'Continuity of protective conductor',
-      measured: '< 0.5 Ω (typ)',
+      measured: 'not measured',
       criterion: '< 1.0 Ω',
-      pass: true,
+      pass: null, status: 'not tested: requires on-site test by the engineer',
       std: 'IEC 62446-1, test: continuity of protective conductors (clause to be confirmed against the purchased standard)',
     },
     {
       id: 'T-2',
       test: 'PV string polarity',
-      measured: 'Correct',
+      measured: 'not measured',
       criterion: 'Polarity matches labelling',
-      pass: true,
+      pass: null, status: 'not tested: requires on-site test by the engineer',
       std: 'IEC 62446-1, test: string polarity (clause to be confirmed against the purchased standard)',
     },
     {
@@ -106,9 +109,9 @@ function iec62446CommissioningReport({
     {
       id: 'T-6',
       test: 'Functional test of inverter shutdown',
-      measured: 'Disconnect → 0 W within 200 ms',
+      measured: 'not measured',
       criterion: 'Anti-islanding per IEC 62116',
-      pass: true,
+      pass: null, status: 'not tested: requires on-site test by the engineer',
       std: 'IEC 62446-1, test: functional test; IEC 62116 anti-islanding (clauses to be confirmed against the purchased standards)',
     },
     {
@@ -121,9 +124,12 @@ function iec62446CommissioningReport({
     },
   ];
 
-  const allVisualPass = visual.every(v => v.pass);
-  const allTestsPass = tests.every(t => t.pass);
+  // null = not inspected / not tested: never counted as passed.
+  const allVisualPass = visual.every(v => v.pass === true);
+  const allTestsPass = tests.every(t => t.pass === true);
   const overallPass = allVisualPass && allTestsPass;
+  const notDone = [...visual.filter(v => v.pass === null), ...tests.filter(t => t.pass === null)];
+  const failed = [...visual.filter(v => v.pass === false), ...tests.filter(t => t.pass === false)];
 
   // Generate hash for tamper-evidence
   const reportHash = crypto.createHash('sha256').update(JSON.stringify({ projectId, systemKwDc, visual, tests, testDate })).digest('hex').slice(0, 16);
@@ -136,19 +142,24 @@ function iec62446CommissioningReport({
     visualInspection: {
       items: visual,
       itemsTotal: visual.length,
-      itemsPassed: visual.filter(v => v.pass).length,
+      itemsPassed: visual.filter(v => v.pass === true).length,
+      itemsNotInspected: visual.filter(v => v.pass === null).length,
       allPass: allVisualPass,
     },
     testing: {
       items: tests,
       testsTotal: tests.length,
-      testsPassed: tests.filter(t => t.pass).length,
+      testsPassed: tests.filter(t => t.pass === true).length,
+      testsNotDone: tests.filter(t => t.pass === null).length,
       allPass: allTestsPass,
     },
     overallVerdict: overallPass
       ? 'PASS — System safe to commission and energise.'
-      : 'FAIL — Rectify failed items before commissioning. Re-inspect.',
-    failedItems: [...visual.filter(v => !v.pass), ...tests.filter(t => !t.pass)],
+      : failed.length
+        ? 'FAIL — Rectify failed items before commissioning. Re-inspect.'
+        : `NOT COMPLETE — ${notDone.length} inspection / test items need the engineer on site; do not energise on this report.`,
+    failedItems: failed,
+    notInspectedItems: notDone,
     signatureBlock: {
       engineerName: testEngineerName,
       engineerLicence: testEngineerLicence,
@@ -157,7 +168,7 @@ function iec62446CommissioningReport({
       tamperEvident: 'SHA-256 hash of report contents — any modification invalidates this signature.',
     },
     provenance: {
-      method: 'IEC 62446-1:2016 "Photovoltaic (PV) systems — Requirements for testing, documentation and maintenance — Part 1: Grid connected systems — Documentation, commissioning tests and inspection." Visual inspection per §6.4, electrical testing per §6.5.',
+      method: 'IEC 62446-1:2016 "Photovoltaic (PV) systems — Requirements for testing, documentation and maintenance — Part 1: Grid connected systems — Documentation, commissioning tests and inspection." Visual inspection and electrical testing sections (clauses to be confirmed against the purchased standard).',
       reference: 'IEC 62446-1:2016; IEC 60364-7-712:2017 (PV special installations); IEC 62116:2014 (anti-islanding); BS 7430:2011 (earthing); EN 50618:2014 (PV cable).',
       limits: 'Engineer name + licence number must be filled in by the actual signing PE/IEng. Hash provides tamper-evidence but not legal signature — pair with DigiCert / Adobe Sign for qualified electronic signature.',
     }
