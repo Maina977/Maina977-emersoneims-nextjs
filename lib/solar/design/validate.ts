@@ -436,9 +436,14 @@ export function generatorConnectionChecks(inverter: Inverter, conn: GeneratorCon
 
 /** Hybrid with a generator. Parallel operation is never assumed safe. */
 export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMinLoadPct?: number }, minSiteLoadKw: number, pvCanBackfeed: boolean): Check[] {
-  const minPct = gen.oemMinLoadPct ?? 30;
+  // Review of 39fa8535, R3: an OEM minimum of 0 % made every site load a
+  // "pass". 0, a negative or a non-number is treated as not given, so the
+  // stated 30 % practice applies and is labelled as such.
+  const oemGiven = typeof gen.oemMinLoadPct === 'number' && Number.isFinite(gen.oemMinLoadPct) && gen.oemMinLoadPct > 0;
+  const minPct = oemGiven ? (gen.oemMinLoadPct as number) : 30;
   const minKw = (gen.ratedKw * minPct) / 100;
-  const compat = (inverter.generatorCompatibility ?? '').trim();
+  // R2: a non-string statement is no statement (and never a raw JS error).
+  const compat = typeof inverter.generatorCompatibility === 'string' ? inverter.generatorCompatibility.trim() : '';
   const checks: Check[] = [
     // Review G2: a statement of only spaces counted; it is trimmed first. The
     // text itself ("supported" vs "NOT supported") is the engineer's, checked
@@ -446,7 +451,7 @@ export function checkGenerator(inverter: Inverter, gen: { ratedKw: number; oemMi
     { id: 'gen-compat', title: 'Inverter listed as generator-compatible', verdict: compat ? 'PASS' : 'REFUSE', value: compat ? 1 : 0, limit: 1, unit: '', marginPct: compat ? 0 : -100,
       formula: 'manufacturer statement required', reference: 'Inverter manufacturer documentation', note: compat ? `${compat} (the statement's wording is confirmed by the second-person datasheet check)` : 'No manufacturer statement: generator connection refused' },
     { id: 'gen-min-load', title: 'Generator minimum loading', verdict: minSiteLoadKw >= minKw ? 'PASS' : 'WARN', value: r2(minSiteLoadKw), limit: r2(minKw), unit: 'kW', marginPct: margin(minSiteLoadKw, minKw, false),
-      formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: gen.oemMinLoadPct !== undefined ? 'Generator OEM minimum load' : 'Common diesel practice (30 %) until the OEM figure is entered',
+      formula: `minimum load ≥ ${minPct} % × ${gen.ratedKw} kW`, reference: oemGiven ? 'Generator OEM minimum load' : `Common diesel practice (30 %) until the OEM figure is entered${gen.oemMinLoadPct !== undefined ? ` (the ${gen.oemMinLoadPct} % entered is not a usable OEM figure)` : ''}`,
       note: minSiteLoadKw < minKw ? 'Light loading: wet stacking risk; schedule load banks or reduce PV while the generator runs' : undefined },
   ];
   if (pvCanBackfeed) {

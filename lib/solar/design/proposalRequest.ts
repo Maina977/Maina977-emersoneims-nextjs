@@ -26,6 +26,9 @@ export function checkProposalRequest(body: unknown): { input: ProposalInput; for
     const en = i[k];
     if (!isObj(en) || !isObj(en.data) || !isObj(en.provenance) || (en.status !== 'verified' && en.status !== 'unverified')) e.push(`${k} must be a datasheet library entry { data, provenance, status }`);
   }
+  // Review of 39fa8535, R2: a non-string generator statement gave "…trim is not a function".
+  { const inv = i.inverter; const g = isObj(inv) && isObj(inv.data) ? inv.data.generatorCompatibility : undefined;
+    if (g !== undefined && g !== null && !isStr(g)) e.push('inverter.data.generatorCompatibility must be text (the manufacturer statement) or null'); }
   if (i.battery !== undefined) {
     const b = i.battery;
     if (!isObj(b) || !isObj(b.entry) || !isObj((b.entry as Record<string, unknown>).data) || !isNum(b.units) || !isNum(b.requiredUsableAcKwh) || (b.seriesPerString !== undefined && !isNum(b.seriesPerString))) e.push('battery must be { entry, units, requiredUsableAcKwh, seriesPerString? }');

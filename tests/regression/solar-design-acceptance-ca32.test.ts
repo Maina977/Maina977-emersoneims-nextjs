@@ -286,3 +286,24 @@ describe('CA-32 R1: single-string cable on a fused 3-string MPPT', () => {
     expect(k(run({ kind: 'dc-pv', designCurrentA: 25, stringFuseA: 25 })).verdict).toBe('REFUSE');
   });
 });
+
+describe('CA-32 R2/R3 (review of 39fa8535)', () => {
+  it('R2: a non-string generator statement is a clean 400 from the API and a refusal in the engine', async () => {
+    const { checkProposalRequest } = await import('@/lib/solar/design/proposalRequest');
+    for (const g of [123, true, {}]) {
+      const r = checkProposalRequest({ format: 'json', input: design({ inv: { generatorCompatibility: g as unknown as string } }) });
+      expect('error' in r ? r.error : '', JSON.stringify(g)).toMatch(/generatorCompatibility must be text/);
+      expect('error' in r ? r.error : '').not.toMatch(/is not a function/);
+      const p = buildProposal(design({ inv: { generatorCompatibility: g as unknown as string }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 8, pvCanBackfeedGenerator: false } }));
+      expect(p.checks.find((c) => c.id === 'gen-compat')?.verdict).toBe('REFUSE');
+    }
+  });
+  it('R3: an OEM minimum of 0 % is not a figure: 30 % applies, so 0.5 kW on a 20 kW set (6 kW) still warns', () => {
+    const p = buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 0.5, generatorOemMinLoadPct: 0, pvCanBackfeedGenerator: false } }));
+    const k = p.checks.find((c) => c.id === 'gen-min-load')!;
+    expect(k).toMatchObject({ verdict: 'WARN', limit: 6 });
+    expect(k.reference).toMatch(/the 0 % entered is not a usable OEM figure/);
+    // A real OEM figure still replaces the default: 20 % of 20 kW = 4 kW; 4.5 kW passes.
+    expect(buildProposal(design({ inv: { generatorCompatibility: GEN_OK }, connections: { grid: false, generator: true, generatorRatedKw: 20, generatorMinSiteLoadKw: 4.5, generatorOemMinLoadPct: 20, pvCanBackfeedGenerator: false } })).checks.find((c) => c.id === 'gen-min-load')?.verdict).toBe('PASS');
+  });
+});
