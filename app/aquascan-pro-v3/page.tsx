@@ -13,6 +13,10 @@ import ToolSeoContent from '@/components/seo/ToolSeoContent';
 // ChunkLoadError on 2026-07-09 (twice, same chunk, across deployments).
 // An initial-page stylesheet cannot throw — worst case is unstyled content.
 import '@/external/borehole-ai-engine/src/styles.css';
+// Privacy correction 2026-11-28: the Inter faces this tool used to fetch from
+// fonts.googleapis.com, now served from our own domain (see the file's header).
+// They back the 'Inter' family named second in the engine's --font.
+import './inter-self-hosted.css';
 
 /**
  * THIS import is where every user-facing ChunkLoadError on this page has
