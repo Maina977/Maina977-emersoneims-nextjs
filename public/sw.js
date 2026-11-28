@@ -75,12 +75,16 @@ self.addEventListener('install', (event) => {
 });
 
 // Warm up external connections
+//
+// Privacy correction 2026-11-28: this list used to hold fonts.googleapis.com,
+// fonts.gstatic.com and www.google-analytics.com. The service worker fetched
+// all three on install, i.e. on a visitor's first visit, before any cookie
+// choice, sending the visitor's IP address to Google. Google tags now load only
+// after Accept All, and no page uses Google Fonts, so nothing here may contact
+// Google. The list is empty; the function is kept so a first-party origin can
+// be added later if one is ever worth warming.
 async function warmupConnections() {
-  const urls = [
-    'https://fonts.googleapis.com',
-    'https://fonts.gstatic.com',
-    'https://www.google-analytics.com',
-  ];
+  const urls = [];
 
   for (const url of urls) {
     try {

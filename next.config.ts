@@ -202,12 +202,16 @@ const nextConfig: NextConfig = {
   // Headers for security and performance
   async headers() {
     // Content Security Policy - Comprehensive protection
+    // Privacy correction 2026-11-28: fonts.googleapis.com (style-src) and
+    // fonts.gstatic.com (font-src) removed. Every font is self-hosted now
+    // (app/fonts, public/fonts/inter-v20), so the policy also stops any future
+    // code from loading Google Fonts in a visitor's browser.
     const ContentSecurityPolicy = `
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel.app https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
       img-src 'self' blob: data: https: http:;
-      font-src 'self' https://fonts.gstatic.com data: https://cdnjs.cloudflare.com;
+      font-src 'self' data: https://cdnjs.cloudflare.com;
       connect-src 'self' https://www.google-analytics.com https://vitals.vercel-insights.com https://*.vercel.app wss://*.vercel.app http://127.0.0.1:5000 http://localhost:5000 ws://127.0.0.1:5000 ws://localhost:5000 https://image.pollinations.ai https://tfhub.dev https://www.kaggle.com https://storage.googleapis.com https://nominatim.openstreetmap.org https://api.bigdatacloud.net https://api.open-elevation.com https://api.open-meteo.com https://archive-api.open-meteo.com https://climate-api.open-meteo.com https://flood-api.open-meteo.com https://power.larc.nasa.gov https://rest.isric.org https://graphql.isric.org https://maps.isric.org https://modis.ornl.gov https://waterservices.usgs.gov https://overpass-api.de https://data.waterpointdata.org https://api.mwater.co https://macrostrat.org https://gibs.earthdata.nasa.gov https://tile.openstreetmap.org https://tile.opentopomap.org https://global-surface-water.appspot.com https://ggis.un-igrac.org https://gws-access.jasmin.ac.uk https://api.daac.asf.alaska.edu https://mrdata.usgs.gov https://map.bgs.ac.uk https://ogc.bgs.ac.uk https://gemstat.bafg.de https://egms.land.copernicus.eu https://onegeology-geonetwork.brgm.fr https://www.dws.gov.za;
       media-src 'self' blob: https:;
       object-src 'none';
