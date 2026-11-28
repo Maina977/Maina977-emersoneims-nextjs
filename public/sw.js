@@ -142,6 +142,15 @@ self.addEventListener('fetch', (event) => {
   // Skip non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
+  // BYPASS: Google tag hosts (production c4ce80ea, 2026-11-28). The worker used to re-fetch the gtag library
+  // itself; that inner fetch is subject to the worker's CSP connect-src, which does not list
+  // googletagmanager.com, so the library load was aborted (net::ERR_ABORTED) and nothing was measured after
+  // Accept. These requests only exist after the visitor accepts (GoogleTags.tsx); the browser handles them
+  // directly, never the cache. No other request changes.
+  if (/(^|\.)(googletagmanager\.com|google-analytics\.com|analytics\.google\.com|googleadservices\.com|googlesyndication\.com|doubleclick\.net)$/i.test(url.hostname)) {
+    return;
+  }
+
   // BYPASS: never cache the Building Suite Pro wizard or its container page
   // (these are heavy HTML shells we redeploy frequently — must always be fresh)
   if (
