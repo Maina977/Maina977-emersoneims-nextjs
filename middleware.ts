@@ -1775,11 +1775,10 @@ export function middleware(request: NextRequest) {
      * 2026-11-27 (privacy correction, management decision). The font is
      * self-hosted (next/font/local in app/layout.tsx), and the hints opened a
      * connection to Google on every page before any consent choice.
-     * ONE EXCEPTION, found in the built CSS: /aquascan-pro-v3 imports
-     * external/borehole-ai-engine/src/styles.css, which @imports Inter from
-     * fonts.googleapis.com. That page still fetches Google Fonts by itself
-     * (pending a management decision on self-hosting that font); the hint only
-     * made it start a little earlier.
+     * /aquascan-pro-v3 used to @import Inter from fonts.googleapis.com via
+     * external/borehole-ai-engine/src/styles.css; that @import was removed on
+     * 2026-11-28 (c6df97a4) and the page now uses the self-hosted Inter, so no
+     * page fetches Google Fonts.
      */
   ];
 

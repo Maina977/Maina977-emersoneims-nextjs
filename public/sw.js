@@ -8,7 +8,11 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const CACHE_VERSION = 'v12-20260709-chunkretry';
+// v13 (privacy correction 2026-11-28): bumping the version makes 'activate' delete every cache from
+// before the fix. Pages cached by v12 still carry the old pre-consent Google loader and were served
+// whenever a navigation fetch failed (offline, network change); if the connection returned within
+// 2.5 s they could contact Google before consent. Media is re-downloaded once; no media file changed.
+const CACHE_VERSION = 'v13-20261128-privacy';
 const OFFLINE_URL = '/offline.html';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const IMAGES_CACHE = `images-${CACHE_VERSION}`;

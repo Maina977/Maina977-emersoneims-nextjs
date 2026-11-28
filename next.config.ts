@@ -204,7 +204,7 @@ const nextConfig: NextConfig = {
     // Content Security Policy - Comprehensive protection
     // Privacy correction 2026-11-28: fonts.googleapis.com (style-src) and
     // fonts.gstatic.com (font-src) removed. Every font is self-hosted now
-    // (app/fonts, public/fonts/inter-v20), so the policy also stops any future
+    // (app/fonts via next/font/local), so the policy also stops any future
     // code from loading Google Fonts in a visitor's browser.
     const ContentSecurityPolicy = `
       default-src 'self';
