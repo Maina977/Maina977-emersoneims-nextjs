@@ -177,9 +177,16 @@ export default function GoogleTags() {
      */
     "addEventListener('storage',function(e){",
     "if(e.key!=='cookie-consent'&&e.key!==null)return;",
+    // localStorage only (as the module listener): a sessionStorage write in a
+    // same-origin frame is not the visitor's stored choice.
+    'try{if(e.storageArea&&e.storageArea!==localStorage)return;}catch(x){}',
     "if(e.newValue==='accepted')return;",
     'window.__eimsGtagBlocked=true;window.__eimsCrossTabStop=true;',
     ...[...GA4_IDS, GOOGLE_ADS_ID].filter(Boolean).map((id) => `window['ga-disable-${id}']=true;`),
+    // CA-53 review, finding 5: a library already running before the client
+    // module loads is told the denial at once, not only at module install.
+    "if(typeof window.gtag==='function')window.gtag('consent','update',{",
+    "analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});",
     '});',
   ].join('');
 

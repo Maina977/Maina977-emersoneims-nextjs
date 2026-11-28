@@ -86,6 +86,10 @@ interface HaltRecord {
   restore: Array<() => void>;
   /** The no-op installed as window.gtag by this halt. */
   dropped: Gtag;
+  /** Queued config commands taken out before the library read them (CA-53 review, finding 1). */
+  purgedConfigs: unknown[];
+  /** A dataLayer.push the library tried to install while stopped (ignored until a re-accept). */
+  capturedPush?: ((...items: unknown[]) => number) | null;
 }
 
 const tagWindow = (): TagWindow | null => (typeof window === 'undefined' ? null : (window as unknown as TagWindow));
@@ -214,12 +218,14 @@ export function haltGoogleTransmission(): void {
   if (!w) return;
   for (const id of tagIds()) w[`ga-disable-${id}`] = true;
   w.__eimsGtagBlocked = true;
+  let carried: unknown[] = [];
   if (w.__eimsGtagHalt) {
     // Already halted. If something has installed a new window.gtag since the
     // halt, undo the old halt and halt again, so the new function also gets
     // the denial and is neutralised.
     if (w.gtag === w.__eimsGtagHalt.dropped) return;
     const current = w.gtag;
+    carried = w.__eimsGtagHalt.purgedConfigs;
     resumeGoogleTransmission();
     w.gtag = current;
     w.__eimsGtagBlocked = true;
@@ -227,6 +233,12 @@ export function haltGoogleTransmission(): void {
   }
 
   const realGtag = w.gtag;
+  // CA-53 review, finding 1: a library that is still downloading has not read
+  // the queue yet. Take out the queued grant, config and event commands first,
+  // so when it does run it never sees a grant or a config (which is what writes
+  // _gcl_au / _ga). Kept in the record: a later Accept in THIS tab puts the
+  // configs back after its fresh grant (see applyConsentChoice).
+  const purgedConfigs = [...carried, ...(libraryRunning(w) ? [] : purgeQueuedGrants(w.dataLayer))];
   if (typeof realGtag === 'function') realGtag('consent', 'update', { ...ALL_DENIED });
 
   const dl = w.dataLayer;
@@ -236,33 +248,112 @@ export function haltGoogleTransmission(): void {
     push: dl && Object.prototype.hasOwnProperty.call(dl, 'push') ? dl.push : null,
     restore: [],
     dropped,
+    purgedConfigs,
   };
+  // window.gtag stays a plain writable property: the inline script declares
+  // gtag as a global function, which makes window.gtag non-configurable, so it
+  // cannot be redefined. The library does not replace window.gtag; it replaces
+  // dataLayer.push, and that is locked below.
   w.gtag = dropped;
   if (dl) {
     try {
-      Object.defineProperty(dl, 'push', { value: () => dl.length, configurable: true, writable: true });
+      // Finding 1: an accessor whose setter ignores assignment, so a library
+      // that loads after the halt cannot install its own push (assignment is
+      // silently ignored, also in strict mode). Configurable, so a later Accept
+      // in this tab can restore the original.
+      // The push the library tried to install is kept (never called while
+      // stopped), so a re-accept in this tab hands the queue back to it.
+      const noopPush = () => dl.length;
+      Object.defineProperty(dl, 'push', {
+        get: () => noopPush,
+        set: (v: unknown) => { if (typeof v === 'function') record.capturedPush = v as HaltRecord['push']; },
+        configurable: true,
+      });
     } catch { /* frozen by the library: layers 1, 3 and 5 still apply */ }
   }
   installTransportGuard(w, record.restore);
   w.__eimsGtagHalt = record;
+  watchPendingLibrary(w);
 }
 
-/** Undo haltGoogleTransmission in the same page (the visitor re-accepted). */
-function resumeGoogleTransmission(): void {
+/** True once gtag.js has executed in this page (it defines these globals). */
+function libraryRunning(w: TagWindow): boolean {
+  return !!(w.google_tag_manager || w.google_tag_data);
+}
+
+/**
+ * Removes queued `consent update` grants, `config` and `event` commands from
+ * a dataLayer the library has not read yet. Returns the removed configs.
+ */
+function purgeQueuedGrants(dl: TagWindow['dataLayer']): unknown[] {
+  if (!dl || !Array.isArray(dl)) return [];
+  const configs: unknown[] = [];
+  const keep: unknown[] = [];
+  for (const item of dl) {
+    const a = item && typeof item === 'object' && 'length' in (item as object) ? Array.from(item as ArrayLike<unknown>) : null;
+    const cmd = a ? a[0] : null;
+    const isGrant = cmd === 'consent' && a![1] === 'update' && a![2] && Object.values(a![2] as object).includes('granted');
+    if (cmd === 'config') configs.push(item);
+    if (cmd === 'config' || cmd === 'event' || isGrant) continue;
+    keep.push(item);
+  }
+  if (keep.length !== dl.length) {
+    dl.length = 0;
+    Array.prototype.push.apply(dl, keep);
+  }
+  return configs;
+}
+
+/**
+ * Finding 1: if a Google tag script is still downloading when the page is
+ * stopped, the request has already left and cannot be recalled. When it
+ * finishes (load or error), and the page is still stopped, run the stop again
+ * and wipe the Google cookies, then once more shortly after, in case the
+ * library wrote one during its first run.
+ */
+function watchPendingLibrary(w: TagWindow & Window): void {
+  const doc = w.document;
+  if (!doc) return;
+  const scripts = Array.from(doc.querySelectorAll('script[src]')).filter((s) => isGoogleTagUrl(s.getAttribute('src') || ''));
+  for (const s of scripts) {
+    const el = s as HTMLScriptElement & { __eimsHaltWatch?: boolean };
+    if (el.__eimsHaltWatch) continue;
+    el.__eimsHaltWatch = true;
+    const after = () => {
+      if (!w.__eimsGtagHalt) return; // re-accepted in this tab meanwhile
+      haltGoogleTransmission();
+      deleteGoogleCookies(doc);
+      for (const ms of [500, 2000]) {
+        setTimeout(() => { if (w.__eimsGtagHalt) deleteGoogleCookies(doc); }, ms);
+      }
+    };
+    el.addEventListener('load', after, { once: true });
+    el.addEventListener('error', after, { once: true });
+  }
+}
+
+/**
+ * Undo haltGoogleTransmission in the same page (the visitor re-accepted).
+ * Returns the config commands the halt took out of the queue, for the caller
+ * to queue again AFTER its grant.
+ */
+function resumeGoogleTransmission(): unknown[] {
   const w = tagWindow();
-  if (!w) return;
+  if (!w) return [];
   for (const id of tagIds()) delete w[`ga-disable-${id}`];
   w.__eimsGtagBlocked = false;
   const record = w.__eimsGtagHalt;
-  if (!record) return;
+  if (!record) return [];
   record.restore.reverse().forEach((undo) => { try { undo(); } catch { /* best effort */ } });
   const dl = w.dataLayer;
   if (dl) {
-    if (record.push) Object.defineProperty(dl, 'push', { value: record.push, configurable: true, writable: true });
+    const push = record.capturedPush || record.push;
+    if (push) Object.defineProperty(dl, 'push', { value: push, configurable: true, writable: true });
     else delete (dl as unknown as Record<string, unknown>).push;
   }
   w.gtag = record.gtag;
   delete w.__eimsGtagHalt;
+  return record.purgedConfigs || [];
 }
 
 /** Cookies Google Analytics and Google Ads set on this site's domain. */
@@ -312,8 +403,12 @@ export function applyConsentChoice(choice: ConsentChoice): void {
   // CA-53: tell every other open tab of this site (see installCrossTabConsentSync).
   broadcastChoice(choice);
   if (choice === 'accepted') {
-    resumeGoogleTransmission();
+    const configs = resumeGoogleTransmission();
     if (typeof w.gtag === 'function') w.gtag('consent', 'update', { ...ALL_GRANTED });
+    // Configs a halt took out of the queue go back in, after the grant, so a
+    // re-accept in this tab measures exactly as it did before (same-tab
+    // Accept-after-withdraw semantics unchanged).
+    if (configs.length && w.dataLayer) for (const c of configs) w.dataLayer.push(c);
     w.__eimsLoadGtag?.(true);
     return;
   }
@@ -347,9 +442,15 @@ export function applyConsentChoice(choice: ConsentChoice): void {
  * DELIBERATE CHOICE: an Accept recorded in another tab does NOT start tags in
  * this tab. Starting measurement in a page the visitor is not looking at, on
  * the strength of a click elsewhere, is the riskier direction; the Accept is
- * applied only on this tab's next page load (the inline script in
- * GoogleTags.tsx reads the stored choice) or its next consent check. Stopping
- * is always applied at once; starting never is.
+ * applied only on this tab's next full page load (the inline script in
+ * GoogleTags.tsx reads the stored choice), or when Accept is pressed in this
+ * tab. Stopping is always applied at once; starting never is.
+ *
+ * RECONCILE (CA-53 review, finding 2): a page restored from the back/forward
+ * cache, or one that missed an event, is checked again on 'pageshow'
+ * (persisted) and on 'visibilitychange' to visible. If the stored choice is no
+ * longer Accept and the page is not stopped yet, it is stopped. This check
+ * only ever stops.
  * ---------------------------------------------------------------------- */
 export const CONSENT_CHANNEL_NAME = 'eims-consent';
 interface ConsentMessage { type: 'eims-consent'; choice: ConsentChoice }
@@ -421,7 +522,32 @@ export function installCrossTabConsentSync(): void {
     });
   }
 
+  // Finding 2: back/forward-cache restore and any missed event.
+  const reconcile = () => {
+    if (w.__eimsGtagHalt) return;
+    if (readStoredConsent() === 'accepted') return;
+    if (!pageMayMeasure(w)) return; // nothing was ever requested or granted here: nothing to stop
+    applyChoiceFromOtherTab(null);
+  };
+  window.addEventListener('pageshow', (e: PageTransitionEvent) => { if (e.persisted) reconcile(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reconcile(); });
+
   if (w.__eimsCrossTabStop) applyChoiceFromOtherTab(null);
+}
+
+/**
+ * True when this page could be sending to Google: a Google tag script was
+ * requested, the library has run, or a grant was queued. A page with none of
+ * these (a visitor who never accepted) has nothing to stop, so the reconcile
+ * check leaves it untouched.
+ */
+function pageMayMeasure(w: TagWindow): boolean {
+  if (libraryRunning(w)) return true;
+  if (Array.from(document.querySelectorAll('script[src]')).some((s) => isGoogleTagUrl(s.getAttribute('src') || ''))) return true;
+  return (w.dataLayer || []).some((item) => {
+    const a = item && typeof item === 'object' && 'length' in (item as object) ? Array.from(item as ArrayLike<unknown>) : null;
+    return !!a && a[0] === 'consent' && a[1] === 'update' && !!a[2] && Object.values(a[2] as object).includes('granted');
+  });
 }
 
 function safeLocalStorage(): Storage | null {

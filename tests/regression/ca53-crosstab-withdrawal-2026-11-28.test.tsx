@@ -12,6 +12,7 @@
  *     for the other tab).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { render } from '@testing-library/react';
 import CookieConsent from '@/components/compliance/CookieConsent';
@@ -57,7 +58,7 @@ async function runInline() {
 function resetWindow() {
   document.head.innerHTML = '';
   for (const fn of inlineListeners.splice(0)) window.removeEventListener('storage', fn);
-  for (const k of ['dataLayer', 'gtag', '__eimsLoadGtag', '__eimsGtagBlocked', '__eimsOpenCookieSettings', '__eimsEngineeringBusy', '__eimsCrossTabStop']) delete w[k];
+  for (const k of ['dataLayer', 'gtag', '__eimsLoadGtag', '__eimsGtagBlocked', '__eimsOpenCookieSettings', '__eimsEngineeringBusy', '__eimsCrossTabStop', 'google_tag_data', 'google_tag_manager']) delete w[k];
   if (w.__eimsGtagHalt) {
     (w.__eimsGtagHalt as { restore: Array<() => void> }).restore.reverse().forEach((u) => u());
     delete w.__eimsGtagHalt;
@@ -72,17 +73,25 @@ function resetWindow() {
 
 /** Tab 2: an accepted visitor whose page is already measuring (library loaded). */
 const realGtagCalls: unknown[][] = [];
+/** Re-renders the SAME GoogleTagsRouteChange instance (review finding 3). */
+let routeRerender: (ui: ReactElement) => void = () => {};
+const pageViews = () => realGtagCalls.filter((a) => a[0] === 'event' && a[1] === 'page_view');
 async function measuringTab() {
   window.localStorage.setItem('cookie-consent', 'accepted');
   await runInline();
   render(<CookieConsent />);
-  render(<GoogleTagsRouteChange />);
+  routeRerender = render(<GoogleTagsRouteChange />).rerender;
   (w.__eimsLoadGtag as (now?: boolean) => void)(true);
   expect(googleScripts()).toHaveLength(1);
   // Stand-in for the running library's gtag, to see what it is told.
   realGtagCalls.length = 0;
   const queueGtag = w.gtag!;
   w.gtag = (...a: unknown[]) => { realGtagCalls.push(a); queueGtag(...a); };
+  // Positive control: before the withdrawal, a client-side navigation on this
+  // same instance DOES send a page_view.
+  pathname = '/before-withdrawal';
+  routeRerender(<GoogleTagsRouteChange />);
+  expect(pageViews()).toEqual([['event', 'page_view', { page_path: '/before-withdrawal' }]]);
   document.cookie = '_ga=GA1.1.1.1; path=/';
   document.cookie = '_ga_TEST=GS1.1; path=/';
   document.cookie = '_gcl_au=1.1.1; path=/';
@@ -116,11 +125,15 @@ async function expectFullStop() {
   // 5. Google cookies deleted, others kept
   expect(document.cookie).not.toMatch(/_ga=|_ga_TEST=|_gcl_au=/);
   expect(document.cookie).toContain('keep_me=1');
-  // 6. a client-side navigation sends no page_view
-  const before = realGtagCalls.length;
+  // 6. a client-side navigation on the SAME route-change instance (the one
+  // that sent a page_view before the withdrawal) now sends none
+  const before = pageViews().length;
   pathname = '/generators';
-  render(<GoogleTagsRouteChange />);
-  expect(realGtagCalls.length).toBe(before);
+  routeRerender(<GoogleTagsRouteChange />);
+  pathname = '/solar';
+  routeRerender(<GoogleTagsRouteChange />);
+  expect(pageViews().length).toBe(before);
+  expect((w.dataLayer || []).map((a) => Array.from(a as ArrayLike<unknown>)).some((a) => a[0] === 'event' && a[1] === 'page_view')).toBe(false);
 }
 
 let origFetch: typeof fetch;
@@ -238,10 +251,170 @@ describe('CA-53: BroadcastChannel from another tab', () => {
     expect(w.__eimsGtagHalt).toBeUndefined();
   });
 
+  it('inline listener ignores a sessionStorage event (review note 6)', async () => {
+    await runInline();
+    const ev = new StorageEvent('storage', { key: 'cookie-consent', newValue: 'withdrawn', storageArea: window.sessionStorage });
+    for (const fn of inlineListeners) (typeof fn === 'function' ? fn : fn.handleEvent).call(window, ev);
+    expect(w.__eimsGtagBlocked).toBeFalsy();
+    expect(w.__eimsCrossTabStop).toBeUndefined();
+  });
+
+  it('inline listener also sends the all-denied update to gtag at once (review note 5)', async () => {
+    window.localStorage.setItem('cookie-consent', 'accepted');
+    await runInline();
+    const ev = new StorageEvent('storage', { key: 'cookie-consent', newValue: 'rejected', storageArea: window.localStorage });
+    for (const fn of inlineListeners) (typeof fn === 'function' ? fn : fn.handleEvent).call(window, ev);
+    const last = Array.from((w.dataLayer || []).at(-1) as ArrayLike<unknown>);
+    expect(last).toEqual(['consent', 'update', { ...ALL_DENIED }]);
+  });
+
   it('a choice made in this tab is broadcast to other tabs', async () => {
     const got: unknown[] = [];
     other.onmessage = (e) => got.push(e.data);
     applyConsentChoice('rejected');
     await vi.waitFor(() => expect(got).toEqual([{ type: 'eims-consent', choice: 'rejected' }]), { timeout: 3000 });
+  });
+});
+
+const items = () => (w.dataLayer || []).map((a) => Array.from(a as ArrayLike<unknown>));
+const hasGrantOrConfig = () => items().some((a) => a[0] === 'config' || a[0] === 'event'
+  || (a[0] === 'consent' && a[1] === 'update' && Object.values((a[2] || {}) as object).includes('granted')));
+
+describe('CA-53 review finding 1: withdrawal while gtag/js is still downloading', () => {
+  /** Accepted tab whose library script is requested but has not executed. */
+  async function downloadingTab() {
+    window.localStorage.setItem('cookie-consent', 'accepted');
+    await runInline();
+    render(<CookieConsent />);
+    (w.__eimsLoadGtag as (now?: boolean) => void)(true);
+    expect(googleScripts()).toHaveLength(1);
+    expect(hasGrantOrConfig()).toBe(true); // the grant and configs are queued, waiting for the library
+    return googleScripts()[0] as HTMLScriptElement;
+  }
+
+  it('the queued grant, configs and events are taken out before the library can read them', async () => {
+    await downloadingTab();
+    otherTabStores('withdrawn');
+    expect(hasGrantOrConfig()).toBe(false);
+    expect(items().at(-1)).toEqual(['consent', 'update', { ...ALL_DENIED }]);
+    expect(items()[0]).toEqual(['consent', 'default', expect.objectContaining({ ...ALL_DENIED })]);
+  });
+
+  it('the library cannot install its own dataLayer.push after the stop', async () => {
+    await downloadingTab();
+    otherTabStores('rejected');
+    const libPush = vi.fn(() => 0);
+    (w.dataLayer as unknown as { push: unknown }).push = libPush; // what gtag.js does on load
+    expect(w.dataLayer!.push).not.toBe(libPush);
+    const n = w.dataLayer!.length;
+    w.dataLayer!.push(['config', 'G-X']);
+    expect(w.dataLayer!.length).toBe(n);
+    expect(libPush).not.toHaveBeenCalled();
+  });
+
+  it('when the late script loads (or fails), the stop runs again and Google cookies written meanwhile are wiped, twice', async () => {
+    const s = await downloadingTab();
+    otherTabStores('essential');
+    // The library runs and writes cookies before our load listener fires.
+    w.google_tag_data = {};
+    document.cookie = '_gcl_au=1.1.late; path=/';
+    document.cookie = '_ga=GA1.1.late; path=/';
+    document.cookie = 'keep_me=1; path=/';
+    s.dispatchEvent(new Event('load'));
+    expect(document.cookie).not.toMatch(/_gcl_au=|_ga=/);
+    expect(document.cookie).toContain('keep_me=1');
+    // ...and a cookie written by its first run, shortly after, is wiped too.
+    document.cookie = '_gcl_au=1.1.later; path=/';
+    await new Promise((r) => setTimeout(r, 650));
+    expect(document.cookie).not.toMatch(/_gcl_au=/);
+  });
+
+  it('error on the late script also re-runs the wipe', async () => {
+    const s = await downloadingTab();
+    otherTabStores('withdrawn');
+    document.cookie = '_gcl_au=1.1.err; path=/';
+    s.dispatchEvent(new Event('error'));
+    expect(document.cookie).not.toMatch(/_gcl_au=/);
+  });
+
+  it('same-tab Accept after such a stop still measures: grant first, configs back, the library gets the queue', async () => {
+    await downloadingTab();
+    otherTabStores('withdrawn');
+    const libPush = vi.fn((...a: unknown[]) => a.length);
+    (w.dataLayer as unknown as { push: unknown }).push = libPush; // library loaded while stopped
+    applyConsentChoice('accepted');
+    expect(w.__eimsGtagHalt).toBeUndefined();
+    expect(w.dataLayer!.push).toBe(libPush);
+    const pushed = libPush.mock.calls.map((c) => Array.from(c[0] as ArrayLike<unknown>));
+    const grantAt = pushed.findIndex((a) => a[0] === 'consent' && a[1] === 'update' && (a[2] as Record<string, string>).analytics_storage === 'granted');
+    const configAt = pushed.findIndex((a) => a[0] === 'config');
+    expect(grantAt).toBeGreaterThanOrEqual(0);
+    expect(configAt).toBeGreaterThan(grantAt);
+    expect(pushed.filter((a) => a[0] === 'config').map((a) => a[1])).toEqual(IDS);
+  });
+
+  it('same-tab Accept after a stop before the library was requested: configs back after the grant, library loads', async () => {
+    window.localStorage.setItem('cookie-consent', 'accepted');
+    await runInline(); // configs queued, library deferred (not requested yet)
+    render(<CookieConsent />);
+    otherTabStores('rejected');
+    expect(googleScripts()).toHaveLength(0);
+    applyConsentChoice('accepted');
+    expect(googleScripts()).toHaveLength(1);
+    const it2 = items();
+    const grantAt = it2.findIndex((a) => a[0] === 'consent' && a[1] === 'update' && (a[2] as Record<string, string>).analytics_storage === 'granted');
+    expect(it2.findIndex((a) => a[0] === 'config')).toBeGreaterThan(grantAt);
+  });
+});
+
+describe('CA-53 review finding 2: reconcile on back/forward-cache restore and on becoming visible', () => {
+  const setVisible = (v: 'visible' | 'hidden') => Object.defineProperty(document, 'visibilityState', { value: v, configurable: true });
+  afterEach(() => { delete (document as unknown as Record<string, unknown>).visibilityState; });
+
+  function pageshow(persisted: boolean) {
+    const e = new Event('pageshow');
+    Object.defineProperty(e, 'persisted', { value: persisted });
+    window.dispatchEvent(e);
+  }
+
+  it('stored choice changed with NO event delivered; pageshow persisted: full stop', async () => {
+    await measuringTab();
+    window.localStorage.setItem('cookie-consent', 'withdrawn'); // event missed (bfcache)
+    expect(w.__eimsGtagHalt).toBeUndefined();
+    pageshow(true);
+    await expectFullStop();
+  });
+
+  it('stored choice changed with NO event delivered; tab becomes visible: full stop', async () => {
+    await measuringTab();
+    window.localStorage.setItem('cookie-consent', 'essential');
+    setVisible('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await expectFullStop();
+  });
+
+  it('pageshow that is not a cache restore, or becoming hidden, does nothing', async () => {
+    await measuringTab();
+    window.localStorage.setItem('cookie-consent', 'rejected');
+    pageshow(false);
+    setVisible('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(w.__eimsGtagHalt).toBeUndefined();
+  });
+
+  it('still accepted: nothing stops', async () => {
+    await measuringTab();
+    pageshow(true);
+    setVisible('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(w.__eimsGtagHalt).toBeUndefined();
+  });
+
+  it('a page that never requested or granted anything is left untouched', async () => {
+    await runInline(); // no stored choice: nothing queued but the denied default
+    setVisible('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    pageshow(true);
+    expect(w.__eimsGtagHalt).toBeUndefined();
   });
 });
