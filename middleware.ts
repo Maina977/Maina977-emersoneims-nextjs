@@ -1760,7 +1760,7 @@ export function middleware(request: NextRequest) {
    * The Image component already carries priority + fetchPriority="high", which
    * is the supported way to do this and adapts to the real srcset.
    */
-  const linkHints = [
+  const linkHints: string[] = [
     /*
      * The logo preload that lived here is gone (2026-08-29). It pointed at the
      * RAW /images/logo-tagline.png while the navbar renders that logo through
@@ -1771,11 +1771,13 @@ export function middleware(request: NextRequest) {
      * LCP image for bandwidth. The source is now 13KB and next/image handles
      * delivery. A duplicate <link rel="preload"> in app/layout.tsx went with it.
      *
-     * The preconnects below stay: they cost nothing and genuinely save a round
-     * trip on the font fetch.
+     * The Google Fonts preconnects that stood here were removed on
+     * 2026-11-27 (privacy correction, management decision). The font is
+     * self-hosted (next/font/local in app/layout.tsx); no reachable code
+     * requests fonts.googleapis.com or fonts.gstatic.com, so the hints saved
+     * nothing. They did open a connection to Google on every page before any
+     * consent choice.
      */
-    '<https://fonts.googleapis.com>; rel=preconnect',
-    '<https://fonts.gstatic.com>; rel=preconnect; crossorigin',
   ];
 
   // EIMS PRO / Building Suite embed: warm connection to Flask before HTML parses.
@@ -1795,7 +1797,9 @@ export function middleware(request: NextRequest) {
     linkHints.push(`<${origin}>; rel=dns-prefetch`);
   }
 
-  response.headers.set('Link', linkHints.join(', '));
+  // No empty Link header when there is nothing to hint (most pages, since the
+  // Google Fonts preconnects were removed on 2026-11-27).
+  if (linkHints.length > 0) response.headers.set('Link', linkHints.join(', '));
 
   // Server Timing - Performance debugging
   response.headers.set('Server-Timing', `middleware;dur=${Date.now() % 100}`);
