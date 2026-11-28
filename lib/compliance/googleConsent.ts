@@ -74,6 +74,9 @@ interface TagWindow {
   __eimsGtagBlocked?: boolean;
   __eimsGtagHalt?: HaltRecord;
   __eimsOpenCookieSettings?: boolean;
+  /** CA-53 re-review A: last choice applied in this page, and whether storage holds it. */
+  __eimsPageChoice?: ConsentChoice;
+  __eimsPageChoiceStored?: boolean;
   /** CA-53: cross-tab listeners installed in this page. */
   __eimsConsentSync?: boolean;
   /** CA-53: set by the inline early listener when another tab withdrew before this module loaded. */
@@ -348,8 +351,13 @@ function resumeGoogleTransmission(): unknown[] {
   const dl = w.dataLayer;
   if (dl) {
     const push = record.capturedPush || record.push;
-    if (push) Object.defineProperty(dl, 'push', { value: push, configurable: true, writable: true });
-    else delete (dl as unknown as Record<string, unknown>).push;
+    // Re-review note B: if the library made push non-configurable (the stop's
+    // own defineProperty was then skipped), redefining throws; the Accept must
+    // still go on to grant and load.
+    try {
+      if (push) Object.defineProperty(dl, 'push', { value: push, configurable: true, writable: true });
+      else delete (dl as unknown as Record<string, unknown>).push;
+    } catch { /* the library's own push is still in place */ }
   }
   w.gtag = record.gtag;
   delete w.__eimsGtagHalt;
@@ -384,11 +392,15 @@ export function deleteGoogleCookies(doc: Document = document): string[] {
   return [...new Set(names)];
 }
 
-function store(choice: ConsentChoice): void {
+/** True when the choice was written AND reads back (storage usable for this choice). */
+function store(choice: ConsentChoice): boolean {
   try {
     window.localStorage.setItem(CONSENT_STORAGE_KEY, choice);
     window.localStorage.setItem(CONSENT_DATE_KEY, new Date().toISOString());
-  } catch { /* storage blocked: the choice still applies to this page */ }
+    return window.localStorage.getItem(CONSENT_STORAGE_KEY) === choice;
+  } catch {
+    return false; /* storage blocked: the choice still applies to this page */
+  }
 }
 
 /**
@@ -398,8 +410,14 @@ function store(choice: ConsentChoice): void {
  */
 export function applyConsentChoice(choice: ConsentChoice): void {
   const w = tagWindow();
-  store(choice);
+  const stored = store(choice);
   if (!w) return;
+  // CA-53 re-review, finding A: the last choice applied IN THIS PAGE, and
+  // whether storage actually holds it. The reconcile check compares against
+  // this, so blocked or failing storage cannot stop a page the visitor
+  // accepted here.
+  w.__eimsPageChoice = choice;
+  w.__eimsPageChoiceStored = stored;
   // CA-53: tell every other open tab of this site (see installCrossTabConsentSync).
   broadcastChoice(choice);
   if (choice === 'accepted') {
@@ -525,6 +543,13 @@ export function installCrossTabConsentSync(): void {
   // Finding 2: back/forward-cache restore and any missed event.
   const reconcile = () => {
     if (w.__eimsGtagHalt) return;
+    // Re-review finding A: act only on a stored value that can be read. When
+    // storage is blocked or throws, there is nothing to reconcile against.
+    if (!storageReadable()) return;
+    // ...and never against this page's own Accept when storage could not hold
+    // it (write failed or did not read back): the stored value is then stale,
+    // not a choice made elsewhere.
+    if (w.__eimsPageChoice === 'accepted' && !w.__eimsPageChoiceStored) return;
     if (readStoredConsent() === 'accepted') return;
     if (!pageMayMeasure(w)) return; // nothing was ever requested or granted here: nothing to stop
     applyChoiceFromOtherTab(null);
@@ -552,6 +577,18 @@ function pageMayMeasure(w: TagWindow): boolean {
 
 function safeLocalStorage(): Storage | null {
   try { return window.localStorage; } catch { return null; }
+}
+
+/** True when localStorage exists and getItem does not throw. */
+function storageReadable(): boolean {
+  try {
+    const s = window.localStorage;
+    if (!s) return false;
+    s.getItem(CONSENT_STORAGE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Re-opens the cookie notice so the visitor can change or withdraw a choice. */

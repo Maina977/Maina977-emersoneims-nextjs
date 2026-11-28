@@ -58,7 +58,7 @@ async function runInline() {
 function resetWindow() {
   document.head.innerHTML = '';
   for (const fn of inlineListeners.splice(0)) window.removeEventListener('storage', fn);
-  for (const k of ['dataLayer', 'gtag', '__eimsLoadGtag', '__eimsGtagBlocked', '__eimsOpenCookieSettings', '__eimsEngineeringBusy', '__eimsCrossTabStop', 'google_tag_data', 'google_tag_manager']) delete w[k];
+  for (const k of ['dataLayer', 'gtag', '__eimsLoadGtag', '__eimsGtagBlocked', '__eimsOpenCookieSettings', '__eimsEngineeringBusy', '__eimsCrossTabStop', 'google_tag_data', 'google_tag_manager', '__eimsPageChoice', '__eimsPageChoiceStored']) delete w[k];
   if (w.__eimsGtagHalt) {
     (w.__eimsGtagHalt as { restore: Array<() => void> }).restore.reverse().forEach((u) => u());
     delete w.__eimsGtagHalt;
@@ -353,6 +353,16 @@ describe('CA-53 review finding 1: withdrawal while gtag/js is still downloading'
     expect(pushed.filter((a) => a[0] === 'config').map((a) => a[1])).toEqual(IDS);
   });
 
+  it('re-review note B: a non-configurable library push does not make a later same-tab Accept throw', async () => {
+    await downloadingTab();
+    const libPush = function (this: unknown, ...a: unknown[]) { return a.length; };
+    Object.defineProperty(w.dataLayer!, 'push', { value: libPush, configurable: false, writable: false });
+    otherTabStores('withdrawn'); // the stop's defineProperty is skipped (caught)
+    expect(() => applyConsentChoice('accepted')).not.toThrow();
+    expect(w.__eimsGtagHalt).toBeUndefined();
+    expect(window.localStorage.getItem('cookie-consent')).toBe('accepted');
+  });
+
   it('same-tab Accept after a stop before the library was requested: configs back after the grant, library loads', async () => {
     window.localStorage.setItem('cookie-consent', 'accepted');
     await runInline(); // configs queued, library deferred (not requested yet)
@@ -408,6 +418,55 @@ describe('CA-53 review finding 2: reconcile on back/forward-cache restore and on
     setVisible('visible');
     document.dispatchEvent(new Event('visibilitychange'));
     expect(w.__eimsGtagHalt).toBeUndefined();
+  });
+
+  // Re-review finding A: blocked storage must not stop a page accepted HERE.
+  it('storage blocked (getItem and setItem throw): Accept in this tab keeps measuring through tab switches and bfcache restores', async () => {
+    await runInline();
+    render(<CookieConsent />);
+    const get = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('blocked', 'SecurityError'); });
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('blocked', 'SecurityError'); });
+    try {
+      applyConsentChoice('accepted');
+      expect(googleScripts()).toHaveLength(1);
+      setVisible('visible');
+      document.dispatchEvent(new Event('visibilitychange'));
+      pageshow(true);
+      expect(w.__eimsGtagHalt).toBeUndefined();
+      const n = (w.dataLayer || []).length;
+      w.gtag!('event', 'page_view');
+      expect((w.dataLayer || []).length).toBe(n + 1);
+    } finally {
+      get.mockRestore();
+      set.mockRestore();
+    }
+  });
+
+  it('storage write fails but reads an old value (quota): Accept in this tab is not undone by reconcile', async () => {
+    window.localStorage.setItem('cookie-consent', 'rejected'); // older choice
+    await runInline();
+    render(<CookieConsent />);
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError'); });
+    try {
+      applyConsentChoice('accepted');
+      expect(window.localStorage.getItem('cookie-consent')).toBe('rejected');
+      setVisible('visible');
+      document.dispatchEvent(new Event('visibilitychange'));
+      pageshow(true);
+      expect(w.__eimsGtagHalt).toBeUndefined();
+    } finally {
+      set.mockRestore();
+    }
+  });
+
+  it('control: Accept stored normally in this tab, then a withdrawal elsewhere whose event was missed: reconcile still stops', async () => {
+    await runInline();
+    render(<CookieConsent />);
+    applyConsentChoice('accepted');
+    window.localStorage.setItem('cookie-consent', 'withdrawn'); // another tab; event missed
+    setVisible('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(w.__eimsGtagHalt).toBeDefined();
   });
 
   it('a page that never requested or granted anything is left untouched', async () => {
