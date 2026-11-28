@@ -77,7 +77,7 @@ async function measuringTab() {
   await runInline();
   render(<CookieConsent />);
   render(<GoogleTagsRouteChange />);
-  w.__eimsLoadGtag!(true);
+  (w.__eimsLoadGtag as (now?: boolean) => void)(true);
   expect(googleScripts()).toHaveLength(1);
   // Stand-in for the running library's gtag, to see what it is told.
   realGtagCalls.length = 0;
