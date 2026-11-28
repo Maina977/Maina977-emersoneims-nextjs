@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { TEAM_EMAILS } from '@/lib/contact/emails';
+import CookieSettingsButton from '@/components/compliance/CookieSettingsButton';
 
 /**
  * Regression-pinned strings (tests/regression/site-invariants.test.ts test 6):
@@ -485,6 +486,8 @@ export default function PremiumFooter() {
                 {link.label}
               </Link>
             ))}
+            {/* Privacy correction 2026-11-27: the way back to the cookie choice. */}
+            <CookieSettingsButton className="text-xs text-gray-400 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm" />
           </div>
           {/* gray-600 (#4b5563) on black measured 2.77:1, against the 4.5:1
               minimum for text this size — it was effectively invisible to

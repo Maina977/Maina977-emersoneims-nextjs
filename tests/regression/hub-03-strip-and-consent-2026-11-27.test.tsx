@@ -17,6 +17,7 @@ import path from 'path';
 import HubLayout from '@/app/hub/layout';
 import CookieConsent from '@/components/compliance/CookieConsent';
 import GoogleTags from '@/components/analytics/GoogleTags';
+import { COOKIE_NOTICE_FULL } from '@/lib/compliance/cookieNoticeText';
 
 const read = (p: string) => readFileSync(path.resolve(__dirname, '../..', p), 'utf8');
 
@@ -76,7 +77,10 @@ describe('cookie notice: consent behaviour after the LCP change', () => {
     const desc = document.getElementById(dialog.getAttribute('aria-describedby') || '');
     expect(desc).not.toBeNull();
     expect(desc!.textContent).toContain('We use essential cookies');
-    expect(desc!.textContent).toContain('never shared with third parties');
+    // Privacy correction 2026-11-27: "never shared with third parties" was
+    // inaccurate and is gone; the notice now names Google as the recipient.
+    expect(desc!.textContent).not.toContain('never shared');
+    expect(desc!.textContent).toContain('Google Analytics');
   });
 
   it('sets the desktop text as short flex-item phrases so no block outweighs the page (LCP)', () => {
@@ -97,7 +101,9 @@ describe('cookie notice: consent behaviour after the LCP change', () => {
     }
     // Every word of the long notice is still there, in order.
     const text = (document.getElementById('cookie-notice-text')!.textContent || '').replace(/\s+/g, ' ');
-    expect(text).toContain('We use essential cookies to ensure our website works properly and analytics cookies to understand how you interact with it. Your data is processed securely and never shared with third parties.');
+    // Privacy correction 2026-11-27: the wording changed (pending approval);
+    // the whole new notice must still be present, in order.
+    expect(text).toContain(COOKIE_NOTICE_FULL.trim());
     // Not hidden from users by opacity or visibility tricks.
     const dialog = screen.getByRole('dialog');
     for (const el of [dialog, ...Array.from(dialog.querySelectorAll('*'))]) {
@@ -124,7 +130,11 @@ describe('cookie notice: consent behaviour after the LCP change', () => {
     for (const call of gtag.mock.calls) {
       expect(JSON.stringify(call)).not.toContain('granted');
     }
-    expect(gtag).toHaveBeenCalledWith('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied' });
+    // Privacy correction 2026-11-27: all four consent types are now stated
+    // explicitly on a decline (before, only analytics_storage and ad_storage).
+    expect(gtag).toHaveBeenCalledWith('consent', 'update', {
+      analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+    });
   });
 
   it('does not show once a choice is stored', () => {
@@ -145,6 +155,13 @@ describe('Google tags: consent defaults are denied before anything is configured
     expect(html).toMatch(/analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'/);
     expect(iConfig).toBeGreaterThan(iDefault);
     expect(iLib).toBeGreaterThan(iConfig);
-    expect(html).not.toMatch(/'granted'/);
+    // Privacy correction 2026-11-27: the script now re-grants a RETURNING
+    // visitor whose stored choice is Accept All. 'granted' may appear only
+    // inside that stored-acceptance branch, and the library request only
+    // inside the loader that runs with consent.
+    const grants = html.match(/'granted'/g) || [];
+    expect(grants).toHaveLength(4);
+    expect(html).toMatch(/if\(eimsOk\)\{gtag\('consent','update',\{analytics_storage:'granted',ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'\}\);\}/);
+    expect(html).toMatch(/if\(eimsOk\)\{config\(\);window\.__eimsLoadGtag\(false\);\}/);
   });
 });

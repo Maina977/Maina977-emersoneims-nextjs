@@ -25,6 +25,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { isConsentGranted } from '@/lib/compliance/googleConsent';
 
 export default function GoogleTagsRouteChange() {
   const pathname = usePathname();
@@ -37,6 +38,9 @@ export default function GoogleTagsRouteChange() {
     }
     const w = window as unknown as { gtag?: (...a: unknown[]) => void };
     if (typeof w.gtag !== 'function') return;
+    // Privacy correction 2026-11-27: nothing is sent, or even queued, unless
+    // the visitor's current choice is Accept All (and not withdrawn since).
+    if (!isConsentGranted()) return;
     w.gtag('event', 'page_view', { page_path: pathname });
   }, [pathname]);
 
