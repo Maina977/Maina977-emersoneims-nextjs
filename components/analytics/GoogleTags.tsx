@@ -166,6 +166,21 @@ export default function GoogleTags() {
     'setTimeout(load,2500);};',
     'if(eimsOk){config();window.__eimsLoadGtag(false);}',
     '})();',
+    /*
+     * CA-53 (28 Nov 2026): EARLY cross-tab stop. If the visitor withdraws,
+     * rejects or chooses Essential Only in ANOTHER tab before this page's
+     * client code has loaded, block the library load and set the ga-disable
+     * flags at once, and leave a marker; installCrossTabConsentSync in
+     * lib/compliance/googleConsent.ts runs the full stop when it starts (and
+     * handles every later change itself). An Accept in another tab is ignored
+     * here on purpose: it applies on this tab's next page load.
+     */
+    "addEventListener('storage',function(e){",
+    "if(e.key!=='cookie-consent'&&e.key!==null)return;",
+    "if(e.newValue==='accepted')return;",
+    'window.__eimsGtagBlocked=true;window.__eimsCrossTabStop=true;',
+    ...[...GA4_IDS, GOOGLE_ADS_ID].filter(Boolean).map((id) => `window['ga-disable-${id}']=true;`),
+    '});',
   ].join('');
 
   return (

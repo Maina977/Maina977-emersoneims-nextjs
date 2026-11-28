@@ -74,6 +74,10 @@ interface TagWindow {
   __eimsGtagBlocked?: boolean;
   __eimsGtagHalt?: HaltRecord;
   __eimsOpenCookieSettings?: boolean;
+  /** CA-53: cross-tab listeners installed in this page. */
+  __eimsConsentSync?: boolean;
+  /** CA-53: set by the inline early listener when another tab withdrew before this module loaded. */
+  __eimsCrossTabStop?: boolean;
   [key: string]: unknown;
 }
 interface HaltRecord {
@@ -305,6 +309,8 @@ export function applyConsentChoice(choice: ConsentChoice): void {
   const w = tagWindow();
   store(choice);
   if (!w) return;
+  // CA-53: tell every other open tab of this site (see installCrossTabConsentSync).
+  broadcastChoice(choice);
   if (choice === 'accepted') {
     resumeGoogleTransmission();
     if (typeof w.gtag === 'function') w.gtag('consent', 'update', { ...ALL_GRANTED });
@@ -315,6 +321,111 @@ export function applyConsentChoice(choice: ConsentChoice): void {
   // so the local queue records the decline), then stops further sends.
   haltGoogleTransmission();
   deleteGoogleCookies();
+}
+
+/* ------------------------------------------------------------------------
+ * CROSS-TAB WITHDRAWAL (CA-53, 28 Nov 2026)
+ *
+ * Before this, a withdrawal, Reject All or Essential Only stopped Google sends
+ * only in the tab where the button was pressed. Any other tab of the site that
+ * was already open (and had accepted) kept measuring until it was reloaded.
+ *
+ * Two signals, both handled by the same code:
+ *   - the 'storage' event on 'cookie-consent', which the browser fires in every
+ *     OTHER tab of this origin when the stored choice changes;
+ *   - BroadcastChannel('eims-consent'), posted by applyConsentChoice. It also
+ *     covers a choice that does not change the stored value (for example
+ *     Essential Only pressed again), which fires no storage event.
+ * One channel object per tab is used for both sending and receiving, so a tab
+ * never receives its own message.
+ *
+ * On a withdrawn, rejected or essential choice from another tab (or the key
+ * being removed, which is no consent), this tab runs the SAME full stop as a
+ * withdrawal pressed here: all four states denied, ga-disable flags, gtag and
+ * dataLayer neutralised, the transport guard, Google cookies deleted.
+ *
+ * DELIBERATE CHOICE: an Accept recorded in another tab does NOT start tags in
+ * this tab. Starting measurement in a page the visitor is not looking at, on
+ * the strength of a click elsewhere, is the riskier direction; the Accept is
+ * applied only on this tab's next page load (the inline script in
+ * GoogleTags.tsx reads the stored choice) or its next consent check. Stopping
+ * is always applied at once; starting never is.
+ * ---------------------------------------------------------------------- */
+export const CONSENT_CHANNEL_NAME = 'eims-consent';
+interface ConsentMessage { type: 'eims-consent'; choice: ConsentChoice }
+
+let consentChannel: BroadcastChannel | null = null;
+function channel(): BroadcastChannel | null {
+  if (consentChannel) return consentChannel;
+  try {
+    if (typeof BroadcastChannel === 'function') {
+      consentChannel = new BroadcastChannel(CONSENT_CHANNEL_NAME);
+      // Node (test runner) only: do not keep the process alive. Absent in browsers.
+      (consentChannel as unknown as { unref?: () => void }).unref?.();
+    }
+  } catch { /* unsupported or blocked: the storage event still applies */ }
+  return consentChannel;
+}
+
+function broadcastChoice(choice: ConsentChoice): void {
+  try {
+    const msg: ConsentMessage = { type: 'eims-consent', choice };
+    channel()?.postMessage(msg);
+  } catch { /* best effort: the storage event still applies */ }
+}
+
+const isChoice = (v: unknown): v is ConsentChoice =>
+  v === 'accepted' || v === 'essential' || v === 'rejected' || v === 'withdrawn';
+
+/**
+ * Applies a choice recorded in ANOTHER tab to this one. Does not store or
+ * re-broadcast (the other tab already did). null means the stored choice was
+ * removed, which is no consent, so it stops too. 'accepted' is ignored on
+ * purpose; see the note above.
+ */
+export function applyChoiceFromOtherTab(choice: ConsentChoice | null): void {
+  if (choice === 'accepted') return; // never start tags from another tab's click
+  if (!tagWindow()) return;
+  haltGoogleTransmission();
+  deleteGoogleCookies();
+}
+
+/**
+ * Starts listening for choices made in other tabs. Idempotent per page; the
+ * listeners live for the page's lifetime (the consent state is page-wide, not
+ * tied to a component). Called by the client components that mount on every
+ * page (GoogleTagsRouteChange, CookieConsent).
+ *
+ * If the early listener in the inline gtag-init script (GoogleTags.tsx) saw a
+ * withdrawal before this module loaded, it has already blocked the library
+ * load and set the ga-disable flags; the full stop runs here.
+ */
+export function installCrossTabConsentSync(): void {
+  const w = tagWindow();
+  if (!w || w.__eimsConsentSync) return;
+  w.__eimsConsentSync = true;
+
+  window.addEventListener('storage', (e: StorageEvent) => {
+    // key null: localStorage.clear() in another tab (no consent any more).
+    if (e.key !== CONSENT_STORAGE_KEY && e.key !== null) return;
+    if (e.storageArea && e.storageArea !== safeLocalStorage()) return;
+    applyChoiceFromOtherTab(isChoice(e.newValue) ? e.newValue : null);
+  });
+
+  const ch = channel();
+  if (ch) {
+    ch.addEventListener('message', (e: MessageEvent) => {
+      const data = e.data as Partial<ConsentMessage> | null;
+      if (!data || data.type !== 'eims-consent' || !isChoice(data.choice)) return;
+      applyChoiceFromOtherTab(data.choice);
+    });
+  }
+
+  if (w.__eimsCrossTabStop) applyChoiceFromOtherTab(null);
+}
+
+function safeLocalStorage(): Storage | null {
+  try { return window.localStorage; } catch { return null; }
 }
 
 /** Re-opens the cookie notice so the visitor can change or withdraw a choice. */

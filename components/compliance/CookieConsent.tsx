@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { releaseConsentBarSpace, reserveConsentBarSpace } from '@/lib/compliance/consentBarSpace';
 // Privacy correction 2026-11-27: choices are applied, and the wording kept, in
 // separate modules (consent logic / text pending approval).
-import { applyConsentChoice, isConsentGranted, OPEN_COOKIE_SETTINGS_EVENT, takePendingSettingsRequest } from '@/lib/compliance/googleConsent';
+import { applyConsentChoice, installCrossTabConsentSync, isConsentGranted, OPEN_COOKIE_SETTINGS_EVENT, takePendingSettingsRequest } from '@/lib/compliance/googleConsent';
 import { COOKIE_NOTICE_FULL_PHRASES, COOKIE_NOTICE_SHORT } from '@/lib/compliance/cookieNoticeText';
 
 /**
@@ -51,6 +51,9 @@ export default function CookieConsent() {
   // "Withdraw consent" in place of Accept All (management, 27 Nov 2026).
   const [granted, setGranted] = useState(false);
   useEffect(() => {
+    // CA-53: also listen for choices made in other tabs (idempotent; it is
+    // installed by GoogleTagsRouteChange too). Banner UI is not changed by it.
+    installCrossTabConsentSync();
     const open = () => { setGranted(isConsentGranted()); setShowBanner(true); };
     if (takePendingSettingsRequest()) open();
     window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, open);

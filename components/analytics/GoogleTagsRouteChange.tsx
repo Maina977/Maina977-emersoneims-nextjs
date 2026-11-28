@@ -25,11 +25,15 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { isConsentGranted } from '@/lib/compliance/googleConsent';
+import { installCrossTabConsentSync, isConsentGranted } from '@/lib/compliance/googleConsent';
 
 export default function GoogleTagsRouteChange() {
   const pathname = usePathname();
   const first = useRef(true);
+
+  // CA-53: a withdrawal, Reject All or Essential Only in another tab stops
+  // Google sends in this tab at once (idempotent; see googleConsent.ts).
+  useEffect(() => { installCrossTabConsentSync(); }, []);
 
   useEffect(() => {
     if (first.current) {
